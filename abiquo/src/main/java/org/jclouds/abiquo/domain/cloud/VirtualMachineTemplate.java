@@ -36,7 +36,8 @@ import org.jclouds.abiquo.domain.config.CostCode;
 import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.domain.infrastructure.Datacenter;
 import org.jclouds.abiquo.domain.infrastructure.Tier;
-import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.ConversionTask;
+import org.jclouds.abiquo.domain.task.VirtualMachineTemplateTask;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.abiquo.rest.internal.ExtendedUtils;
 import org.jclouds.http.HttpResponse;
@@ -44,8 +45,12 @@ import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.rest.RestContext;
 
 import com.abiquo.model.enumerator.ConversionState;
+import com.abiquo.model.enumerator.DiskControllerType;
 import com.abiquo.model.enumerator.DiskFormatType;
+import com.abiquo.model.enumerator.EthernetDriverType;
 import com.abiquo.model.enumerator.HypervisorType;
+import com.abiquo.model.enumerator.OSType;
+import com.abiquo.model.enumerator.VMTemplateState;
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.server.core.appslibrary.CategoryDto;
@@ -53,8 +58,10 @@ import com.abiquo.server.core.appslibrary.ConversionDto;
 import com.abiquo.server.core.appslibrary.ConversionsDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplatePersistentDto;
+import com.abiquo.server.core.appslibrary.VirtualMachineTemplateRequestDto;
 import com.abiquo.server.core.infrastructure.storage.VolumeManagementDto;
 import com.abiquo.server.core.pricing.CostCodeDto;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -67,9 +74,8 @@ import com.google.inject.TypeLiteral;
  * @author Francesc Montserrat
  * @see API: <a href=
  *      "http://community.abiquo.com/display/ABI20/Virtual+Machine+Template+Resource"
- *      >
- *      http://community.abiquo.com/display/ABI20/Virtual+Machine+Template+Resource
- *      </a>
+ *      > http://community.abiquo.com/display/ABI20/Virtual+Machine+Template+
+ *      Resource </a>
  */
 public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplateDto> {
    /**
@@ -91,23 +97,15 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
       target = context.getApi().getVirtualMachineTemplateApi().updateVirtualMachineTemplate(target);
    }
 
-   /**
-    * TODO
-    * 
-    * @param vdc
-    * @param volume
-    * @param persistentTemplateName
-    * @param persistentVolumeName
-    * @return
-    */
-   public AsyncTask makePersistent(final VirtualDatacenter vdc, final Volume volume, final String persistentTemplateName) {
+   public VirtualMachineTemplateTask makePersistent(final VirtualDatacenter vdc, final Volume volume,
+         final String persistentTemplateName) {
       RESTLink storageLink = volume.unwrap().getEditLink();
       storageLink.setRel("volume");
       return makePersistent(vdc, storageLink, persistentTemplateName, null);
    }
 
-   public AsyncTask makePersistent(final VirtualDatacenter vdc, final Tier tier, final String persistentTemplateName,
-         final String persistentVolumeName) {
+   public VirtualMachineTemplateTask makePersistent(final VirtualDatacenter vdc, final Tier tier,
+         final String persistentTemplateName, final String persistentVolumeName) {
       // infrastructure
       RESTLink storageLink = tier.unwrap().getEditLink();
       if (storageLink == null) {
@@ -118,7 +116,7 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
       return makePersistent(vdc, storageLink, persistentTemplateName, persistentVolumeName);
    }
 
-   private AsyncTask makePersistent(final VirtualDatacenter vdc, final RESTLink storageLink,
+   private VirtualMachineTemplateTask makePersistent(final VirtualDatacenter vdc, final RESTLink storageLink,
          final String persistentTemplateName, final String persistentVolumeName) {
       VirtualMachineTemplatePersistentDto persistentData = new VirtualMachineTemplatePersistentDto();
       persistentData.setPersistentTemplateName(persistentTemplateName);
@@ -150,7 +148,38 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
       AcceptedRequestDto<String> response = context.getApi().getVirtualMachineTemplateApi()
             .createPersistentVirtualMachineTemplate(idEnt, idDcRepo, persistentData);
 
-      return getTask(response);
+      return getTask(response).asVirtualMachineTemplateTask();
+   }
+
+   /**
+    * Creates a new virtual machine template by copy an already existing virtual
+    * machine template instance disk files, the new template won't be an
+    * instance and its not related to the original virtual machine template (you
+    * can delete the instance once the promoted is finished). Conversions are
+    * copied as well.
+    * 
+    * @param promotedName
+    *           Desired name for the new virtual machine template
+    * @return the task to track the progress for the new virtual machine
+    *         template creation process
+    */
+   public VirtualMachineTemplateTask promoteToMaster(final String promotedName) {
+
+      RESTLink vmtLink = new RESTLink(ParentLinkName.VIRTUAL_MACHINE_TEMPLATE, target.getEditLink().getHref());
+      Integer repositoryId = target.getIdFromLink(ParentLinkName.DATACENTER_REPOSITORY);
+      Integer enterpriseId = target.getIdFromLink(ParentLinkName.ENTERPRISE);
+      checkNotNull(vmtLink, "virtual machine template edit link");
+      checkNotNull(enterpriseId, "virtual machine template's enterprise link");
+      checkNotNull(repositoryId, "virtual machine template's datacenter repository link");
+
+      VirtualMachineTemplateRequestDto request = new VirtualMachineTemplateRequestDto();
+      request.setPromotedName(promotedName);
+      request.getLinks().add(vmtLink);
+
+      AcceptedRequestDto<String> response = context.getApi().getVirtualMachineTemplateApi()
+            .createVirtualMachineTemplate(enterpriseId, repositoryId, request);
+
+      return getTask(response).asVirtualMachineTemplateTask();
    }
 
    // Children access
@@ -290,14 +319,14 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
     *           , desired target format for the request template
     * @return The task reference to track its progress
     */
-   public AsyncTask requestConversion(final DiskFormatType diskFormat) {
+   public ConversionTask requestConversion(final DiskFormatType diskFormat) {
       ConversionDto request = new ConversionDto();
       request.setTargetFormat(diskFormat);
 
       AcceptedRequestDto<String> taskRef = context.getApi().getVirtualMachineTemplateApi()
             .requestConversion(target, diskFormat, request);
 
-      return taskRef == null ? null : getTask(taskRef);
+      return taskRef == null ? null : getTask(taskRef).asConversionTask();
    }
 
    public CostCode getCostCode() {
@@ -308,7 +337,7 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
 
    // Delegate methods
 
-   public int getCpuRequired() {
+   public Integer getCpuRequired() {
       return target.getCpuRequired();
    }
 
@@ -324,7 +353,7 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
       return target.getDescription();
    }
 
-   public long getDiskFileSize() {
+   public Long getDiskFileSize() {
       return target.getDiskFileSize();
    }
 
@@ -332,7 +361,7 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
       return DiskFormatType.valueOf(target.getDiskFormatType());
    }
 
-   public long getHdRequired() {
+   public Long getHdRequired() {
       return target.getHdRequired();
    }
 
@@ -344,7 +373,7 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
       return target.getPath();
    }
 
-   public int getRamRequired() {
+   public Integer getRamRequired() {
       return target.getRamRequired();
    }
 
@@ -360,6 +389,54 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
       target.setName(name);
    }
 
+   public String getLoginUser() {
+      return target.getLoginUser();
+   }
+
+   public void setLoginUser(final String loginUser) {
+      target.setLoginUser(loginUser);
+   }
+
+   public String getLoginPassword() {
+      return target.getLoginPassword();
+   }
+
+   public void setLoginPassword(final String loginPassword) {
+      target.setLoginPassword(loginPassword);
+   }
+
+   public OSType getOsType() {
+      return target.getOsType();
+   }
+
+   public void setOsType(final OSType osType) {
+      target.setOsType(osType);
+   }
+
+   public String getOsVersion() {
+      return target.getOsVersion();
+   }
+
+   public void setOsVersion(final String osVersion) {
+      target.setOsVersion(osVersion);
+   }
+
+   public DiskControllerType getDiskControllerType() {
+      return target.getDiskControllerType();
+   }
+
+   public void setDiskControllerType(final DiskControllerType diskControllerType) {
+      target.setDiskControllerType(diskControllerType);
+   }
+
+   public EthernetDriverType getEthernetDriverType() {
+      return target.getEthernetDriverType();
+   }
+
+   public void setEthernetDriverType(final EthernetDriverType ethernetDriverType) {
+      target.setEthernetDriverType(ethernetDriverType);
+   }
+
    public Integer getId() {
       return target.getId();
    }
@@ -368,13 +445,29 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
       return target.getIconUrl();
    }
 
+   public VMTemplateState getState() {
+      return target.getState();
+   }
+
+   /**
+    * Only downloaded virtual machine templates can request the source
+    * {@link TemplateDefinition} source URL
+    * 
+    * @return the source OVF Document URL, present in
+    *         {@link TemplateDefinition#getUrl()}
+    */
+   public Optional<String> getUrl() {
+      Optional<RESTLink> anylink = Optional.fromNullable(target.searchLink("templatedefinition"));
+      return Optional.fromNullable(anylink.isPresent() ? anylink.get().getHref() : null);
+   }
+
    @Override
    public String toString() {
       return "VirtualMachineTemplate [id=" + getId() + ", cpuRequired=" + getCpuRequired() + ", creationDate="
             + getCreationDate() + ", creationUser=" + getCreationUser() + ", description=" + getDescription()
             + ", diskFileSize=" + getDiskFileSize() + ", diskFormatType=" + getDiskFormatType() + ", hdRequired="
             + getHdRequired() + ", name=" + getName() + ", path=" + getPath() + ", ramRequired=" + getRamRequired()
-            + ", chefEnabled=" + isChefEnabled() + "]";
+            + ", chefEnabled=" + isChefEnabled() + ", state=" + getState() + ", ostype=" + getOsType() + "]";
    }
 
 }

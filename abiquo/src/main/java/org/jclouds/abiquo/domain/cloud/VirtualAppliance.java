@@ -22,6 +22,7 @@ package org.jclouds.abiquo.domain.cloud;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.jclouds.abiquo.AbiquoApi;
@@ -30,11 +31,14 @@ import org.jclouds.abiquo.domain.DomainWrapper;
 import org.jclouds.abiquo.domain.cloud.options.VirtualMachineOptions;
 import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.VirtualMachineTask;
 import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.rest.RestContext;
 
 import com.abiquo.model.transport.AcceptedRequestDto;
+import com.abiquo.server.core.cloud.LayerDto;
+import com.abiquo.server.core.cloud.LayersDto;
 import com.abiquo.server.core.cloud.VirtualApplianceDto;
 import com.abiquo.server.core.cloud.VirtualApplianceState;
 import com.abiquo.server.core.cloud.VirtualApplianceStateDto;
@@ -206,6 +210,28 @@ public class VirtualAppliance extends DomainWrapper<VirtualApplianceDto> {
       return wrap(context, VirtualMachine.class, vm);
    }
 
+   /**
+    * Gets a list of layers with its virtual machines
+    * 
+    * @return The list of layers and virtual machines of each one.
+    */
+   public List<Layer> listLayers() {
+      LayersDto layers = context.getApi().getCloudApi().listLayers(target);
+      return wrap(context, Layer.class, layers.getCollection());
+   }
+
+   /**
+    * Gets a concrete layer with its virtual machines
+    * 
+    * @param layerName
+    *           Layer's name
+    * @return The requested layer
+    */
+   public Layer getLayer(final String layerName) {
+      LayerDto layer = context.getApi().getCloudApi().getLayer(target, layerName);
+      return wrap(context, Layer.class, layer);
+   }
+
    // Actions
 
    /**
@@ -219,7 +245,7 @@ public class VirtualAppliance extends DomainWrapper<VirtualApplianceDto> {
     * @return The list of tasks corresponding to the deploy process of each
     *         virtual machine in the appliance.
     */
-   public AsyncTask[] deploy() {
+   public VirtualMachineTask[] deploy() {
       return deploy(false);
    }
 
@@ -237,13 +263,14 @@ public class VirtualAppliance extends DomainWrapper<VirtualApplianceDto> {
     * @return The list of tasks corresponding to the deploy process of each
     *         virtual machine in the appliance.
     */
-   public AsyncTask[] deploy(final boolean forceEnterpriseSoftLimits) {
+   public VirtualMachineTask[] deploy(final boolean forceEnterpriseSoftLimits) {
       VirtualMachineTaskDto force = new VirtualMachineTaskDto();
       force.setForceEnterpriseSoftLimits(forceEnterpriseSoftLimits);
 
       AcceptedRequestDto<String> response = context.getApi().getCloudApi().deployVirtualAppliance(unwrap(), force);
 
-      return getTasks(response);
+      AsyncTask<?, ?>[] tasks = getTasks(response);
+      return Arrays.copyOf(tasks, tasks.length, VirtualMachineTask[].class);
    }
 
    /**
@@ -257,7 +284,7 @@ public class VirtualAppliance extends DomainWrapper<VirtualApplianceDto> {
     * @return The list of tasks corresponding to the undeploy process of each
     *         virtual machine in the appliance.
     */
-   public AsyncTask[] undeploy() {
+   public VirtualMachineTask[] undeploy() {
       return undeploy(false);
    }
 
@@ -275,13 +302,14 @@ public class VirtualAppliance extends DomainWrapper<VirtualApplianceDto> {
     * @return The list of tasks corresponding to the undeploy process of each
     *         virtual machine in the appliance.
     */
-   public AsyncTask[] undeploy(final boolean forceUndeploy) {
+   public VirtualMachineTask[] undeploy(final boolean forceUndeploy) {
       VirtualMachineTaskDto force = new VirtualMachineTaskDto();
       force.setForceUndeploy(forceUndeploy);
 
       AcceptedRequestDto<String> response = context.getApi().getCloudApi().undeployVirtualAppliance(unwrap(), force);
 
-      return getTasks(response);
+      AsyncTask<?, ?>[] tasks = getTasks(response);
+      return Arrays.copyOf(tasks, tasks.length, VirtualMachineTask[].class);
    }
 
    /**
@@ -346,6 +374,10 @@ public class VirtualAppliance extends DomainWrapper<VirtualApplianceDto> {
       return target.getError();
    }
 
+   /**
+    * @deprecated This field will be removed in future versions.
+    */
+   @Deprecated
    public int getHighDisponibility() {
       return target.getHighDisponibility();
    }
@@ -358,6 +390,10 @@ public class VirtualAppliance extends DomainWrapper<VirtualApplianceDto> {
       return target.getName();
    }
 
+   /**
+    * @deprecated This field will be removed in future versions.
+    */
+   @Deprecated
    public int getPublicApp() {
       return target.getPublicApp();
    }

@@ -38,6 +38,7 @@ import org.testng.annotations.Test;
 import com.abiquo.model.enumerator.ConversionState;
 import com.abiquo.model.enumerator.DiskFormatType;
 import com.abiquo.model.enumerator.HypervisorType;
+import com.abiquo.model.enumerator.OSType;
 import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.server.core.appslibrary.ConversionDto;
 import com.abiquo.server.core.appslibrary.ConversionsDto;
@@ -84,11 +85,11 @@ public class VirtualMachineTemplateAsyncApiTest extends BaseAbiquoAsyncApiTest<V
                   1,
                   1,
                   VirtualMachineTemplateOptions.builder().hypervisorType(HypervisorType.XENSERVER)
-                        .categoryName("Firewalls").build())));
+                        .categoryName("Firewalls").osType(OSType.MACOS).build())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates"
-                  + "?hypervisorTypeName=XENSERVER&categoryName=Firewalls HTTP/1.1");
+                  + "?hypervisorTypeName=XENSERVER&categoryName=Firewalls&ostype=MACOS HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VirtualMachineTemplatesDto.BASE_MEDIA_TYPE + "\n");
       assertPayloadEquals(request, null, null, false);
 

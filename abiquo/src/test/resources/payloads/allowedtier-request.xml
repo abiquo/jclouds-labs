@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<allowedtier>
+    <link href="http://localhost/api/admin/datacenters/1/storage/tiers/2" rel="tier"/>
+</allowedtier>

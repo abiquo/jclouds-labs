@@ -24,6 +24,7 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.jclouds.abiquo.domain.DomainWrapper.wrap;
+import static org.jclouds.abiquo.domain.TemplateResources.virtualMachineTemplatePut;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
 
@@ -32,17 +33,20 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.easymock.EasyMock;
+import org.easymock.IMockBuilder;
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
 import org.jclouds.abiquo.domain.infrastructure.Datacenter;
 import org.jclouds.compute.domain.Image;
+import org.jclouds.compute.domain.Image.Status;
 import org.jclouds.compute.domain.OperatingSystem;
 import org.jclouds.domain.Location;
+import org.jclouds.domain.LoginCredentials;
 import org.jclouds.rest.RestContext;
 import org.testng.annotations.Test;
 
-import com.abiquo.model.rest.RESTLink;
+import com.abiquo.model.enumerator.VMTemplateState;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
@@ -54,69 +58,102 @@ import com.google.common.base.Supplier;
  */
 @Test(groups = "unit", testName = "VirtualMachineTemplateToImageTest")
 public class VirtualMachineTemplateToImageTest {
-   @SuppressWarnings("unchecked")
+
    public void testVirtualMachineTemplateToImage() {
-      RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
-      Function<Datacenter, Location> dcToLocation = mockDatacenterToLocation();
-      Supplier<Map<Integer, Datacenter>> regionMap = mockRegionMap();
-      VirtualMachineTemplateToImage function = new VirtualMachineTemplateToImage(dcToLocation, regionMap);
 
-      VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
-      dto.setId(5);
-      dto.setName("Template");
-      dto.setDescription("Template description");
-      dto.addLink(new RESTLink("diskfile", "http://foo/bar"));
-      dto.addLink(new RESTLink("datacenter", "http://foo/bar/4"));
+      VirtualMachineTemplateDto dto = virtualMachineTemplatePut();
+      dto.setState(VMTemplateState.DONE);
 
-      Image image = function.apply(wrap(context, VirtualMachineTemplate.class, dto));
-
-      verify(regionMap);
-      verify(dcToLocation);
+      Image image = toImage(dto);
 
       assertEquals(image.getId(), dto.getId().toString());
       assertEquals(image.getName(), dto.getName());
       assertEquals(image.getDescription(), dto.getDescription());
-      assertEquals(image.getUri(), URI.create("http://foo/bar"));
-      assertEquals(image.getOperatingSystem(), OperatingSystem.builder().description(dto.getName()).build());
+      assertEquals(image.getUri(), URI.create(dto.searchLink("diskfile").getHref()));
+
+      assertEquals(image.getStatus(), Status.AVAILABLE);
+
+      assertEquals(image.getOperatingSystem().is64Bit(), dto.getOsType().is64Bit());
+      assertEquals(image.getOperatingSystem().getName(), dto.getOsType().name());
+
+      assertEquals(image.getDefaultCredentials().getUser(), dto.getLoginUser());
+      assertEquals(image.getDefaultCredentials().getPassword(), dto.getLoginPassword());
+      assertEquals(image.getDefaultCredentials().shouldAuthenticateSudo(), false);
    }
 
-   @SuppressWarnings("unchecked")
    public void testConvertWithoutDownloadLink() {
-      RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
-      Function<Datacenter, Location> dcToLocation = mockDatacenterToLocation();
-      Supplier<Map<Integer, Datacenter>> regionMap = mockRegionMap();
-      VirtualMachineTemplateToImage function = new VirtualMachineTemplateToImage(dcToLocation, regionMap);
+      VirtualMachineTemplateDto dto = virtualMachineTemplatePut();
+      dto.setLinks(Collections.singletonList(dto.searchLink("datacenter"))); // required
 
-      VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
-      dto.setId(5);
-      dto.setName("Template");
-      dto.setDescription("Template description");
-      dto.addLink(new RESTLink("datacenter", "http://foo/bar/4"));
-
-      Image image = function.apply(wrap(context, VirtualMachineTemplate.class, dto));
-
-      verify(regionMap);
-      verify(dcToLocation);
-
+      Image image = toImage(dto);
       assertNull(image.getUri());
    }
 
-   @SuppressWarnings("unchecked")
    @Test(expectedExceptions = NullPointerException.class)
    public void testConvertWithoutId() {
-      RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
-      Function<Datacenter, Location> dcToLocation = mockDatacenterToLocation();
-      Supplier<Map<Integer, Datacenter>> regionMap = mockRegionMap();
-      VirtualMachineTemplateToImage function = new VirtualMachineTemplateToImage(dcToLocation, regionMap);
-
-      VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
-      function.apply(wrap(context, VirtualMachineTemplate.class, dto));
+      toImage(new VirtualMachineTemplateDto());
    }
 
-   @SuppressWarnings("unchecked")
+   private static Image toImage(VirtualMachineTemplateDto dto) {
+      @SuppressWarnings("unchecked")
+      RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
+      return new MockVirtualMachineTemplate().apply(wrap(context, VirtualMachineTemplate.class, dto));
+   }
+
+   private static class MockVirtualMachineTemplate implements Function<VirtualMachineTemplate, Image> {
+      Supplier<Map<Integer, Datacenter>> regionMap = mockRegionMap();
+
+      Function<Datacenter, Location> dcToLocation = mockDatacenterToLocation();
+
+      Function<VirtualMachineTemplate, LoginCredentials> vmtToLogin = mockTemplateToLogin();
+
+      Function<VirtualMachineTemplate, OperatingSystem> vmtToOS = mockTemplateToOS();
+
+      Function<VirtualMachineTemplate, Status> vmtToStatus = mockTemplateToStatus();
+
+      @Override
+      public Image apply(VirtualMachineTemplate input) {
+         Image image = new VirtualMachineTemplateToImage(dcToLocation, regionMap, vmtToOS, vmtToLogin, vmtToStatus)
+               .apply(input);
+         verify(regionMap);
+         verify(dcToLocation);
+         verify(vmtToLogin);
+         verify(vmtToOS);
+         verify(vmtToStatus);
+         return image;
+      }
+   }
+
    private static Function<Datacenter, Location> mockDatacenterToLocation() {
+      @SuppressWarnings("unchecked")
       Function<Datacenter, Location> mock = EasyMock.createMock(Function.class);
       expect(mock.apply(anyObject(Datacenter.class))).andReturn(null);
+      replay(mock);
+      return mock;
+   }
+
+   private static Function<VirtualMachineTemplate, LoginCredentials> mockTemplateToLogin() {
+      @SuppressWarnings("unchecked")
+      Function<VirtualMachineTemplate, LoginCredentials> mock = EasyMock.createMock(Function.class);
+      expect(mock.apply(anyObject(VirtualMachineTemplate.class))).andDelegateTo(
+            new VirtualMachineTemplateToLoginCredentials());
+      replay(mock);
+      return mock;
+   }
+
+   private static Function<VirtualMachineTemplate, OperatingSystem> mockTemplateToOS() {
+      @SuppressWarnings("unchecked")
+      Function<VirtualMachineTemplate, OperatingSystem> mock = EasyMock.createMock(Function.class);
+      expect(mock.apply(anyObject(VirtualMachineTemplate.class))).andDelegateTo(
+            new VirtualMachineTemplateToOperatingSystem());
+      replay(mock);
+      return mock;
+   }
+
+   private static Function<VirtualMachineTemplate, Status> mockTemplateToStatus() {
+      @SuppressWarnings("unchecked")
+      Function<VirtualMachineTemplate, Status> mock = EasyMock.createMock(Function.class);
+      expect(mock.apply(anyObject(VirtualMachineTemplate.class))).andDelegateTo(new VirtualMachineTemplateToStatus());
       replay(mock);
       return mock;
    }
@@ -127,5 +164,12 @@ public class VirtualMachineTemplateToImageTest {
       expect(mock.get()).andReturn(Collections.EMPTY_MAP);
       replay(mock);
       return mock;
+   }
+
+   public static IMockBuilder<VirtualMachineTemplate> mockBuilderVirtualMachineTemplate(
+         final VirtualMachineTemplateDto dto) {
+      @SuppressWarnings("unchecked")
+      RestContext<AbiquoApi, AbiquoAsyncApi> cntx = EasyMock.createMock(RestContext.class);
+      return EasyMock.createMockBuilder(VirtualMachineTemplate.class).withConstructor(cntx, dto);
    }
 }

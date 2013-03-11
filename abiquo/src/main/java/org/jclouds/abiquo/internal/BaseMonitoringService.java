@@ -176,7 +176,8 @@ public class BaseMonitoringService implements MonitoringService {
     * Performs the periodical monitoring tasks.
     * 
     * @author Ignasi Barrera
-    * @param <T> The type of the object being monitored.
+    * @param <T>
+    *           The type of the object being monitored.
     */
    @VisibleForTesting
    class AsyncMonitor<T> implements Runnable {
@@ -204,8 +205,10 @@ public class BaseMonitoringService implements MonitoringService {
       /**
        * Starts the monitoring job with the given timeout.
        * 
-       * @param maxWait The timeout.
-       * @param timeUnit The timeunit used in the maxWait parameter.
+       * @param maxWait
+       *           The timeout.
+       * @param timeUnit
+       *           The timeunit used in the maxWait parameter.
        */
       public void startMonitoring(final Long maxWait, TimeUnit timeUnit) {
          if (maxWait != null) {

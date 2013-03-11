@@ -19,7 +19,6 @@
 
 package org.jclouds.abiquo.domain.options.search;
 
-import org.jclouds.abiquo.domain.options.search.reference.OrderBy;
 import org.jclouds.http.options.BaseHttpRequestOptions;
 
 import com.google.common.collect.Multimap;
@@ -54,7 +53,7 @@ public class FilterOptions extends BaseHttpRequestOptions {
 
       protected Integer limit;
 
-      protected OrderBy by;
+      protected String by;
 
       protected String has;
 
@@ -75,7 +74,7 @@ public class FilterOptions extends BaseHttpRequestOptions {
          return (T) this;
       }
 
-      public T orderBy(final OrderBy by) {
+      public T orderBy(final String by) {
          this.by = by;
          return (T) this;
       }
@@ -111,7 +110,7 @@ public class FilterOptions extends BaseHttpRequestOptions {
          }
 
          if (by != null) {
-            queryParameters.put("by", by.getValue());
+            queryParameters.put("by", by);
          }
 
          if (asc != null) {

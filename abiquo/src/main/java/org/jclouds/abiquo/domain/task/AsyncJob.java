@@ -24,13 +24,13 @@ import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
 import org.jclouds.rest.RestContext;
 
-import com.abiquo.server.core.task.Job.JobState;
-import com.abiquo.server.core.task.Job.JobType;
+import com.abiquo.server.core.task.JobState;
+import com.abiquo.server.core.task.JobType;
 import com.abiquo.server.core.task.JobDto;
 
 /**
  * Adds generic high level functionality to {JobDto}.
- * 
+ *
  * @author Francesc Montserrat
  */
 public class AsyncJob extends DomainWrapper<JobDto> {

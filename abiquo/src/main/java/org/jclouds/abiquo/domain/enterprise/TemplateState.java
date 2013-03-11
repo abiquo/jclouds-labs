@@ -24,8 +24,8 @@ import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
 import org.jclouds.rest.RestContext;
 
-import com.abiquo.am.model.TemplateStateDto;
-import com.abiquo.am.model.TemplateStatusEnumType;
+import com.abiquo.server.core.appslibrary.TemplateStateDto;
+import com.abiquo.server.core.appslibrary.TemplateStateDto.TemplateStatusEnumType;
 
 /**
  * Adds high level functionality to {@link TemplateStateDto}.

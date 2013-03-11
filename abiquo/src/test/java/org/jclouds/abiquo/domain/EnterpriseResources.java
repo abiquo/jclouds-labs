@@ -164,6 +164,7 @@ public class EnterpriseResources {
       limits.setVlansLimits(0, 0);
       limits.setRepositoryHardLimitsInMb(0);
       limits.setRepositorySoftLimitsInMb(0);
+      limits.addLink(new RESTLink("datacenter", "http://localhost/api/admin/datacenters/1"));
       return limits;
    }
 
@@ -194,6 +195,7 @@ public class EnterpriseResources {
    public static String datacenterLimitsPostPayload() {
       StringBuilder buffer = new StringBuilder();
       buffer.append("<limit>");
+      buffer.append(link("/admin/datacenters/1", "datacenter"));
       buffer.append("<cpuHard>0</cpuHard>");
       buffer.append("<cpuSoft>0</cpuSoft>");
       buffer.append("<hdHard>0</hdHard>");
@@ -237,6 +239,7 @@ public class EnterpriseResources {
    public static String datacenterLimitsPutPayload(final EnterpriseDto enterprise) {
       StringBuilder buffer = new StringBuilder();
       buffer.append("<limit>");
+      buffer.append(link("/admin/datacenters/1", "datacenter"));
       buffer.append(link("/admin/enterprises/" + enterprise.getId() + "/limits/1", "edit"));
       buffer.append("<cpuHard>0</cpuHard>");
       buffer.append("<cpuSoft>0</cpuSoft>");

@@ -92,23 +92,25 @@ public class ListMachines implements ListRootEntities<Machine> {
    }
 
    private Iterable<RackDto> listConcurrentRacks(final Iterable<Datacenter> datacenters) {
-      Iterable<RacksDto> racks = transformParallel(datacenters, new Function<Datacenter, ListenableFuture<? extends RacksDto>>() {
-         @Override
-         public ListenableFuture<RacksDto> apply(final Datacenter input) {
-            return context.getAsyncApi().getInfrastructureApi().listRacks(input.unwrap());
-         }
-      }, userExecutor, maxTime, logger, "getting racks");
+      Iterable<RacksDto> racks = transformParallel(datacenters,
+            new Function<Datacenter, ListenableFuture<? extends RacksDto>>() {
+               @Override
+               public ListenableFuture<RacksDto> apply(final Datacenter input) {
+                  return context.getAsyncApi().getInfrastructureApi().listRacks(input.unwrap());
+               }
+            }, userExecutor, maxTime, logger, "getting racks");
 
       return DomainWrapper.join(racks);
    }
 
    private Iterable<MachineDto> listConcurrentMachines(final Iterable<RackDto> racks) {
-      Iterable<MachinesDto> machines = transformParallel(racks, new Function<RackDto, ListenableFuture<? extends MachinesDto>>() {
-         @Override
-         public ListenableFuture<MachinesDto> apply(final RackDto input) {
-            return context.getAsyncApi().getInfrastructureApi().listMachines(input);
-         }
-      }, userExecutor, maxTime, logger, "getting machines");
+      Iterable<MachinesDto> machines = transformParallel(racks,
+            new Function<RackDto, ListenableFuture<? extends MachinesDto>>() {
+               @Override
+               public ListenableFuture<MachinesDto> apply(final RackDto input) {
+                  return context.getAsyncApi().getInfrastructureApi().listMachines(input);
+               }
+            }, userExecutor, maxTime, logger, "getting machines");
 
       return DomainWrapper.join(machines);
    }

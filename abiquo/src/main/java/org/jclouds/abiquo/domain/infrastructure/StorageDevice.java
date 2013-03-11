@@ -248,9 +248,8 @@ public class StorageDevice extends DomainWrapper<StorageDeviceDto> {
     * 
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/TierResource#TierResource-Retrievethelistoftiers"
-    *      >
-    *      http://community.abiquo.com/display/ABI20/TierResource#TierResource-
-    *      Retrievethelistoftiers </a>
+    *      > http://community.abiquo.com/display/ABI20/TierResource#TierResource
+    *      - Retrievethelistoftiers </a>
     * @return List of tiers in the datacenter using this device.
     */
    public List<Tier> listTiersFromDatacenter() {
@@ -274,9 +273,8 @@ public class StorageDevice extends DomainWrapper<StorageDeviceDto> {
     *           Filter to be applied to the list.
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/TierResource#TierResource-Retrievethelistoftiers"
-    *      >
-    *      http://community.abiquo.com/display/ABI20/TierResource#TierResource-
-    *      Retrievethelistoftiers </a>
+    *      > http://community.abiquo.com/display/ABI20/TierResource#TierResource
+    *      - Retrievethelistoftiers </a>
     * @return Filtered list of tiers in the datacenter using this device.
     */
    public List<Tier> listTiersFromDatacenter(final Predicate<Tier> filter) {

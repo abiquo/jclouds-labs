@@ -19,6 +19,7 @@
 
 package org.jclouds.abiquo.features;
 
+import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.DatacenterOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.IpmiOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.MachineOptions;
@@ -35,6 +36,7 @@ import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
 import com.abiquo.server.core.enterprise.DatacentersLimitsDto;
 import com.abiquo.server.core.enterprise.EnterpriseDto;
+import com.abiquo.server.core.enterprise.EnterprisesDto;
 import com.abiquo.server.core.infrastructure.BladeLocatorLedDto;
 import com.abiquo.server.core.infrastructure.DatacenterDto;
 import com.abiquo.server.core.infrastructure.DatacentersDto;
@@ -687,7 +689,8 @@ public interface InfrastructureApi {
     * 
     * @param machine
     *           The machine to check
-    * @param sync boolean that indicates a database synchronization
+    * @param sync
+    *           boolean that indicates a database synchronization
     * @return A machineStateDto with a machine state value from enum
     *         MachineState
     */
@@ -919,6 +922,45 @@ public interface InfrastructureApi {
     */
    @EnterpriseEdition
    TierDto getTier(DatacenterDto datacenter, Integer tierId);
+
+   /**
+    * Allow the tier to be used by all enterprises.
+    * 
+    * @param tier
+    *           The tier to be allowed.
+    */
+   void allowTierToAllEnterprises(TierDto tier);
+
+   /**
+    * Restrict a tier to all enterprises.
+    * 
+    * @param tier
+    *           The tier to be restricted.
+    * @param force
+    *           Boolean indicating if the force the operation must succeed even
+    *           if not all enterprises could be updated
+    */
+   void restrictTierToAllEnterprises(TierDto tier, boolean force);
+
+   /**
+    * Retrieve list of allowed enterprises for a tier
+    * 
+    * @param tier
+    *           The tier for searching its allowed enterprises
+    * @return The list of the enterprises with the tier allowed
+    */
+   EnterprisesDto listAllowedEnterprisesForTier(TierDto tier);
+
+   /**
+    * Retrieve list of allowed enterprises for a tier
+    * 
+    * @param tier
+    *           The tier for searching its allowed enterprises
+    * @param options
+    *           Optional query params
+    * @return The list of the enterprises with the tier allowed
+    */
+   EnterprisesDto listAllowedEnterprisesForTier(TierDto tier, EnterpriseOptions options);
 
    /*********************** Storage Pool ***********************/
 

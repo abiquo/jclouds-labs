@@ -125,7 +125,7 @@ public class VirtualMachineToNodeMetadataTest {
       assertEquals(node.getLocation().getDescription(), "Mock Location");
       assertEquals(node.getImageId(), "1");
       assertEquals(node.getHardware().getId(), "1");
-      assertEquals(node.getHardware().getRam(), vm.getRam());
+      assertEquals(node.getHardware().getRam(), vm.getRam().intValue());
       assertEquals(node.getHardware().getProcessors().get(0).getCores(), (double) vm.getCpu());
       assertEquals(node.getLoginPort(), vm.getVdrpPort());
       assertEquals(node.getPrivateAddresses().size(), 1);
@@ -141,6 +141,8 @@ public class VirtualMachineToNodeMetadataTest {
 
       expect(image.getId()).andReturn("1");
       expect(image.getOperatingSystem()).andReturn(null);
+      expect(image.getDefaultCredentials()).andReturn(null);
+
       expect(templateToImage.apply(anyObject(VirtualMachineTemplate.class))).andReturn(image);
 
       replay(image);

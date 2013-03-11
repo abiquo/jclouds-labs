@@ -17,25 +17,29 @@
  * under the License.
  */
 
-package org.jclouds.abiquo.domain.options.search.reference;
+package org.jclouds.abiquo.domain.task;
+
+import org.jclouds.abiquo.AbiquoApi;
+import org.jclouds.abiquo.AbiquoAsyncApi;
+import org.jclouds.abiquo.domain.cloud.Conversion;
+import org.jclouds.rest.RestContext;
+
+import com.abiquo.server.core.appslibrary.ConversionDto;
+import com.abiquo.server.core.task.TaskDto;
 
 /**
- * Available fields to order search results.
+ * Task that produces a {@link Conversion}.
  * 
- * @author Francesc Montserrat
  * @author Ignasi Barrera
  */
-public enum OrderBy {
-   NAME("name"), ID("id"), VIRTUALDATACENTER("virtualdatacenter"), VIRTUALMACHINE("virtualmachine"), VIRTUALAPPLIANCE(
-         "virtualappliance"), TIER("tier"), TOTALSIZE("totalsize"), STATE("state");
-
-   public String value;
-
-   public String getValue() {
-      return value;
+public class ConversionTask extends AsyncTask<Conversion, ConversionDto> {
+   protected ConversionTask(final RestContext<AbiquoApi, AbiquoAsyncApi> context, final TaskDto target) {
+      super(context, target, Conversion.class, ConversionDto.class);
    }
 
-   private OrderBy(final String value) {
-      this.value = value;
+   @Override
+   public String toString() {
+      return "Conversion" + super.toString();
    }
+
 }

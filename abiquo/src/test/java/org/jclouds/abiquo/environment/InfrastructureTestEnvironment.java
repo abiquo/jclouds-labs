@@ -113,6 +113,8 @@ public class InfrastructureTestEnvironment implements TestEnvironment {
 
    public Enterprise enterprise;
 
+   public Limits limits;
+
    public StorageDevice storageDevice;
 
    public StoragePool storagePool;
@@ -317,7 +319,7 @@ public class InfrastructureTestEnvironment implements TestEnvironment {
       enterprise = Enterprise.builder(context.getApiContext()).name(randomName()).build();
       enterprise.save();
       assertNotNull(enterprise.getId());
-      Limits limits = enterprise.allowDatacenter(datacenter);
+      limits = enterprise.allowDatacenter(datacenter);
       assertNotNull(limits);
    }
 

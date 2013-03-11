@@ -19,8 +19,11 @@
 
 package org.jclouds.abiquo.features;
 
+import org.jclouds.abiquo.domain.cloud.TemplateDefinition;
+import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
 import org.jclouds.abiquo.domain.cloud.options.ConversionOptions;
 import org.jclouds.abiquo.domain.cloud.options.VirtualMachineTemplateOptions;
+import org.jclouds.abiquo.domain.infrastructure.Datacenter;
 
 import com.abiquo.model.enumerator.DiskFormatType;
 import com.abiquo.model.transport.AcceptedRequestDto;
@@ -28,6 +31,7 @@ import com.abiquo.server.core.appslibrary.ConversionDto;
 import com.abiquo.server.core.appslibrary.ConversionsDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplatePersistentDto;
+import com.abiquo.server.core.appslibrary.VirtualMachineTemplateRequestDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplatesDto;
 
 /**
@@ -107,16 +111,44 @@ public interface VirtualMachineTemplateApi {
     * Creates a persistent virtual machine template from other virtual machine
     * template.
     * 
-    * @param dcRepository
+    * @param datacenterRepositoryId
     *           The repository where the persistent virtual machine template
     *           will be created.
     * @param options
     *           The persistent options like name, volume/tier, virtual
     *           datacenter and original template.
-    * @return Response message to the persistent request.
+    * @return Traceable task response.
     */
    AcceptedRequestDto<String> createPersistentVirtualMachineTemplate(Integer enterpriseId,
          Integer datacenterRepositoryId, VirtualMachineTemplatePersistentDto persistentOptions);
+
+   /**
+    * Creates a new virtual machine template in the given datacenter.
+    * <ul>
+    * <li>It can download a template definition @see
+    * {@link TemplateDefinition#downloadToRepository(Datacenter)}</li>
+    * <li>Or promote a virtual machine template instance @see
+    * {@link VirtualMachineTemplate#promoteToMaster(String)}</li>
+    * </ul>
+    * 
+    * @param enterpriseId
+    *           Id of the enterprise
+    * @param datacenterRepositoryId
+    *           The datacenter repository where the new virtual machine template
+    *           will be created.
+    * @param templateRequest
+    *           <ul>
+    *           <li>To downloading a template definition: Hold the template
+    *           definition link with _rel_ ''templateDefinition''</li>
+    *           <li>To promote a virtual machine template instance: Hold the
+    *           virtual machine template link with _rel_
+    *           ''virtualmachinetemplate'' and also the desired
+    *           ''promotedName'', name of the new created virtual machine
+    *           template</li>
+    *           </ul>
+    */
+   AcceptedRequestDto<String> createVirtualMachineTemplate(Integer enterpriseId, Integer datacenterRepositoryId,
+         VirtualMachineTemplateRequestDto templateRequest);
 
    /**
     * List all the conversions for a virtual machine template.

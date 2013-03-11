@@ -22,12 +22,15 @@ package org.jclouds.abiquo.predicates.cloud;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Arrays;
+import java.util.Collection;
 
+import org.jclouds.abiquo.domain.cloud.TemplateDefinition;
 import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
 
 import com.abiquo.model.enumerator.DiskFormatType;
-import com.abiquo.model.enumerator.HypervisorType;
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 
 /**
  * Container for {@link VirtualMachineTemplate} filters.
@@ -68,17 +71,6 @@ public class VirtualMachineTemplatePredicates {
       };
    }
 
-   public static Predicate<VirtualMachineTemplate> compatible(final HypervisorType type) {
-      checkNotNull(type, "type must be defined");
-
-      return new Predicate<VirtualMachineTemplate>() {
-         @Override
-         public boolean apply(final VirtualMachineTemplate template) {
-            return type.isCompatible(template.getDiskFormatType());
-         }
-      };
-   }
-
    public static Predicate<VirtualMachineTemplate> isShared() {
       return new Predicate<VirtualMachineTemplate>() {
          @Override
@@ -93,6 +85,25 @@ public class VirtualMachineTemplatePredicates {
          @Override
          public boolean apply(final VirtualMachineTemplate input) {
             return input.unwrap().searchLink("master") != null;
+         }
+      };
+   }
+
+   public static Predicate<VirtualMachineTemplate> templateDefinition(final TemplateDefinition... definitions) {
+      checkNotNull(definitions, "definitions must be defined");
+
+      final Collection<String> urls = Collections2.transform(Arrays.asList(definitions),
+            new Function<TemplateDefinition, String>() {
+               @Override
+               public String apply(TemplateDefinition def) {
+                  return def.getUrl();
+               }
+            });
+
+      return new Predicate<VirtualMachineTemplate>() {
+         @Override
+         public boolean apply(final VirtualMachineTemplate template) {
+            return template.getUrl().isPresent() ? urls.contains(template.getUrl().get()) : false;
          }
       };
    }

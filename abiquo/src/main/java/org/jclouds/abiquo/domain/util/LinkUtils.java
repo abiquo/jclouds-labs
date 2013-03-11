@@ -57,4 +57,16 @@ public class LinkUtils {
    public static List<RESTLink> filterNicLinks(final List<RESTLink> links) {
       return ImmutableList.copyOf(filter(links, LinkPredicates.isNic()));
    }
+
+   /**
+    * Filter the given link list and return only the links that point to a
+    * virtual disk.
+    * 
+    * @param links
+    *           The list with the links to filter.
+    * @return A list with all links that point to a virtual disk.
+    */
+   public static List<RESTLink> filterDiskLinks(final List<RESTLink> links) {
+      return ImmutableList.copyOf(filter(links, LinkPredicates.isDisk()));
+   }
 }

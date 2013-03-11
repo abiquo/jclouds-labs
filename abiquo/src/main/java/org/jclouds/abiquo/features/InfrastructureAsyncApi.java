@@ -42,6 +42,7 @@ import org.jclouds.abiquo.binders.infrastructure.AppendRemoteServiceTypeToPath;
 import org.jclouds.abiquo.binders.infrastructure.BindSupportedDevicesLinkToPath;
 import org.jclouds.abiquo.binders.infrastructure.ucs.BindLogicServerParameters;
 import org.jclouds.abiquo.binders.infrastructure.ucs.BindOrganizationParameters;
+import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.DatacenterOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.IpmiOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.MachineOptions;
@@ -70,6 +71,7 @@ import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
 import com.abiquo.server.core.enterprise.DatacentersLimitsDto;
 import com.abiquo.server.core.enterprise.EnterpriseDto;
+import com.abiquo.server.core.enterprise.EnterprisesDto;
 import com.abiquo.server.core.infrastructure.BladeLocatorLedDto;
 import com.abiquo.server.core.infrastructure.DatacenterDto;
 import com.abiquo.server.core.infrastructure.DatacentersDto;
@@ -908,6 +910,44 @@ public interface InfrastructureAsyncApi {
    @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<TierDto> getTier(@EndpointLink("tiers") @BinderParam(BindToPath.class) DatacenterDto datacenter,
          @BinderParam(AppendToPath.class) Integer tierId);
+
+   /**
+    * @see InfrastructureApi#allowTierToAllEnterprises(TierDto)
+    */
+   @Named("tier:allow")
+   @PUT
+   ListenableFuture<Void> allowTierToAllEnterprises(
+         @EndpointLink("allowallenterprises") @BinderParam(BindToPath.class) TierDto tier);
+
+   /**
+    * @see InfrastructureApi#restrictTierToAllEnterprises(TierDto, boolean)
+    */
+   @Named("tier:restrict")
+   @PUT
+   ListenableFuture<Void> restrictTierToAllEnterprises(
+         @EndpointLink("restrictallenterprises") @BinderParam(BindToPath.class) TierDto tier,
+         @QueryParam("force") boolean force);
+
+   /**
+    * @see InfrastructureApi#listAllowedEnterprisesForTier(TierDto)
+    */
+   @Named("tier:enterprises")
+   @GET
+   @Consumes(EnterprisesDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<EnterprisesDto> listAllowedEnterprisesForTier(
+         @EndpointLink("enterprises") @BinderParam(BindToPath.class) TierDto tier);
+
+   /**
+    * @see InfrastructureApi#listAllowedEnterprisesForTier(TierDto,
+    *      EnterpriseOptions)
+    */
+   @Named("tier:enterprises")
+   @GET
+   @Consumes(EnterprisesDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<EnterprisesDto> listAllowedEnterprisesForTier(
+         @EndpointLink("enterprises") @BinderParam(BindToPath.class) TierDto tier, EnterpriseOptions options);
 
    /*********************** Storage Pool ***********************/
 

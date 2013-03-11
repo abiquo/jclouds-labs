@@ -21,11 +21,21 @@ package org.jclouds.abiquo.domain.infrastructure;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 
+import java.util.List;
+
+import org.jclouds.abiquo.domain.enterprise.Enterprise;
+import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
 import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
+import org.jclouds.abiquo.predicates.infrastructure.DatacenterPredicates;
 import org.jclouds.abiquo.predicates.infrastructure.TierPredicates;
+import org.jclouds.abiquo.reference.rest.ParentLinkName;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
+import com.abiquo.server.core.enterprise.DatacentersLimitsDto;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
 /**
@@ -36,6 +46,15 @@ import com.google.common.collect.Iterables;
  */
 @Test(groups = "api", testName = "TierLiveApiTest")
 public class TierLiveApiTest extends BaseAbiquoApiLiveApiTest {
+
+   @AfterClass
+   public void restoreTiers() {
+      env.tier.allowTierToAllEnterprises();
+
+      DatacentersLimitsDto dto = env.enterpriseApi.getLimits(env.enterprise.unwrap(), env.datacenter.unwrap());
+      assertNotNull(dto.getCollection().get(0).searchLink(ParentLinkName.TIER));
+      assertNotNull(dto.getCollection().get(0).searchLinkByHref(env.tier.unwrap().getEditLink().getHref()));
+   }
 
    public void testUpdate() {
       Tier tier = env.datacenter.listTiers().get(0);
@@ -60,5 +79,42 @@ public class TierLiveApiTest extends BaseAbiquoApiLiveApiTest {
 
       tiers = env.datacenter.listTiers(TierPredicates.name("FAIL"));
       assertEquals(Iterables.size(tiers), 0);
+   }
+
+   public void testAllowTierToAllEnterprises() {
+      Tier tier = env.datacenter.getTier(env.datacenter.listTiers().get(0).getId());
+      tier.allowTierToAllEnterprises();
+
+      DatacentersLimitsDto dto = env.enterpriseApi.getLimits(env.enterprise.unwrap(), env.datacenter.unwrap());
+      assertNotNull(dto.getCollection().get(0).searchLink(ParentLinkName.TIER));
+      assertNotNull(dto.getCollection().get(0).searchLinkByHref(tier.unwrap().getEditLink().getHref()));
+   }
+
+   public void testRestrictTierToAllEnterprises() {
+      Tier tier = env.datacenter.getTier(env.datacenter.listTiers().get(0).getId());
+      tier.restrictTierToAllEnterprises(true);
+
+      DatacentersLimitsDto dto = env.enterpriseApi.listLimits(env.enterprise.unwrap());
+      assertNull(dto.searchLinkByHref(tier.getURI().getPath()));
+   }
+
+   public void testListAllowedEnterprisesByTier() {
+      Iterable<Enterprise> enterprises = env.administrationService.listEnterprises(new Predicate<Enterprise>() {
+         @Override
+         public boolean apply(Enterprise input) {
+            return input.findAllowedDatacenter(DatacenterPredicates.id(env.datacenter.getId())) != null;
+         }
+      });
+
+      assertEquals(env.tier.listAllowedEnterprises().size(), Iterables.size(enterprises));
+   }
+
+   public void testListAllowedEnterprisesByTierWithOptions() {
+      String entName = env.enterprise.getName();
+      EnterpriseOptions options = EnterpriseOptions.builder().has(entName).limit(1).build();
+
+      List<Enterprise> enterprises = env.tier.listAllowedEnterprises(options);
+      assertEquals(enterprises.size(), 1);
+      assertEquals(enterprises.get(0).getName(), entName);
    }
 }

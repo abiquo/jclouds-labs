@@ -35,12 +35,9 @@ import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.abiquo.binders.AppendToPath;
 import org.jclouds.abiquo.binders.BindToPath;
 import org.jclouds.abiquo.binders.BindToXMLPayloadAndPath;
-import org.jclouds.abiquo.binders.cloud.BindHardDiskRefsToPayload;
 import org.jclouds.abiquo.binders.cloud.BindMoveVolumeToPath;
-import org.jclouds.abiquo.binders.cloud.BindNetworkConfigurationRefToPayload;
 import org.jclouds.abiquo.binders.cloud.BindNetworkRefToPayload;
 import org.jclouds.abiquo.binders.cloud.BindVirtualDatacenterRefToPayload;
-import org.jclouds.abiquo.binders.cloud.BindVolumeRefsToPayload;
 import org.jclouds.abiquo.domain.cloud.VirtualDatacenter;
 import org.jclouds.abiquo.domain.cloud.options.VirtualApplianceOptions;
 import org.jclouds.abiquo.domain.cloud.options.VirtualDatacenterOptions;
@@ -71,12 +68,15 @@ import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.model.transport.LinksDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplatesDto;
+import com.abiquo.server.core.cloud.LayerDto;
+import com.abiquo.server.core.cloud.LayersDto;
 import com.abiquo.server.core.cloud.VirtualApplianceDto;
 import com.abiquo.server.core.cloud.VirtualApplianceStateDto;
 import com.abiquo.server.core.cloud.VirtualAppliancesDto;
 import com.abiquo.server.core.cloud.VirtualDatacenterDto;
 import com.abiquo.server.core.cloud.VirtualDatacentersDto;
 import com.abiquo.server.core.cloud.VirtualMachineDto;
+import com.abiquo.server.core.cloud.VirtualMachineInstanceDto;
 import com.abiquo.server.core.cloud.VirtualMachineStateDto;
 import com.abiquo.server.core.cloud.VirtualMachineTaskDto;
 import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
@@ -89,7 +89,6 @@ import com.abiquo.server.core.infrastructure.network.PublicIpDto;
 import com.abiquo.server.core.infrastructure.network.PublicIpsDto;
 import com.abiquo.server.core.infrastructure.network.VLANNetworkDto;
 import com.abiquo.server.core.infrastructure.network.VLANNetworksDto;
-import com.abiquo.server.core.infrastructure.network.VMNetworkConfigurationDto;
 import com.abiquo.server.core.infrastructure.network.VMNetworkConfigurationsDto;
 import com.abiquo.server.core.infrastructure.storage.DiskManagementDto;
 import com.abiquo.server.core.infrastructure.storage.DisksManagementDto;
@@ -483,6 +482,16 @@ public interface CloudAsyncApi {
    /*********************** Virtual Machine ***********************/
 
    /**
+    * @see CloudApi#listAllVirtualMachines()
+    */
+   @Named("vm:listall")
+   @GET
+   @Path("/virtualmachines")
+   @Consumes(VirtualMachinesWithNodeExtendedDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<VirtualMachinesWithNodeExtendedDto> listAllVirtualMachines();
+
+   /**
     * @see CloudApi#listVirtualMachines(VirtualApplianceDto)
     */
    @Named("vm:list")
@@ -595,17 +604,6 @@ public interface CloudAsyncApi {
          @EndpointLink("configurations") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
 
    /**
-    * @see CloudApi#setGatewayNetwork(VirtualMachineDto,
-    *      VMNetworkConfigurationDto)
-    */
-   @Named("vm:setgateway")
-   @PUT
-   @Produces(LinksDto.BASE_MEDIA_TYPE)
-   ListenableFuture<Void> setGatewayNetwork(
-         @EndpointLink("configurations") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
-         @BinderParam(BindNetworkConfigurationRefToPayload.class) VLANNetworkDto network);
-
-   /**
     * @see CloudApi#rebootVirtualMachine(VirtualMachineDto)
     */
    @Named("vm:reboot")
@@ -615,17 +613,18 @@ public interface CloudAsyncApi {
    ListenableFuture<AcceptedRequestDto<String>> rebootVirtualMachine(
          @EndpointLink("reset") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
 
-   /*********************** Virtual Machine Template ***********************/
-
    /**
-    * @see CloudApi#getVirtualMachineTemplate(VirtualMachineTemplateDto)
+    * @see CloudApi#snapshotVirtualMachine(VirtualMachineDto,
+    *      VirtualMachineInstanceDto)
     */
-   @Named("vm:gettemplate")
-   @GET
-   @Consumes(VirtualMachineTemplateDto.BASE_MEDIA_TYPE)
+   @Named("vm:snapshot")
+   @POST
+   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
+   @Produces(VirtualMachineInstanceDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
-   ListenableFuture<VirtualMachineTemplateDto> getVirtualMachineTemplate(
-         @EndpointLink("virtualmachinetemplate") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
+   ListenableFuture<AcceptedRequestDto<String>> snapshotVirtualMachine(
+         @EndpointLink("instance") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
+         @BinderParam(BindToXMLPayload.class) VirtualMachineInstanceDto snapshotConfig);
 
    /**
     * @see CloudApi#listAttachedVolumes(VirtualMachineDto)
@@ -638,29 +637,6 @@ public interface CloudAsyncApi {
          @EndpointLink("volumes") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
 
    /**
-    * @see CloudApi#detachAllVolumes(VirtualMachineDto)
-    */
-   @Named("vm:detachvolumes")
-   @DELETE
-   @ResponseParser(ReturnTaskReferenceOrNull.class)
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   ListenableFuture<AcceptedRequestDto<String>> detachAllVolumes(
-         @EndpointLink("volumes") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
-
-   /**
-    * @see CloudApi#replaceVolumes(VirtualMachineDto, VirtualMachineOptions,
-    *      VolumeManagementDto...)
-    */
-   @Named("vm:changevolumes")
-   @PUT
-   @ResponseParser(ReturnTaskReferenceOrNull.class)
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   @Produces(LinksDto.BASE_MEDIA_TYPE)
-   ListenableFuture<AcceptedRequestDto<String>> replaceVolumes(
-         @EndpointLink("volumes") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
-         VirtualMachineOptions options, @BinderParam(BindVolumeRefsToPayload.class) VolumeManagementDto... volumes);
-
-   /**
     * @see CloudApi#listAttachedHardDisks(VirtualMachineDto)
     */
    @Named("vm:listharddisks")
@@ -668,29 +644,7 @@ public interface CloudAsyncApi {
    @Consumes(DisksManagementDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
    ListenableFuture<DisksManagementDto> listAttachedHardDisks(
-         @EndpointLink("disks") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
-
-   /**
-    * @see CloudApi#detachAllHardDisks(VirtualMachineDto)
-    */
-   @Named("vm:detachharddisks")
-   @DELETE
-   @ResponseParser(ReturnTaskReferenceOrNull.class)
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   ListenableFuture<AcceptedRequestDto<String>> detachAllHardDisks(
-         @EndpointLink("disks") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
-
-   /**
-    * @see CloudApi#replaceHardDisks(VirtualMachineDto, DiskManagementDto...)
-    */
-   @Named("vm:changeharddisks")
-   @PUT
-   @ResponseParser(ReturnTaskReferenceOrNull.class)
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   @Produces(LinksDto.BASE_MEDIA_TYPE)
-   ListenableFuture<AcceptedRequestDto<String>> replaceHardDisks(
-         @EndpointLink("disks") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
-         @BinderParam(BindHardDiskRefsToPayload.class) DiskManagementDto... hardDisks);
+         @EndpointLink("harddisks") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
 
    /**
     * @see CloudApi#deployVirtualMachine(VirtualMachineDto,
@@ -717,6 +671,18 @@ public interface CloudAsyncApi {
    ListenableFuture<AcceptedRequestDto<String>> undeployVirtualMachine(
          @EndpointLink("undeploy") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
          @BinderParam(BindToXMLPayload.class) VirtualMachineTaskDto task);
+
+   /*********************** Virtual Machine Template ***********************/
+
+   /**
+    * @see CloudApi#getVirtualMachineTemplate(VirtualMachineTemplateDto)
+    */
+   @Named("vm:gettemplate")
+   @GET
+   @Consumes(VirtualMachineTemplateDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<VirtualMachineTemplateDto> getVirtualMachineTemplate(
+         @EndpointLink("virtualmachinetemplate") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
 
    /*********************** Hard disks ***********************/
 
@@ -825,7 +791,7 @@ public interface CloudAsyncApi {
          @EndpointLink("edit") @BinderParam(BindToXMLPayloadAndPath.class) VolumeManagementDto volume);
 
    /**
-    * @see CloudApi#updateVolume(VolumeManagementDto)
+    * @see CloudApi#deleteVolume(VolumeManagementDto)
     */
    @Named("volume:delete")
    @EnterpriseEdition
@@ -845,5 +811,59 @@ public interface CloudAsyncApi {
    ListenableFuture<VolumeManagementDto> moveVolume(
          @BinderParam(BindMoveVolumeToPath.class) VolumeManagementDto volume,
          @BinderParam(BindVirtualDatacenterRefToPayload.class) VirtualDatacenterDto newVirtualDatacenter);
+
+   /*********************** AntiAffinity ***********************/
+
+   /**
+    * @see CloudApi#createLayer(VirtualApplianceDto, LayerDto)
+    */
+   @Named("layer:create")
+   @POST
+   @Consumes(LayerDto.MEDIA_TYPE)
+   @Produces(LayerDto.MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<LayerDto> createLayer(
+         @EndpointLink("layers") @BinderParam(BindToPath.class) VirtualApplianceDto virtualAppliance,
+         @BinderParam(BindToXMLPayload.class) LayerDto layer);
+
+   /**
+    * @see CloudApi#deleteLayer(LayerDto)
+    */
+   @Named("layer:delete")
+   @DELETE
+   ListenableFuture<Void> deleteLayer(@EndpointLink("edit") @BinderParam(BindToPath.class) LayerDto layer);
+
+   /**
+    * @see CloudApi#getLayers(VirtualApplianceDto)
+    */
+   @Named("layer:list")
+   @GET
+   @Consumes(LayersDto.MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<LayersDto> listLayers(
+         @EndpointLink("layers") @BinderParam(BindToPath.class) VirtualApplianceDto virtualAppliance);
+
+   /**
+    * @see CloudApi#getLayer(VirtualApplianceDto, String)
+    */
+   @Named("layer:get")
+   @GET
+   @Consumes(LayerDto.MEDIA_TYPE)
+   @JAXBResponseParser
+   @Fallback(NullOnNotFoundOr404.class)
+   ListenableFuture<LayerDto> getLayer(
+         @EndpointLink("layers") @BinderParam(BindToPath.class) VirtualApplianceDto virtualAppliance,
+         @BinderParam(AppendToPath.class) String layerName);
+
+   /**
+    * @see CloudApi#updateLayer(LayerDto)
+    */
+   @Named("layer:update")
+   @PUT
+   @Consumes(LayerDto.MEDIA_TYPE)
+   @Produces(LayerDto.MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<LayerDto> updateLayer(
+         @EndpointLink("edit") @BinderParam(BindToXMLPayloadAndPath.class) LayerDto layer);
 
 }
