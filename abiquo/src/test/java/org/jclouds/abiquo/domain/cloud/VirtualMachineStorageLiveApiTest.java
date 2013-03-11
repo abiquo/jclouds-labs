@@ -28,10 +28,16 @@ import static org.testng.Assert.assertTrue;
 import java.util.List;
 
 import org.jclouds.abiquo.domain.infrastructure.Tier;
-import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.VirtualMachineTask;
 import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
 import org.jclouds.abiquo.predicates.infrastructure.TierPredicates;
+import org.testng.SkipException;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import com.abiquo.model.enumerator.HypervisorType;
+import com.google.common.collect.Lists;
 
 /**
  * Live integration tests for the {@link VirtualMachine} storage operations.
@@ -44,72 +50,95 @@ public class VirtualMachineStorageLiveApiTest extends BaseAbiquoApiLiveApiTest {
 
    private HardDisk hardDisk;
 
-   public void testAttachVolumes() {
+   @BeforeClass
+   public void setupVirtualDisks() {
       volume = createVolume();
+      hardDisk = createHardDisk();
+   }
 
+   @AfterClass
+   public void tearDownVirtualDisks() {
+      deleteVolume(volume);
+      deleteHardDisk(hardDisk);
+   }
+
+   public void testAttachVolume() {
       // Since the virtual machine is not deployed, this should not generate a
       // task
-      AsyncTask task = env.virtualMachine.attachVolumes(volume);
+      VirtualMachineTask task = env.virtualMachine.setVirtualDisks(Lists.newArrayList(volume));
       assertNull(task);
 
-      List<Volume> attached = env.virtualMachine.listAttachedVolumes();
+      List<VirtualDisk<?>> attached = env.virtualMachine.listVirtualDisks();
       assertEquals(attached.size(), 1);
       assertEquals(attached.get(0).getId(), volume.getId());
    }
 
-   @Test(dependsOnMethods = "testAttachVolumes")
-   public void detachVolume() {
-      env.virtualMachine.detachVolumes(volume);
-      List<Volume> attached = env.virtualMachine.listAttachedVolumes();
+   @Test(dependsOnMethods = "testAttachVolume")
+   public void testDetachVolume() {
+      VirtualMachineTask task = env.virtualMachine.setVirtualDisks(Lists.<VirtualDisk<?>> newArrayList());
+      assertNull(task);
+
+      List<VirtualDisk<?>> attached = env.virtualMachine.listVirtualDisks();
       assertTrue(attached.isEmpty());
    }
 
-   @Test(dependsOnMethods = "detachVolume")
-   public void detachAllVolumes() {
-      // Since the virtual machine is not deployed, this should not generate a
-      // task
-      AsyncTask task = env.virtualMachine.attachVolumes(volume);
-      assertNull(task);
-
-      env.virtualMachine.detachAllVolumes();
-      List<Volume> attached = env.virtualMachine.listAttachedVolumes();
-      assertTrue(attached.isEmpty());
-
-      deleteVolume(volume);
-   }
-
-   public void testAttachHardDisks() {
-      hardDisk = createHardDisk();
+   public void testAttachHardDisk() {
+      skipIfHardDisksNotSupported();
 
       // Since the virtual machine is not deployed, this should not generate a
       // task
-      AsyncTask task = env.virtualMachine.attachHardDisks(hardDisk);
+      VirtualMachineTask task = env.virtualMachine.setVirtualDisks(Lists.newArrayList(hardDisk));
       assertNull(task);
 
-      List<HardDisk> attached = env.virtualMachine.listAttachedHardDisks();
+      List<VirtualDisk<?>> attached = env.virtualMachine.listVirtualDisks();
       assertEquals(attached.size(), 1);
       assertEquals(attached.get(0).getId(), hardDisk.getId());
    }
 
-   @Test(dependsOnMethods = "testAttachHardDisks")
-   public void detachHardDisk() {
-      env.virtualMachine.detachHardDisks(hardDisk);
-      List<HardDisk> attached = env.virtualMachine.listAttachedHardDisks();
+   @Test(dependsOnMethods = "testAttachHardDisk")
+   public void testDetachHardDisk() {
+      skipIfHardDisksNotSupported();
+
+      VirtualMachineTask task = env.virtualMachine.setVirtualDisks(Lists.<VirtualDisk<?>> newArrayList());
+      assertNull(task);
+
+      List<VirtualDisk<?>> attached = env.virtualMachine.listVirtualDisks();
       assertTrue(attached.isEmpty());
    }
 
-   @Test(dependsOnMethods = "detachHardDisk")
-   public void detachAllHardDisks() {
-      // Since the virtual machine is not deployed, this should not generate a
-      // task
-      AsyncTask task = env.virtualMachine.attachHardDisks(hardDisk);
+   @Test(dependsOnMethods = { "testDetachVolume", "testDetachHardDisk" })
+   public void testAttachHardDiskAndVolume() {
+      skipIfHardDisksNotSupported();
+
+      VirtualMachineTask task = env.virtualMachine.setVirtualDisks(Lists
+            .<VirtualDisk<?>> newArrayList(hardDisk, volume));
       assertNull(task);
 
-      env.virtualMachine.detachAllHardDisks();
-      List<HardDisk> attached = env.virtualMachine.listAttachedHardDisks();
-      assertTrue(attached.isEmpty());
+      List<VirtualDisk<?>> attached = env.virtualMachine.listVirtualDisks();
+      assertEquals(attached.size(), 2);
+      assertEquals(attached.get(0).getId(), hardDisk.getId());
+      assertEquals(attached.get(1).getId(), volume.getId());
+   }
 
-      deleteHardDisk(hardDisk);
+   @Test(dependsOnMethods = "testAttachHardDiskAndVolume")
+   public void testReorderVirtualDisks() {
+      VirtualMachineTask task = env.virtualMachine.setVirtualDisks(Lists
+            .<VirtualDisk<?>> newArrayList(volume, hardDisk));
+      assertNull(task);
+
+      List<VirtualDisk<?>> attached = env.virtualMachine.listVirtualDisks();
+      assertEquals(attached.size(), 2);
+      assertEquals(attached.get(0).getId(), volume.getId());
+      assertEquals(attached.get(1).getId(), hardDisk.getId());
+   }
+
+   @Test(dependsOnMethods = "testReorderVirtualDisks")
+   public void testDetachAllVirtualDisks() {
+      VirtualMachineTask task = env.virtualMachine.setVirtualDisks(Lists.<VirtualDisk<?>> newArrayList());
+      assertNull(task);
+
+      List<VirtualDisk<?>> attached = env.virtualMachine.listVirtualDisks();
+      assertTrue(attached.isEmpty());
    }
 
    private Volume createVolume() {
@@ -145,5 +174,12 @@ public class VirtualMachineStorageLiveApiTest extends BaseAbiquoApiLiveApiTest {
       Integer id = hardDisk.getId();
       hardDisk.delete();
       assertNull(env.virtualDatacenter.getHardDisk(id));
+   }
+
+   protected static void skipIfHardDisksNotSupported() {
+      if (!env.machine.getType().equals(HypervisorType.VMX_04)) {
+         throw new SkipException(
+               "Cannot perform this test because hard disk actions are not available for this hypervisor");
+      }
    }
 }

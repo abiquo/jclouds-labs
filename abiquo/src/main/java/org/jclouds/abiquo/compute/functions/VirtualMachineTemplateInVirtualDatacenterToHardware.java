@@ -78,6 +78,8 @@ public class VirtualMachineTemplateInVirtualDatacenterToHardware implements
       builder.location(virtualDatacenterToLocation.apply(virtualDatacenter));
       builder.hypervisor(virtualDatacenter.getHypervisorType().name());
       builder.supportsImage(ImagePredicates.idEquals(template.getId().toString()));
+      // already filtered in ''supportedImages''
+      // builder.is64Bit(template.getOsType().is64Bit());
 
       VolumeBuilder volumeBuilder = new VolumeBuilder();
       volumeBuilder.bootDevice(true);

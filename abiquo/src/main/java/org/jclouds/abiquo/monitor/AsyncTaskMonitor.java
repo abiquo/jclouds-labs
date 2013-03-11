@@ -21,6 +21,7 @@ package org.jclouds.abiquo.monitor;
 
 import java.util.concurrent.TimeUnit;
 
+import org.jclouds.abiquo.domain.cloud.VirtualMachine;
 import org.jclouds.abiquo.domain.task.AsyncTask;
 import org.jclouds.abiquo.features.services.MonitoringService;
 import org.jclouds.abiquo.monitor.internal.BaseAsyncTaskMonitor;
@@ -40,7 +41,7 @@ public interface AsyncTaskMonitor extends MonitoringService {
     * @param tasks
     *           The {@link AsyncTask}s to monitor.
     */
-   void awaitCompletion(final AsyncTask... tasks);
+   void awaitCompletion(final AsyncTask<?, ?>... tasks);
 
    /**
     * Monitor the given {@link AsyncTask}s and populate an event when they
@@ -49,7 +50,7 @@ public interface AsyncTaskMonitor extends MonitoringService {
     * @param tasks
     *           The {@link AsyncTask}s to monitor.
     */
-   public void monitor(final AsyncTask... tasks);
+   public void monitor(final AsyncTask<?, ?>... tasks);
 
    /**
     * Monitor the given {@link AsyncTask}s and block until they finish.
@@ -61,7 +62,7 @@ public interface AsyncTaskMonitor extends MonitoringService {
     * @param tasks
     *           The {@link AsyncTask}s to monitor.
     */
-   void awaitCompletion(final Long maxWait, final TimeUnit timeUnit, final AsyncTask... tasks);
+   void awaitCompletion(final Long maxWait, final TimeUnit timeUnit, final AsyncTask<?, ?>... tasks);
 
    /**
     * Monitor the given {@link AsyncTask}s and populate an event when they
@@ -74,5 +75,5 @@ public interface AsyncTaskMonitor extends MonitoringService {
     * @param tasks
     *           The {@link AsyncTask}s to monitor.
     */
-   public void monitor(final Long maxWait, final TimeUnit timeUnit, final AsyncTask... tasks);
+   public void monitor(final Long maxWait, final TimeUnit timeUnit, final AsyncTask<?, ?>... tasks);
 }

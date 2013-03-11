@@ -88,10 +88,6 @@ public class VirtualMachineToNodeMetadata implements Function<VirtualMachine, No
       builder.name(vm.getNameLabel());
       builder.group(vm.getVirtualAppliance().getName());
 
-      // TODO: Node credentials still not present in Abiquo template metadata
-      // Will be added in Abiquo 2.4:
-      // http://jira.abiquo.com/browse/ABICLOUDPREMIUM-3647
-
       // Location details
       VirtualDatacenter vdc = vm.getVirtualDatacenter();
       builder.location(virtualDatacenterToLocation.apply(vdc));
@@ -101,6 +97,7 @@ public class VirtualMachineToNodeMetadata implements Function<VirtualMachine, No
       Image image = virtualMachineTemplateToImage.apply(template);
       builder.imageId(image.getId().toString());
       builder.operatingSystem(image.getOperatingSystem());
+      builder.credentials(image.getDefaultCredentials());
 
       // Hardware details
       Hardware defaultHardware = virtualMachineTemplateToHardware.apply(new VirtualMachineTemplateInVirtualDatacenter(

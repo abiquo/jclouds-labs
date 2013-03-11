@@ -19,6 +19,7 @@
 
 package org.jclouds.abiquo.domain.infrastructure;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 
 import java.util.List;
@@ -26,10 +27,14 @@ import java.util.List;
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
+import org.jclouds.abiquo.domain.enterprise.Enterprise;
+import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
 import org.jclouds.abiquo.reference.annotations.EnterpriseEdition;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.rest.RestContext;
+import org.jclouds.rest.annotations.SinceApiVersion;
 
+import com.abiquo.server.core.enterprise.EnterprisesDto;
 import com.abiquo.server.core.infrastructure.DatacenterDto;
 import com.abiquo.server.core.infrastructure.storage.StoragePoolsDto;
 import com.abiquo.server.core.infrastructure.storage.TierDto;
@@ -38,10 +43,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 /**
- * Adds high level functionality to {@link TierDto}. The Tier Resource offers
- * the functionality of managing the logic of QoS volume management. These are
- * only logical levels of QoS and the real QoS (networking speed, volume
- * replication, availability) must be configured manually in the infrastructure.
+ * Adds high level functionality to {@link TierDto}.
+ * <p>
+ * The Tier Resource offers the functionality of managing the logic of QoS
+ * volume management. These are only logical levels of QoS and the real QoS
+ * (networking speed, volume replication, availability) must be configured
+ * manually in the infrastructure.
  * 
  * @author Ignasi Barrera
  * @author Francesc Montserrat
@@ -121,6 +128,45 @@ public class Tier extends DomainWrapper<TierDto> {
       return Iterables.getFirst(filter(listStoragePools(), filter), null);
    }
 
+   /**
+    * Allow the tier to be used to all enterprises.
+    */
+   @SinceApiVersion("2.4")
+   public void allowTierToAllEnterprises() {
+      context.getApi().getInfrastructureApi().allowTierToAllEnterprises(target);
+   }
+
+   /**
+    * Restrict the tier to all enterprises.
+    * 
+    * @param force
+    *           Boolean indicating if the force the operation must succeed even
+    *           if not all enterprises could be updated
+    */
+   @SinceApiVersion("2.4")
+   public void restrictTierToAllEnterprises(boolean force) {
+      context.getApi().getInfrastructureApi().restrictTierToAllEnterprises(target, force);
+   }
+
+   /**
+    * Retrieve a list of enterprises with access to the tier.
+    */
+   @SinceApiVersion("2.4")
+   public List<Enterprise> listAllowedEnterprises() {
+      EnterprisesDto enterprises = context.getApi().getInfrastructureApi().listAllowedEnterprisesForTier(target);
+      return wrap(context, Enterprise.class, enterprises.getCollection());
+   }
+
+   /**
+    * Retrieve a list of enterprises with access to the tier.
+    */
+   @SinceApiVersion("2.4")
+   public List<Enterprise> listAllowedEnterprises(EnterpriseOptions options) {
+      EnterprisesDto enterprises = context.getApi().getInfrastructureApi()
+            .listAllowedEnterprisesForTier(target, checkNotNull(options, "options"));
+      return wrap(context, Enterprise.class, enterprises.getCollection());
+   }
+
    // Parent access
 
    /**
@@ -168,10 +214,17 @@ public class Tier extends DomainWrapper<TierDto> {
       target.setName(name);
    }
 
+   public boolean isAllowedByDefault() {
+      return target.isDefaultAllowed();
+   }
+
+   public void setAllowedByDefault(final boolean allowedByDefault) {
+      target.setDefaultAllowed(allowedByDefault);
+   }
+
    @Override
    public String toString() {
       return "Tier [id=" + getId() + ", description=" + getDescription() + ", enabled=" + getEnabled() + ", name="
-            + getName() + "]";
+            + getName() + ", allowedByDefault=" + isAllowedByDefault() + "]";
    }
-
 }

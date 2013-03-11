@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<layers>
+    <layer>
+       <link rel="edit" type="application/vnd.abiquo.layer+xml" href="http://localhost:80/api/cloud/virtualdatacenters/1/virtualappliances/1/layers/layer1"/>
+       <link rel="virtualmachine" href="http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1"/>
+       <name>layer1</name>
+    </layer>
+</layers>

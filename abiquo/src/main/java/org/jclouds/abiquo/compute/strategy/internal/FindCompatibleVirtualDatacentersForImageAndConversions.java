@@ -64,8 +64,10 @@ public class FindCompatibleVirtualDatacentersForImageAndConversions implements F
    @Override
    public Iterable<VirtualDatacenter> execute(final VirtualMachineTemplate template) {
       // Build the transport object with the available information to avoid
-      // making an unnecessary call to the target API (we only need the id of
-      // the datacenter, and it is present in the link).
+      // making an unnecessary
+      // call to the target API (we only need the id of the datacenter, and it
+      // is present in the
+      // link).
       DatacenterDto datacenterDto = new DatacenterDto();
       datacenterDto.setId(template.unwrap().getIdFromLink(ParentLinkName.DATACENTER_REPOSITORY));
       Datacenter datacenter = wrap(context, Datacenter.class, datacenterDto);

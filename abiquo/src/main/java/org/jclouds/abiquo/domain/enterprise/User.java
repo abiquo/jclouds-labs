@@ -81,9 +81,8 @@ public class User extends DomainWrapper<UserDto> {
    /**
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/User+resource#Userresource-Deleteanexistinguser"
-    *      >
-    *      http://community.abiquo.com/display/ABI20/User+resource#Userresource
-    *      -Deleteanexistinguser </a>
+    *      > http://community.abiquo.com/display/ABI20/User+resource#
+    *      Userresource -Deleteanexistinguser </a>
     */
    public void delete() {
       context.getApi().getEnterpriseApi().deleteUser(target);
@@ -106,9 +105,8 @@ public class User extends DomainWrapper<UserDto> {
    /**
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/User+resource#Userresource-Updatesanexistinguser"
-    *      >
-    *      http://community.abiquo.com/display/ABI20/User+resource#Userresource
-    *      -Updatesanexistinguser </a>
+    *      > http://community.abiquo.com/display/ABI20/User+resource#
+    *      Userresource -Updatesanexistinguser </a>
     */
    public void update() {
       // update role link (if exists)

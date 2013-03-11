@@ -22,10 +22,12 @@ package org.jclouds.abiquo.features;
 import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
 import org.jclouds.abiquo.reference.annotations.EnterpriseEdition;
 
-import com.abiquo.am.model.TemplatesStateDto;
 import com.abiquo.server.core.appslibrary.DatacenterRepositoryDto;
+import com.abiquo.server.core.appslibrary.TemplateDefinitionDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListsDto;
+import com.abiquo.server.core.appslibrary.TemplateDefinitionsDto;
+import com.abiquo.server.core.appslibrary.TemplatesStateDto;
 import com.abiquo.server.core.cloud.VirtualAppliancesDto;
 import com.abiquo.server.core.cloud.VirtualDatacentersDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
@@ -164,14 +166,11 @@ public interface EnterpriseApi {
     * 
     * @param enterprise
     *           The enterprise.
-    * @param datacenter
-    *           The datacenter to allow to the given enterprise.
     * @param limits
-    *           The usage limits for the enterprise in the given datacenter.
-    * @return The usage limits for the enterprise in the given datacenter.
+    *           The usage limits for the enterprise in a concrete datacenter.
+    * @return The usage limits for the enterprise in a concrete datacenter.
     */
-   DatacenterLimitsDto createLimits(final EnterpriseDto enterprise, final DatacenterDto datacenter,
-         final DatacenterLimitsDto limits);
+   DatacenterLimitsDto createLimits(final EnterpriseDto enterprise, final DatacenterLimitsDto limits);
 
    /**
     * Retrieves the limits for the given enterprise and datacenter.
@@ -183,6 +182,17 @@ public interface EnterpriseApi {
     * @return The usage limits for the enterprise in the given datacenter.
     */
    DatacentersLimitsDto getLimits(EnterpriseDto enterprise, DatacenterDto datacenter);
+
+   /**
+    * Get the given limit from the given enterprise.
+    * 
+    * @param enterprise
+    *           The enterprise.
+    * @param limitId
+    *           The id of the limit.
+    * @return The limit or <code>null</code> if it does not exist.
+    */
+   DatacenterLimitsDto getLimit(EnterpriseDto enterprise, Integer limitId);
 
    /**
     * Retrieves limits for the given enterprise and any datacenter.
@@ -335,6 +345,8 @@ public interface EnterpriseApi {
     */
    MachinesDto listReservedMachines(EnterpriseDto enterprise);
 
+   /*********************** Template definition list ***********************/
+
    /**
     * List all template definitions in apps library.
     * 
@@ -367,6 +379,15 @@ public interface EnterpriseApi {
    TemplateDefinitionListDto updateTemplateDefinitionList(TemplateDefinitionListDto templateList);
 
    /**
+    * Refresh an existing template definition list using the source ''ovfindex.xml'' url.
+    *
+    * @param template
+    *           The template to be update, require ''url'' set.
+    * @return The updated template list after fetching new template definitions form the ovfindex source.
+    */
+   TemplateDefinitionListDto refreshTemplateDefinitionList(TemplateDefinitionListDto templateList);
+
+   /**
     * Deletes existing user.
     * 
     * @param user
@@ -395,4 +416,49 @@ public interface EnterpriseApi {
     * @return The list of states.
     */
    TemplatesStateDto listTemplateListStatus(TemplateDefinitionListDto templateList, DatacenterDto datacenter);
+
+   /*********************** Template definition ************************/
+
+   /**
+    * Template Definitions are a summarized version of the OVF Envelope format.
+    * list all Template Definitions for a given enterprise.
+    * 
+    * @return The list of template definitions
+    */
+   TemplateDefinitionsDto listTemplateDefinitions(EnterpriseDto enterprise);
+
+   /**
+    * Creates a template definition
+    * 
+    * @param templateDefinition
+    * @return The created template definition
+    */
+   TemplateDefinitionDto createTemplateDefinition(EnterpriseDto enterprise, TemplateDefinitionDto templateDefinition);
+
+   /**
+    * Updates an existing template definition
+    * 
+    * @param templateDefinition
+    *           The new attributes for the templateDefinition.
+    * @return The updated templateDefinition.
+    */
+   TemplateDefinitionDto updateTemplateDefinition(TemplateDefinitionDto templateDefinition);
+
+   /**
+    * Get the given template definition
+    * 
+    * @param enterprise
+    *           The enterprise
+    * @param templateDefinitionId
+    *           The id of the template definition.
+    * @return The template definition or <code>null</code> if it does not exist.
+    */
+   TemplateDefinitionDto getTemplateDefinition(final EnterpriseDto enterprise, Integer templateDefinitionId);
+
+   /**
+    * Deletes an existing template definition
+    * 
+    * @param templateDefinition
+    */
+   void deleteTemplateDefinition(TemplateDefinitionDto templateDefinition);
 }

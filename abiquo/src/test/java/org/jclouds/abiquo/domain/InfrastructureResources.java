@@ -30,6 +30,7 @@ import com.abiquo.server.core.infrastructure.OrganizationDto;
 import com.abiquo.server.core.infrastructure.RackDto;
 import com.abiquo.server.core.infrastructure.RemoteServiceDto;
 import com.abiquo.server.core.infrastructure.UcsRackDto;
+import com.abiquo.server.core.infrastructure.network.NetworkServiceTypeDto;
 import com.abiquo.server.core.infrastructure.storage.StorageDeviceDto;
 import com.abiquo.server.core.infrastructure.storage.StoragePoolDto;
 import com.abiquo.server.core.infrastructure.storage.TierDto;
@@ -104,6 +105,12 @@ public class InfrastructureResources {
       return storagePool;
    }
 
+   public static NetworkServiceTypeDto networkServiceTypePost() {
+      NetworkServiceTypeDto dto = new NetworkServiceTypeDto();
+      dto.setName("Storage Network");
+      return dto;
+   }
+
    public static DatacenterDto datacenterPut() {
       DatacenterDto datacenter = datacenterPost();
       datacenter.setId(1);
@@ -124,6 +131,8 @@ public class InfrastructureResources {
       datacenter.addLink(new RESTLink("remoteservices", "http://localhost/api/admin/datacenters/1/remoteservices"));
       datacenter.addLink(new RESTLink("tiers", "http://localhost/api/admin/datacenters/1/storage/tiers"));
       datacenter.addLink(new RESTLink("network", "http://localhost/api/admin/datacenters/1/network"));
+      datacenter.addLink(new RESTLink("networkservicetypes",
+            "http://localhost/api/admin/datacenters/1/networkservicetypes"));
       datacenter.addLink(new RESTLink("enterprises", "http://localhost/api/admin/datacenters/1/action/enterprises"));
       datacenter.addLink(new RESTLink("hypervisor", "http://localhost/api/admin/datacenters/1/action/hypervisor"));
       datacenter.addLink(new RESTLink("hypervisors", "http://localhost/api/admin/datacenters/1/hypervisors"));
@@ -187,6 +196,10 @@ public class InfrastructureResources {
       tier.addLink(new RESTLink("edit", "http://localhost/api/admin/datacenters/1/storage/tiers/1"));
       tier.addLink(new RESTLink("datacenter", "http://localhost/api/admin/datacenters/1"));
       tier.addLink(new RESTLink("pools", "http://localhost/api/admin/datacenters/1/storage/tiers/1/pools"));
+      tier.addLink(new RESTLink("allowallenterprises",
+            "http://localhost/api/admin/datacenters/1/storage/tiers/1/action/allowallenterprises"));
+      tier.addLink(new RESTLink("restrictallenterprises",
+            "http://localhost/api/admin/datacenters/1/storage/tiers/1/action/restrictallenterprises"));
 
       return tier;
    }
@@ -309,6 +322,23 @@ public class InfrastructureResources {
       return buffer.toString();
    }
 
+   public static String networkServiceTypePostPayload() {
+      StringBuffer buffer = new StringBuffer();
+      buffer.append("<networkservicetype>");
+      buffer.append("<name>Storage Network</name>");
+      buffer.append("</networkservicetype>");
+      return buffer.toString();
+   }
+
+   public static String networkServiceTypePutPayload() {
+      StringBuffer buffer = new StringBuffer();
+      buffer.append("<networkservicetype>");
+      buffer.append("<link href='http://localhost/api/admin/datacenters/1/networkservicetypes/1' rel='edit'/>");
+      buffer.append("<name>Storage Network Edited</name>");
+      buffer.append("</networkservicetype>");
+      return buffer.toString();
+   }
+
    public static String machinePostPayload() {
       StringBuilder buffer = new StringBuilder();
       buffer.append("<machine>");
@@ -349,6 +379,7 @@ public class InfrastructureResources {
       buffer.append(link("/admin/datacenters/1/remoteservices", "remoteservices"));
       buffer.append(link("/admin/datacenters/1/storage/tiers", "tiers"));
       buffer.append(link("/admin/datacenters/1/network", "network"));
+      buffer.append(link("/admin/datacenters/1/networkservicetypes", "networkservicetypes"));
       buffer.append(link("/admin/datacenters/1/action/enterprises", "enterprises"));
       buffer.append(link("/admin/datacenters/1/action/hypervisor", "hypervisor"));
       buffer.append(link("/admin/datacenters/1/hypervisors", "hypervisors"));
@@ -380,6 +411,8 @@ public class InfrastructureResources {
       buffer.append(link("/admin/datacenters/1/storage/tiers/1", "edit"));
       buffer.append(link("/admin/datacenters/1", "datacenter"));
       buffer.append(link("/admin/datacenters/1/storage/tiers/1/pools", "pools"));
+      buffer.append(link("/admin/datacenters/1/storage/tiers/1/action/allowallenterprises", "allowallenterprises"));
+      buffer.append(link("/admin/datacenters/1/storage/tiers/1/action/restrictallenterprises", "restrictallenterprises"));
       buffer.append("<enabled>true</enabled>");
       buffer.append("<id>1</id>");
       buffer.append("<name>Tier</name>");
@@ -486,5 +519,12 @@ public class InfrastructureResources {
       buffer.append("<virtualSwitch>192.168.1.10</virtualSwitch>");
       buffer.append("</machine>");
       return buffer.toString();
+   }
+
+   public static NetworkServiceTypeDto networkServiceTypePut() {
+      NetworkServiceTypeDto dto = new NetworkServiceTypeDto();
+      dto.setName("Storage Network Edited");
+      dto.addLink(new RESTLink("edit", "http://localhost/api/admin/datacenters/1/networkservicetypes/1"));
+      return dto;
    }
 }

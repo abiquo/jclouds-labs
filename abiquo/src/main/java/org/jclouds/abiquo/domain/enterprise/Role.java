@@ -63,9 +63,8 @@ public class Role extends DomainWrapper<RoleDto> {
    /**
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/Roles+Resource#RolesResource-DeleteanexistingRole"
-    *      >
-    *      http://community.abiquo.com/display/ABI20/Roles+Resource#RolesResource
-    *      -DeleteanexistingRole </a>
+    *      > http://community.abiquo.com/display/ABI20/Roles+Resource#
+    *      RolesResource -DeleteanexistingRole </a>
     */
    public void delete() {
       context.getApi().getAdminApi().deleteRole(target);
@@ -86,9 +85,8 @@ public class Role extends DomainWrapper<RoleDto> {
    /**
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/Roles+Resource#RolesResource-UpdateanexistingRole"
-    *      >
-    *      http://community.abiquo.com/display/ABI20/Roles+Resource#RolesResource
-    *      -UpdateanexistingRole </a>
+    *      > http://community.abiquo.com/display/ABI20/Roles+Resource#
+    *      RolesResource -UpdateanexistingRole </a>
     */
    public void update() {
       target = context.getApi().getAdminApi().updateRole(target);

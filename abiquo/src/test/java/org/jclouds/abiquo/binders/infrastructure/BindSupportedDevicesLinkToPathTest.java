@@ -18,6 +18,7 @@
  */
 
 package org.jclouds.abiquo.binders.infrastructure;
+
 import static org.jclouds.reflect.Reflection2.method;
 import static org.testng.Assert.assertEquals;
 
@@ -65,8 +66,7 @@ public class BindSupportedDevicesLinkToPathTest {
 
       GeneratedHttpRequest request = GeneratedHttpRequest.builder()
             .invocation(Invocation.create(withEndpointLink, ImmutableList.<Object> of(datacenter)))
-            .method(HttpMethod.GET)
-            .endpoint(URI.create("http://foo/bar")).build();
+            .method(HttpMethod.GET).endpoint(URI.create("http://foo/bar")).build();
 
       assertEquals(binder.getNewEndpoint(request, datacenter), "http://foo/bar/action/supported");
    }
@@ -82,8 +82,7 @@ public class BindSupportedDevicesLinkToPathTest {
 
       GeneratedHttpRequest request = GeneratedHttpRequest.builder()
             .invocation(Invocation.create(withEndpointLink, ImmutableList.<Object> of(datacenter)))
-            .method(HttpMethod.GET)
-            .endpoint(URI.create("http://foo/bar")).build();
+            .method(HttpMethod.GET).endpoint(URI.create("http://foo/bar")).build();
 
       assertEquals(binder.getNewEndpoint(request, datacenter), "http://foo/bar/action/supported");
    }

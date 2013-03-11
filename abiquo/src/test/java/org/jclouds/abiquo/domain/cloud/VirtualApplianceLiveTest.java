@@ -27,7 +27,7 @@ import static org.testng.Assert.assertNull;
 
 import java.util.concurrent.TimeUnit;
 
-import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.VirtualMachineTask;
 import org.jclouds.abiquo.features.services.MonitoringService;
 import org.jclouds.abiquo.internal.BaseAbiquoLiveApiTest;
 import org.jclouds.abiquo.predicates.cloud.VirtualAppliancePredicates;
@@ -92,7 +92,7 @@ public class VirtualApplianceLiveTest extends BaseAbiquoLiveApiTest {
       vm.save();
       assertNotNull(vm.getId());
 
-      AsyncTask[] tasks = vapp.deploy();
+      VirtualMachineTask[] tasks = vapp.deploy();
       assertEquals(tasks.length, 1); // One task for each VM in the VAPP
 
       monitoringService.getVirtualApplianceMonitor().awaitCompletionDeploy(MAX_WAIT, TimeUnit.MINUTES, vapp);
@@ -102,7 +102,7 @@ public class VirtualApplianceLiveTest extends BaseAbiquoLiveApiTest {
 
    @Test(dependsOnMethods = "testDeployVirtualAppliance")
    public void testUndeployVirtualAppliance() {
-      AsyncTask[] tasks = vapp.undeploy();
+      VirtualMachineTask[] tasks = vapp.undeploy();
       assertEquals(tasks.length, 1); // One task for each VM in the VAPP
 
       monitoringService.getVirtualApplianceMonitor().awaitCompletionUndeploy(MAX_WAIT, TimeUnit.MINUTES, vapp);

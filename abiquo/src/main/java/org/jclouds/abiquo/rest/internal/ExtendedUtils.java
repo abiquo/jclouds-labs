@@ -58,8 +58,8 @@ public class ExtendedUtils extends UtilsImpl implements Utils {
    public ExtendedUtils(final Injector injector, final Json json, final XMLParser xml, final HttpClient simpleApi,
          final HttpAsyncClient simpleAsyncApi, final Crypto encryption, final DateService date,
          @Named(Constants.PROPERTY_USER_THREADS) final ListeningExecutorService userExecutor,
-         @Named(Constants.PROPERTY_IO_WORKER_THREADS) final ListeningExecutorService ioExecutor, final EventBus eventBus,
-         final Map<String, Credentials> credentialStore, final LoggerFactory loggerFactory,
+         @Named(Constants.PROPERTY_IO_WORKER_THREADS) final ListeningExecutorService ioExecutor,
+         final EventBus eventBus, final Map<String, Credentials> credentialStore, final LoggerFactory loggerFactory,
          final AbiquoHttpClient abiquoHttpClient, final AbiquoHttpAsyncClient abiquoHttpAsyncApi) {
       super(injector, json, xml, simpleApi, simpleAsyncApi, encryption, date, userExecutor, ioExecutor, eventBus,
             credentialStore, loggerFactory);

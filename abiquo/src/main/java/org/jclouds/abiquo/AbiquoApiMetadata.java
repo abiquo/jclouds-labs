@@ -18,6 +18,7 @@
  */
 
 package org.jclouds.abiquo;
+
 import static org.jclouds.Constants.PROPERTY_MAX_REDIRECTS;
 import static org.jclouds.abiquo.config.AbiquoProperties.ASYNC_TASK_MONITOR_DELAY;
 import static org.jclouds.abiquo.config.AbiquoProperties.CREDENTIAL_IS_TOKEN;
@@ -58,7 +59,7 @@ public class AbiquoApiMetadata extends BaseRestApiMetadata {
    public Builder toBuilder() {
       return new Builder().fromApiMetadata(this);
    }
-   
+
    protected AbiquoApiMetadata(Builder builder) {
       super(builder);
    }

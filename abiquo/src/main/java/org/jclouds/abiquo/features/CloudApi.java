@@ -30,12 +30,15 @@ import org.jclouds.abiquo.reference.annotations.EnterpriseEdition;
 import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplatesDto;
+import com.abiquo.server.core.cloud.LayerDto;
+import com.abiquo.server.core.cloud.LayersDto;
 import com.abiquo.server.core.cloud.VirtualApplianceDto;
 import com.abiquo.server.core.cloud.VirtualApplianceStateDto;
 import com.abiquo.server.core.cloud.VirtualAppliancesDto;
 import com.abiquo.server.core.cloud.VirtualDatacenterDto;
 import com.abiquo.server.core.cloud.VirtualDatacentersDto;
 import com.abiquo.server.core.cloud.VirtualMachineDto;
+import com.abiquo.server.core.cloud.VirtualMachineInstanceDto;
 import com.abiquo.server.core.cloud.VirtualMachineStateDto;
 import com.abiquo.server.core.cloud.VirtualMachineTaskDto;
 import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
@@ -374,7 +377,7 @@ public interface CloudApi {
     *           the extra options for the deploy process.
     * @return Response message to the deploy request.
     */
-      AcceptedRequestDto<String> deployVirtualAppliance(VirtualApplianceDto virtualAppliance, VirtualMachineTaskDto options);
+   AcceptedRequestDto<String> deployVirtualAppliance(VirtualApplianceDto virtualAppliance, VirtualMachineTaskDto options);
 
    /**
     * Undeploy a virtual appliance.
@@ -408,6 +411,13 @@ public interface CloudApi {
    String getVirtualAppliancePrice(VirtualApplianceDto virtualAppliance);
 
    /*********************** Virtual Machine ***********************/
+
+   /**
+    * List all virtual machines available to the current user.
+    * 
+    * @return The list of all virtual machines available to the current user.
+    */
+   VirtualMachinesWithNodeExtendedDto listAllVirtualMachines();
 
    /**
     * List all virtual machines for a virtual appliance.
@@ -536,16 +546,6 @@ public interface CloudApi {
    VMNetworkConfigurationsDto listNetworkConfigurations(VirtualMachineDto virtualMachine);
 
    /**
-    * Sets the gateway network to be used by this virtual machine.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @param network
-    *           The gateway network to use.
-    */
-   void setGatewayNetwork(final VirtualMachineDto virtualMachine, final VLANNetworkDto network);
-
-   /**
     * Reboot a virtual machine.
     * 
     * @param virtualMachine
@@ -553,6 +553,39 @@ public interface CloudApi {
     * @return Response message to the reset request.
     */
    AcceptedRequestDto<String> rebootVirtualMachine(VirtualMachineDto virtualMachine);
+
+   /**
+    * Take a snapshot of the given virtual machine.
+    * <p>
+    * This will create a new virtual machine template in the appliance library
+    * based on the given virtual machine.
+    * 
+    * @param virtualMachine
+    *           The virtual machine to snapshot.
+    * @param snapshotConfig
+    *           The configuration of the snapshot.
+    * @return The task reference to the snapshot process.
+    */
+   AcceptedRequestDto<String> snapshotVirtualMachine(VirtualMachineDto virtualMachine,
+         VirtualMachineInstanceDto snapshotConfig);
+
+   /*
+    * Get the volumes attached to the given virtual machine.
+    * 
+    * @param virtualMachine
+    *           The virtual machine.
+    * @return The volumes attached to the given virtual machine.
+    */
+   VolumesManagementDto listAttachedVolumes(VirtualMachineDto virtualMachine);
+
+   /**
+    * List all hard disks attached to the given virtual machine.
+    * 
+    * @param virtualMachine
+    *           The virtual machine.
+    * @return The hard disks attached to the virtual machine.
+    */
+   DisksManagementDto listAttachedHardDisks(VirtualMachineDto virtualMachine);
 
    /******************* Virtual Machine Template ***********************/
 
@@ -564,85 +597,6 @@ public interface CloudApi {
     * @return The template of the given virtual machine.
     */
    VirtualMachineTemplateDto getVirtualMachineTemplate(VirtualMachineDto virtualMachine);
-
-   /**
-    * Get the volumes attached to the given virtual machine.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @return The volumes attached to the given virtual machine.
-    */
-   VolumesManagementDto listAttachedVolumes(VirtualMachineDto virtualMachine);
-
-   /**
-    * Detach all volumes from the given virtual machine.
-    * <p>
-    * If the virtual machine is deployed, the operation will be executed
-    * asynchronously.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @return The task reference or <code>null</code> if the operation completed
-    *         synchronously.
-    */
-   AcceptedRequestDto<String> detachAllVolumes(VirtualMachineDto virtualMachine);
-
-   /**
-    * Replaces the current volumes attached to the virtual machine with the
-    * given ones.
-    * <p>
-    * If the virtual machine is deployed, the operation will be executed
-    * asynchronously.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @param options
-    *           virtual machine parameters
-    * @param volumes
-    *           The new volumes for the virtual machine.
-    * @return The task reference or <code>null</code> if the operation completed
-    *         synchronously.
-    */
-   AcceptedRequestDto<String> replaceVolumes(VirtualMachineDto virtualMachine, VirtualMachineOptions options,
-         VolumeManagementDto... volumes);
-
-   /**
-    * List all hard disks attached to the given virtual machine.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @return The hard disks attached to the virtual machine.
-    */
-   DisksManagementDto listAttachedHardDisks(VirtualMachineDto virtualMachine);
-
-   /**
-    * Detach all hard disks from the given virtual machine.
-    * <p>
-    * If the virtual machine is deployed, the operation will be executed
-    * asynchronously.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @return The task reference or <code>null</code> if the operation completed
-    *         synchronously.
-    */
-   AcceptedRequestDto<String> detachAllHardDisks(VirtualMachineDto virtualMachine);
-
-   /**
-    * Replaces the current hard disks attached to the virtual machine with the
-    * given ones.
-    * <p>
-    * If the virtual machine is deployed, the operation will be executed
-    * asynchronously.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @param hardDisks
-    *           The new hard disks for the virtual machine.
-    * @return The task reference or <code>null</code> if the operation completed
-    *         synchronously.
-    */
-   AcceptedRequestDto<String> replaceHardDisks(VirtualMachineDto virtualMachine, DiskManagementDto... hardDisks);
 
    /*********************** Hard disks ***********************/
 
@@ -771,5 +725,61 @@ public interface CloudApi {
     */
    @EnterpriseEdition
    VolumeManagementDto moveVolume(VolumeManagementDto volume, VirtualDatacenterDto newVirtualDatacenter);
+
+   /*********************** AntiAffinity ***********************/
+
+   /**
+    * Creates a new layer containing a single virtual machine.
+    * 
+    * @param virtualAppliance
+    *           The virtual appliance where the new layer will belong to
+    * 
+    * @param layer
+    *           The layer to be created. It requires a name and *a single*
+    *           virtual machine link
+    */
+   LayerDto createLayer(VirtualApplianceDto virtualAppliance, LayerDto layer);
+
+   /**
+    * Deletes a layer composed of a single virtual machine.
+    * 
+    * @param layer
+    *           The layer to be deleted
+    */
+   Void deleteLayer(LayerDto layer);
+
+   /**
+    * Antiaffinity related resource. Returns the list of layers and the set of
+    * virtual machines included in these layers
+    * 
+    * @param virtualAppliance
+    *           The virtual appliance.
+    * @return The layers and its virtual machines
+    */
+   LayersDto listLayers(VirtualApplianceDto virtualAppliance);
+
+   /**
+    * Antiaffinity related resource. Returns the set of virtual machines
+    * included in the given layer
+    * 
+    * @param virtualAppliance
+    *           The virtual appliance.
+    * @param layerName
+    *           The name of the layer
+    * @return The requested layer name or <code>null</code> if it does not exist
+    */
+   LayerDto getLayer(VirtualApplianceDto virtualAppliance, String layerName);
+
+   /**
+    * Antiaffinity related resource. Modifies virtual machines layer name of a
+    * given layer.
+    * 
+    * @param virtualAppliance
+    *           The virtual appliance.
+    * @param layerName
+    *           The name of the layer
+    * @return Layer name modified and consequently its virtual machines
+    */
+   LayerDto updateLayer(LayerDto layer);
 
 }
