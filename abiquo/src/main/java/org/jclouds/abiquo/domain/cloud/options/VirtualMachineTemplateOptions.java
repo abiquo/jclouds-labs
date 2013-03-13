@@ -22,7 +22,6 @@ package org.jclouds.abiquo.domain.cloud.options;
 import org.jclouds.abiquo.domain.config.Category;
 import org.jclouds.http.options.BaseHttpRequestOptions;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.enumerator.StatefulInclusion;
 
 /**
@@ -45,7 +44,7 @@ public class VirtualMachineTemplateOptions extends BaseHttpRequestOptions {
    public static class Builder {
       private StatefulInclusion persistent;
 
-      private HypervisorType hypervisorType;
+      private String hypervisorType;
 
       private Category category;
 
@@ -58,7 +57,7 @@ public class VirtualMachineTemplateOptions extends BaseHttpRequestOptions {
          return this;
       }
 
-      public Builder hypervisorType(final HypervisorType hypervisorType) {
+      public Builder hypervisorType(final String hypervisorType) {
          this.hypervisorType = hypervisorType;
          return this;
       }
@@ -85,7 +84,7 @@ public class VirtualMachineTemplateOptions extends BaseHttpRequestOptions {
             options.queryParameters.put("stateful", persistent.name());
          }
          if (hypervisorType != null) {
-            options.queryParameters.put("hypervisorTypeName", hypervisorType.name());
+            options.queryParameters.put("hypervisorTypeName", hypervisorType);
          }
          if (category != null) {
             options.queryParameters.put("categoryName", category.getName());

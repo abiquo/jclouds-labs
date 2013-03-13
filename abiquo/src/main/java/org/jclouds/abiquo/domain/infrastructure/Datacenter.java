@@ -41,7 +41,6 @@ import org.jclouds.abiquo.domain.network.options.NetworkOptions;
 import org.jclouds.abiquo.predicates.network.NetworkServiceTypePredicates;
 import org.jclouds.rest.ApiContext;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.enumerator.MachineIpmiState;
 import com.abiquo.model.enumerator.MachineState;
 import com.abiquo.model.enumerator.NetworkType;
@@ -765,12 +764,11 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     * @throws Exception
     *            If the hypervisor type information cannot be retrieved.
     */
-   public HypervisorType getHypervisorType(final String ip) {
+   public String getHypervisorType(final String ip) {
       DatacenterOptions options = DatacenterOptions.builder().ip(ip).build();
 
-      String type = context.getApi().getInfrastructureApi().getHypervisorTypeFromMachine(target, options);
+      return context.getApi().getInfrastructureApi().getHypervisorTypeFromMachine(target, options);
 
-      return HypervisorType.valueOf(type);
    }
 
    /**
@@ -782,7 +780,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      DatacenterResource- Retrieveavailablehypervisortypes</a>
     * @return List of available hypervisor types in the datacenter.
     */
-   public List<HypervisorType> listAvailableHypervisors() {
+   public List<String> listAvailableHypervisors() {
       HypervisorTypesDto types = context.getApi().getInfrastructureApi().getHypervisorTypes(target);
 
       return getHypervisorTypes(types);
@@ -799,7 +797,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      DatacenterResource- Retrieveavailablehypervisortypes</a>
     * @return Filtered list of available hypervisor types in the datacenter.
     */
-   public List<HypervisorType> listAvailableHypervisors(final Predicate<HypervisorType> filter) {
+   public List<String> listAvailableHypervisors(final Predicate<String> filter) {
       return ImmutableList.copyOf(filter(listAvailableHypervisors(), filter));
    }
 
@@ -816,15 +814,15 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     * @return First hypervisor type matching the filter or <code>null</code> if
     *         there is none.
     */
-   public HypervisorType findHypervisor(final Predicate<HypervisorType> filter) {
+   public String findHypervisor(final Predicate<String> filter) {
       return getFirst(filter(listAvailableHypervisors(), filter), null);
    }
 
-   private List<HypervisorType> getHypervisorTypes(final HypervisorTypesDto dtos) {
-      return ImmutableList.copyOf(transform(dtos.getCollection(), new Function<HypervisorTypeDto, HypervisorType>() {
+   private List<String> getHypervisorTypes(final HypervisorTypesDto dtos) {
+      return ImmutableList.copyOf(transform(dtos.getCollection(), new Function<HypervisorTypeDto, String>() {
          @Override
-         public HypervisorType apply(HypervisorTypeDto input) {
-            return HypervisorType.fromId(input.getId());
+         public String apply(HypervisorTypeDto input) {
+            return input.getName();
          }
       }));
    }
@@ -848,9 +846,9 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
     *      DatacenterResource- Retrieveremotemachineinformation</a>
     */
-   public Machine discoverSingleMachine(final String ip, final HypervisorType hypervisorType, final String user,
+   public Machine discoverSingleMachine(final String ip, final String hypervisorType, final String user,
          final String password) {
-      return discoverSingleMachine(ip, hypervisorType, user, password, hypervisorType.defaultPort);
+      return discoverSingleMachine(ip, hypervisorType, user, password, 443); // FIXME defaultPort
    }
 
    /**
@@ -874,7 +872,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
     *      DatacenterResource- Retrieveremotemachineinformation</a>
     */
-   public Machine discoverSingleMachine(final String ip, final HypervisorType hypervisorType, final String user,
+   public Machine discoverSingleMachine(final String ip, final String hypervisorType, final String user,
          final String password, final int port) {
       MachineDto dto = context
             .getApi()
@@ -911,8 +909,8 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      DatacenterResource- Retrievealistofremotemachineinformation</a>
     */
    public List<Machine> discoverMultipleMachines(final String ipFrom, final String ipTo,
-         final HypervisorType hypervisorType, final String user, final String password) {
-      return discoverMultipleMachines(ipFrom, ipTo, hypervisorType, user, password, hypervisorType.defaultPort);
+         final String hypervisorType, final String user, final String password) {
+      return discoverMultipleMachines(ipFrom, ipTo, hypervisorType, user, password, 443); // FIXME defaultPort
    }
 
    /**
@@ -939,7 +937,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      DatacenterResource- Retrievealistofremotemachineinformation</a>
     */
    public List<Machine> discoverMultipleMachines(final String ipFrom, final String ipTo,
-         final HypervisorType hypervisorType, final String user, final String password, final int port) {
+         final String hypervisorType, final String user, final String password, final int port) {
       MachinesDto dto = context
             .getApi()
             .getInfrastructureApi()
@@ -976,10 +974,10 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
     *      DatacenterResource- Checkthestatefromremotemachine</a>
     */
-   public MachineState checkMachineState(final String ip, final HypervisorType hypervisorType, final String user,
+   public MachineState checkMachineState(final String ip, final String hypervisorType, final String user,
          final String password) {
       return checkMachineState(ip, hypervisorType, user, password,
-            MachineOptions.builder().port(hypervisorType.defaultPort).build());
+            MachineOptions.builder().port(443).build()); // FIXME defaultPort
    }
 
    /**
@@ -1005,7 +1003,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
     *      DatacenterResource- Checkthestatefromremotemachine</a>
     */
-   public MachineState checkMachineState(final String ip, final HypervisorType hypervisorType, final String user,
+   public MachineState checkMachineState(final String ip, final String hypervisorType, final String user,
          final String password, final MachineOptions options) {
       MachineStateDto dto = context.getApi().getInfrastructureApi()
             .checkMachineState(target, ip, hypervisorType, user, password, options);

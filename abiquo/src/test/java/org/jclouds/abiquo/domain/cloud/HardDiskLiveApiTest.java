@@ -26,8 +26,6 @@ import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
 import org.testng.SkipException;
 import org.testng.annotations.Test;
 
-import com.abiquo.model.enumerator.HypervisorType;
-
 /**
  * Live integration tests for the {@link HardDisk} domain class.
  * 
@@ -62,7 +60,7 @@ public class HardDiskLiveApiTest extends BaseAbiquoApiLiveApiTest {
    }
 
    protected static void skipIfUnsupported() {
-      if (!env.machine.getType().equals(HypervisorType.VMX_04)) {
+      if (!env.machine.getType().equals("VMX_04")) {
          throw new SkipException(
                "Cannot perform this test because hard disk actions are not available for this hypervisor");
       }

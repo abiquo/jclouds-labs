@@ -33,7 +33,6 @@ import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
 
 import com.abiquo.model.enumerator.ConversionState;
-import com.abiquo.model.enumerator.HypervisorType;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
@@ -55,7 +54,7 @@ public class VirtualDatacenterPredicates {
       };
    }
 
-   public static Predicate<VirtualDatacenter> type(final HypervisorType... types) {
+   public static Predicate<VirtualDatacenter> type(final String... types) {
       checkNotNull(types, "types must be defined");
 
       return new Predicate<VirtualDatacenter>() {
@@ -104,8 +103,8 @@ public class VirtualDatacenterPredicates {
       return new Predicate<VirtualDatacenter>() {
          @Override
          public boolean apply(final VirtualDatacenter vdc) {
-            HypervisorType type = vdc.getHypervisorType();
-            boolean compatible = type.isCompatible(template.getDiskFormatType());
+            String type = vdc.getHypervisorType();
+            boolean compatible = true; // FIXME compatible
             if (!compatible) {
                List<Conversion> compatibleConversions = template.listConversions(type, ConversionState.FINISHED);
                compatible = compatibleConversions != null && !compatibleConversions.isEmpty();

@@ -39,7 +39,6 @@ import org.jclouds.abiquo.predicates.infrastructure.RemoteServicePredicates;
 import org.jclouds.abiquo.util.Config;
 import org.testng.annotations.Test;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.enumerator.MachineState;
 import com.abiquo.model.enumerator.RemoteServiceType;
 import com.abiquo.server.core.infrastructure.MachineDto;
@@ -59,7 +58,7 @@ public class MachineLiveApiTest extends BaseAbiquoApiLiveApiTest {
 
       try {
          String ip = Config.get("abiquo.hypervisor.address");
-         HypervisorType type = HypervisorType.valueOf(Config.get("abiquo.hypervisor.type"));
+         String type = Config.get("abiquo.hypervisor.type");
          String user = Config.get("abiquo.hypervisor.user");
          String pass = Config.get("abiquo.hypervisor.pass");
 
@@ -95,7 +94,7 @@ public class MachineLiveApiTest extends BaseAbiquoApiLiveApiTest {
 
    public void testCheckFromDatacenter() {
       String ip = Config.get("abiquo.hypervisor.address");
-      HypervisorType type = HypervisorType.valueOf(Config.get("abiquo.hypervisor.type"));
+      String type = Config.get("abiquo.hypervisor.type");
       String user = Config.get("abiquo.hypervisor.user");
       String pass = Config.get("abiquo.hypervisor.pass");
 

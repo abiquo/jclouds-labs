@@ -48,7 +48,6 @@ import org.jclouds.reflect.Invocation;
 import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.enumerator.NetworkType;
 import com.abiquo.model.enumerator.RemoteServiceType;
 import com.abiquo.server.core.cloud.HypervisorTypesDto;
@@ -751,9 +750,9 @@ public class InfrastructureApiTest extends BaseAbiquoApiTest<InfrastructureApi> 
 
    public void testDiscoverSingleMachineWithoutOptions() throws SecurityException, NoSuchMethodException, IOException {
       Invokable<?, ?> method = method(InfrastructureApi.class, "discoverSingleMachine", DatacenterDto.class,
-            String.class, HypervisorType.class, String.class, String.class);
+            String.class, String.class, String.class, String.class);
       GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
-            InfrastructureResources.datacenterPut(), "10.60.1.222", HypervisorType.XENSERVER, "user", "pass")));
+            InfrastructureResources.datacenterPut(), "10.60.1.222", "XENSERVER", "user", "pass")));
 
       String baseUrl = "http://localhost/api/admin/datacenters/1/action/discoversingle";
       String query = "ip=10.60.1.222&hypervisor=XENSERVER&user=user&password=pass";
@@ -772,9 +771,9 @@ public class InfrastructureApiTest extends BaseAbiquoApiTest<InfrastructureApi> 
 
    public void testDiscoverSingleMachineAllParams() throws SecurityException, NoSuchMethodException {
       Invokable<?, ?> method = method(InfrastructureApi.class, "discoverSingleMachine", DatacenterDto.class,
-            String.class, HypervisorType.class, String.class, String.class, MachineOptions.class);
+            String.class, String.class, String.class, String.class, MachineOptions.class);
       GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
-            InfrastructureResources.datacenterPut(), "80.80.80.80", HypervisorType.KVM, "user", "pass", MachineOptions
+            InfrastructureResources.datacenterPut(), "80.80.80.80", "KVM", "user", "pass", MachineOptions
                   .builder().port(8889).build())));
 
       String baseUrl = "http://localhost/api/admin/datacenters/1/action/discoversingle";
@@ -794,9 +793,9 @@ public class InfrastructureApiTest extends BaseAbiquoApiTest<InfrastructureApi> 
 
    public void testDiscoverSingleMachineDefaultValues() throws SecurityException, NoSuchMethodException {
       Invokable<?, ?> method = method(InfrastructureApi.class, "discoverSingleMachine", DatacenterDto.class,
-            String.class, HypervisorType.class, String.class, String.class, MachineOptions.class);
+            String.class, String.class, String.class, String.class, MachineOptions.class);
       GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
-            InfrastructureResources.datacenterPut(), "80.80.80.80", HypervisorType.KVM, "user", "pass", MachineOptions
+            InfrastructureResources.datacenterPut(), "80.80.80.80", "KVM", "user", "pass", MachineOptions
                   .builder().build())));
 
       String baseUrl = "http://localhost/api/admin/datacenters/1/action/discoversingle";
@@ -817,9 +816,9 @@ public class InfrastructureApiTest extends BaseAbiquoApiTest<InfrastructureApi> 
    public void testDiscoverMultipleMachinesWithoutOptions() throws SecurityException, NoSuchMethodException,
          IOException {
       Invokable<?, ?> method = method(InfrastructureApi.class, "discoverMultipleMachines", DatacenterDto.class,
-            String.class, String.class, HypervisorType.class, String.class, String.class);
+            String.class, String.class, String.class, String.class, String.class);
       GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
-            InfrastructureResources.datacenterPut(), "10.60.1.222", "10.60.1.250", HypervisorType.XENSERVER, "user",
+            InfrastructureResources.datacenterPut(), "10.60.1.222", "10.60.1.250", "XENSERVER", "user",
             "pass")));
 
       String baseUrl = "http://localhost/api/admin/datacenters/1/action/discovermultiple";
@@ -839,9 +838,9 @@ public class InfrastructureApiTest extends BaseAbiquoApiTest<InfrastructureApi> 
 
    public void testDiscoverMultipleMachinesAllParams() throws SecurityException, NoSuchMethodException {
       Invokable<?, ?> method = method(InfrastructureApi.class, "discoverMultipleMachines", DatacenterDto.class,
-            String.class, String.class, HypervisorType.class, String.class, String.class, MachineOptions.class);
+            String.class, String.class, String.class, String.class, String.class, MachineOptions.class);
       GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
-            InfrastructureResources.datacenterPut(), "80.80.80.80", "80.80.80.86", HypervisorType.KVM, "user", "pass",
+            InfrastructureResources.datacenterPut(), "80.80.80.80", "80.80.80.86", "KVM", "user", "pass",
             MachineOptions.builder().port(8889).build())));
 
       String baseUrl = "http://localhost/api/admin/datacenters/1/action/discovermultiple";
@@ -860,10 +859,10 @@ public class InfrastructureApiTest extends BaseAbiquoApiTest<InfrastructureApi> 
    }
 
    public void testCheckMachineStateWithoutOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Invokable<?, ?> method = method(InfrastructureApi.class, "checkMachineState", DatacenterDto.class, String.class,
-            HypervisorType.class, String.class, String.class);
+      Invokable<?, ?> method = method(InfrastructureApi.class, "checkMachineState", DatacenterDto.class,
+            String.class, String.class, String.class, String.class);
       GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
-            InfrastructureResources.datacenterPut(), "10.60.1.222", HypervisorType.XENSERVER, "user", "pass")));
+            InfrastructureResources.datacenterPut(), "10.60.1.222", "XENSERVER", "user", "pass")));
 
       String baseUrl = "http://localhost/api/admin/datacenters/1/action/checkmachinestate";
       String query = "ip=10.60.1.222&hypervisor=XENSERVER&user=user&password=pass";
@@ -881,10 +880,10 @@ public class InfrastructureApiTest extends BaseAbiquoApiTest<InfrastructureApi> 
    }
 
    public void testCheckMachineStateAllParams() throws SecurityException, NoSuchMethodException, IOException {
-      Invokable<?, ?> method = method(InfrastructureApi.class, "checkMachineState", DatacenterDto.class, String.class,
-            HypervisorType.class, String.class, String.class, MachineOptions.class);
+      Invokable<?, ?> method = method(InfrastructureApi.class, "checkMachineState", DatacenterDto.class,
+            String.class, String.class, String.class, String.class, MachineOptions.class);
       GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
-            InfrastructureResources.datacenterPut(), "10.60.1.222", HypervisorType.XENSERVER, "user", "pass",
+            InfrastructureResources.datacenterPut(), "10.60.1.222", "XENSERVER", "user", "pass",
             MachineOptions.builder().port(8889).build())));
 
       String baseUrl = "http://localhost/api/admin/datacenters/1/action/checkmachinestate";

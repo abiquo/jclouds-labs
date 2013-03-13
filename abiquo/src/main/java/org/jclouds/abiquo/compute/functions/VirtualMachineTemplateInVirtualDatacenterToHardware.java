@@ -76,7 +76,7 @@ public class VirtualMachineTemplateInVirtualDatacenterToHardware implements
 
       // Location information
       builder.location(virtualDatacenterToLocation.apply(virtualDatacenter));
-      builder.hypervisor(virtualDatacenter.getHypervisorType().name());
+      builder.hypervisor(virtualDatacenter.getHypervisorType());
       builder.supportsImage(ImagePredicates.idEquals(template.getId().toString()));
 
       VolumeBuilder volumeBuilder = new VolumeBuilder();

@@ -48,10 +48,10 @@ import org.jclouds.rest.annotations.ParamParser;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.binders.BindToXMLPayload;
 
-import com.abiquo.am.model.TemplatesStateDto;
 import com.abiquo.server.core.appslibrary.DatacenterRepositoryDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListsDto;
+import com.abiquo.server.core.appslibrary.TemplatesStateDto;
 import com.abiquo.server.core.cloud.VirtualAppliancesDto;
 import com.abiquo.server.core.cloud.VirtualDatacentersDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
@@ -585,7 +585,9 @@ public interface EnterpriseApi extends Closeable {
     * @param datacenter
     *           The given datacenter.
     * @return The list of states.
+    * @deprecated Will disappear in future Abiquo versions
     */
+   @Deprecated
    @Named("templatedefinitionlist:status")
    @GET
    @Consumes(TemplatesStateDto.BASE_MEDIA_TYPE)

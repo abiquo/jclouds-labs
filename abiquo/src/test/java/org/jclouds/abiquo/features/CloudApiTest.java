@@ -46,7 +46,6 @@ import org.jclouds.reflect.Invocation;
 import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.model.transport.LinksDto;
@@ -290,7 +289,7 @@ public class CloudApiTest extends BaseAbiquoApiTest<CloudApi> {
       GeneratedHttpRequest request = processor.apply(Invocation.create(
             method,
             ImmutableList.<Object> of(CloudResources.virtualDatacenterPut(), VirtualMachineTemplateOptions.builder()
-                  .hypervisorType(HypervisorType.XENSERVER).categoryName("Firewalls").idTemplate(1).build())));
+                  .hypervisorType("XENSERVER").categoryName("Firewalls").idTemplate(1).build())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/cloud/virtualdatacenters/1/action/templates"
             + "?hypervisorTypeName=XENSERVER&categoryName=Firewalls&idTemplate=1 HTTP/1.1");

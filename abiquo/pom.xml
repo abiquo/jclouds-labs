@@ -14,8 +14,7 @@
     <packaging>bundle</packaging>
     
     <properties>
-        <abiquomodel.version>2.2.0.1</abiquomodel.version>
-        <abiquoam.version>2.1.2.1</abiquoam.version>
+        <abiquomodel.version>2.3.0-SNAPSHOT</abiquomodel.version>
         <test.abiquo.endpoint>http://localhost/api</test.abiquo.endpoint>
         <test.abiquo.identity>FIXME</test.abiquo.identity>
         <test.abiquo.credential>FIXME</test.abiquo.credential>
@@ -56,27 +55,16 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>com.abiquo</groupId>
-            <artifactId>am-model</artifactId>
-            <version>${abiquoam.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.ws.rs</groupId>
-                    <artifactId>jsr311-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.uncommons</groupId>
-                    <artifactId>reportng</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <!-- Required for class SyndLink (imported form RESTLink) : TODO remove this dependency -->
         <dependency>
             <groupId>org.apache.wink</groupId>
             <artifactId>wink-common</artifactId>
             <version>1.1-incubating</version>
             <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-jdk14</artifactId>

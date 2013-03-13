@@ -35,7 +35,6 @@ import org.jclouds.abiquo.domain.infrastructure.Datacenter.Builder;
 import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
 import org.testng.annotations.Test;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.server.core.infrastructure.DatacenterDto;
 
 /**
@@ -57,7 +56,7 @@ public class DatacenterLiveApiTest extends BaseAbiquoApiLiveApiTest {
    }
 
    public void testCheckHypervisorType() {
-      HypervisorType type = env.datacenter.getHypervisorType(env.machine.getIp());
+      String type = env.datacenter.getHypervisorType(env.machine.getIp());
 
       assertEquals(env.machine.getType(), type);
    }

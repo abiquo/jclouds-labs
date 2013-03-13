@@ -36,8 +36,6 @@ import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
 import com.abiquo.model.enumerator.ConversionState;
-import com.abiquo.model.enumerator.DiskFormatType;
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.server.core.appslibrary.ConversionDto;
 import com.abiquo.server.core.appslibrary.ConversionsDto;
@@ -83,7 +81,7 @@ public class VirtualMachineTemplateApiTest extends BaseAbiquoApiTest<VirtualMach
             ImmutableList.<Object> of(
                   1,
                   1,
-                  VirtualMachineTemplateOptions.builder().hypervisorType(HypervisorType.XENSERVER)
+                  VirtualMachineTemplateOptions.builder().hypervisorType("XENSERVER")
                         .categoryName("Firewalls").build())));
 
       assertRequestLineEquals(request,
@@ -177,10 +175,10 @@ public class VirtualMachineTemplateApiTest extends BaseAbiquoApiTest<VirtualMach
 
    public void testRequestConversion() throws SecurityException, NoSuchMethodException, IOException {
       Invokable<?, ?> method = method(VirtualMachineTemplateApi.class, "requestConversion",
-            VirtualMachineTemplateDto.class, DiskFormatType.class, ConversionDto.class);
+            VirtualMachineTemplateDto.class, String.class, ConversionDto.class);
 
       GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
-            TemplateResources.virtualMachineTemplatePut(), DiskFormatType.VMDK_STREAM_OPTIMIZED,
+            TemplateResources.virtualMachineTemplatePut(), "VMDK_STREAM_OPTIMIZED",
             TemplateResources.conversionPut())));
 
       assertRequestLineEquals(request,
@@ -223,7 +221,7 @@ public class VirtualMachineTemplateApiTest extends BaseAbiquoApiTest<VirtualMach
       GeneratedHttpRequest request = processor.apply(Invocation.create(
             method,
             ImmutableList.<Object> of(TemplateResources.virtualMachineTemplatePut(), ConversionOptions.builder()
-                  .hypervisorType(HypervisorType.XENSERVER).conversionState(ConversionState.FINISHED).build())));
+                  .hypervisorType("XENSERVER").conversionState(ConversionState.FINISHED).build())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates/"
@@ -240,9 +238,9 @@ public class VirtualMachineTemplateApiTest extends BaseAbiquoApiTest<VirtualMach
 
    public void testGetConversion() throws SecurityException, NoSuchMethodException, IOException {
       Invokable<?, ?> method = method(VirtualMachineTemplateApi.class, "getConversion",
-            VirtualMachineTemplateDto.class, DiskFormatType.class);
+            VirtualMachineTemplateDto.class, String.class);
       GeneratedHttpRequest request = processor.apply(Invocation.create(method,
-            ImmutableList.<Object> of(TemplateResources.virtualMachineTemplatePut(), DiskFormatType.RAW)));
+            ImmutableList.<Object> of(TemplateResources.virtualMachineTemplatePut(), "RAW")));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/enterprises/1/datacenterrepositories/1/"
             + "virtualmachinetemplates/1/conversions/RAW HTTP/1.1");
