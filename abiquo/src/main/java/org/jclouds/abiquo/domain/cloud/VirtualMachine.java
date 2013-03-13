@@ -737,7 +737,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
 
    // Delegate methods
 
-   public int getCpu() {
+   public Integer getCpu() {
       return target.getCpu();
    }
 
@@ -746,7 +746,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    }
 
    // Read-only field. This value is computed from the size of the Template
-   public long getHdInBytes() {
+   public Long getHdInBytes() {
       return target.getHdInBytes();
    }
 
@@ -778,7 +778,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
       return target.getPassword();
    }
 
-   public int getRam() {
+   public Integer getRam() {
       return target.getRam();
    }
 
