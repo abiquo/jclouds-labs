@@ -20,6 +20,7 @@
 package org.jclouds.abiquo.domain.cloud.options;
 
 import org.jclouds.abiquo.domain.config.Category;
+import org.jclouds.abiquo.domain.options.search.FilterOptions.BaseFilterOptionsBuilder;
 import org.jclouds.http.options.BaseHttpRequestOptions;
 
 import com.abiquo.model.enumerator.HypervisorType;
@@ -42,7 +43,7 @@ public class VirtualMachineTemplateOptions extends BaseHttpRequestOptions {
       return options;
    }
 
-   public static class Builder {
+   public static class Builder extends BaseFilterOptionsBuilder<Builder> {
       private StatefulInclusion persistent;
 
       private HypervisorType hypervisorType;
@@ -99,7 +100,7 @@ public class VirtualMachineTemplateOptions extends BaseHttpRequestOptions {
             options.queryParameters.put("idTemplate", String.valueOf(idTemplate));
          }
 
-         return options;
+         return addFilterOptions(options);
       }
    }
 }
