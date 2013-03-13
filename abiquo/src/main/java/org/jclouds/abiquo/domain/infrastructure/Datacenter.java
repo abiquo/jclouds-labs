@@ -19,6 +19,7 @@
 
 package org.jclouds.abiquo.domain.infrastructure;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.find;
 import static com.google.common.collect.Iterables.getFirst;
@@ -39,6 +40,7 @@ import org.jclouds.abiquo.domain.network.NetworkServiceType;
 import org.jclouds.abiquo.domain.network.PrivateNetwork;
 import org.jclouds.abiquo.domain.network.options.NetworkOptions;
 import org.jclouds.abiquo.predicates.network.NetworkServiceTypePredicates;
+import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.rest.ApiContext;
 
 import com.abiquo.model.enumerator.HypervisorType;
@@ -70,6 +72,7 @@ import com.abiquo.server.core.infrastructure.network.VlanTagAvailabilityDto;
 import com.abiquo.server.core.infrastructure.storage.StorageDeviceDto;
 import com.abiquo.server.core.infrastructure.storage.StorageDevicesDto;
 import com.abiquo.server.core.infrastructure.storage.StorageDevicesMetadataDto;
+import com.abiquo.server.core.infrastructure.storage.TierDto;
 import com.abiquo.server.core.infrastructure.storage.TiersDto;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -623,6 +626,19 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     */
    public Tier findTier(final Predicate<Tier> filter) {
       return getFirst(filter(listTiers(), filter), null);
+   }
+
+   /**
+    * Retrieve a single tier.
+    * 
+    * @param id
+    *           Unique ID of the tier.
+    * @return Tier with the given id or <code>null</code> if it does not exist.
+    */
+   public Tier getTier(Integer tierId) {
+      TierDto dto = context.getApi().getInfrastructureApi()
+            .getTier(target, checkNotNull(tierId, ValidationErrors.NULL_RESOURCE));
+      return wrap(context, Tier.class, dto);
    }
 
    /**

@@ -44,6 +44,7 @@ import org.jclouds.abiquo.binders.infrastructure.AppendRemoteServiceTypeToPath;
 import org.jclouds.abiquo.binders.infrastructure.BindSupportedDevicesLinkToPath;
 import org.jclouds.abiquo.binders.infrastructure.ucs.BindLogicServerParameters;
 import org.jclouds.abiquo.binders.infrastructure.ucs.BindOrganizationParameters;
+import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.DatacenterOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.IpmiOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.MachineOptions;
@@ -71,6 +72,7 @@ import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
 import com.abiquo.server.core.enterprise.DatacentersLimitsDto;
 import com.abiquo.server.core.enterprise.EnterpriseDto;
+import com.abiquo.server.core.enterprise.EnterprisesDto;
 import com.abiquo.server.core.infrastructure.BladeLocatorLedDto;
 import com.abiquo.server.core.infrastructure.DatacenterDto;
 import com.abiquo.server.core.infrastructure.DatacentersDto;
@@ -1268,6 +1270,60 @@ public interface InfrastructureApi extends Closeable {
    @Fallback(NullOnNotFoundOr404.class)
    TierDto getTier(@EndpointLink("tiers") @BinderParam(BindToPath.class) DatacenterDto datacenter,
          @BinderParam(AppendToPath.class) Integer tierId);
+
+   /**
+    * Allow the tier to be used by all enterprises.
+    * 
+    * @param tier
+    *           The tier to be allowed.
+    */
+   @Named("tier:allow")
+   @PUT
+   void allowTierToAllEnterprises(@EndpointLink("allowallenterprises") @BinderParam(BindToPath.class) TierDto tier);
+
+   /**
+    * Restrict a tier to all enterprises.
+    * 
+    * @param tier
+    *           The tier to be restricted.
+    * @param force
+    *           Boolean indicating if the force the operation must succeed even
+    *           if not all enterprises could be updated
+    */
+   @Named("tier:restrict")
+   @PUT
+   void restrictTierToAllEnterprises(
+         @EndpointLink("restrictallenterprises") @BinderParam(BindToPath.class) TierDto tier,
+         @QueryParam("force") boolean force);
+
+   /**
+    * Retrieve list of allowed enterprises for a tier
+    * 
+    * @param tier
+    *           The tier for searching its allowed enterprises
+    * @return The list of the enterprises with the tier allowed
+    */
+   @Named("tier:enterprises")
+   @GET
+   @Consumes(EnterprisesDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   EnterprisesDto listAllowedEnterprisesForTier(@EndpointLink("enterprises") @BinderParam(BindToPath.class) TierDto tier);
+
+   /**
+    * Retrieve list of allowed enterprises for a tier
+    * 
+    * @param tier
+    *           The tier for searching its allowed enterprises
+    * @param options
+    *           Optional query params
+    * @return The list of the enterprises with the tier allowed
+    */
+   @Named("tier:enterprises")
+   @GET
+   @Consumes(EnterprisesDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   EnterprisesDto listAllowedEnterprisesForTier(
+         @EndpointLink("enterprises") @BinderParam(BindToPath.class) TierDto tier, EnterpriseOptions options);
 
    /*********************** Storage Pool ***********************/
 

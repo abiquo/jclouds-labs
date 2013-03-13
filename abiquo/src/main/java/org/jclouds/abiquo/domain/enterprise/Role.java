@@ -28,7 +28,6 @@ import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
 import org.jclouds.abiquo.domain.config.Privilege;
 import org.jclouds.abiquo.reference.ValidationErrors;
-
 import org.jclouds.rest.ApiContext;
 
 import com.abiquo.model.rest.RESTLink;

@@ -92,8 +92,9 @@ public class VolumeLiveApiTest extends BaseAbiquoApiLiveApiTest {
       PrivateNetwork network = PrivateNetwork.builder(env.context.getApiContext()).name("DefaultNetwork")
             .gateway("192.168.1.1").address("192.168.1.0").mask(24).build();
 
-      VirtualDatacenter newVdc = VirtualDatacenter.builder(env.context.getApiContext(), env.datacenter, env.enterprise)
-            .name("New VDC").network(network).hypervisorType(env.machine.getType()).build();
+      VirtualDatacenter newVdc = VirtualDatacenter
+            .builder(env.context.getApiContext(), env.datacenter, env.defaultEnterprise).name("New VDC")
+            .network(network).hypervisorType(env.machine.getType()).build();
       newVdc.save();
       assertNotNull(newVdc.getId());
 

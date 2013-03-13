@@ -25,6 +25,8 @@ import javax.inject.Singleton;
 import org.jclouds.abiquo.binders.BindRefsToPayload;
 import org.jclouds.xml.XMLParser;
 
+import com.abiquo.server.core.infrastructure.storage.DiskManagementDto;
+
 /**
  * Bind multiple {@link DiskManagementDto} objects to the payload of the request
  * as a list of links.

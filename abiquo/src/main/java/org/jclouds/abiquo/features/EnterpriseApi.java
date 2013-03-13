@@ -46,6 +46,7 @@ import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.JAXBResponseParser;
 import org.jclouds.rest.annotations.ParamParser;
 import org.jclouds.rest.annotations.RequestFilters;
+import org.jclouds.rest.annotations.SinceApiVersion;
 import org.jclouds.rest.binders.BindToXMLPayload;
 
 import com.abiquo.am.model.TemplatesStateDto;
@@ -250,7 +251,11 @@ public interface EnterpriseApi extends Closeable {
     * @param limits
     *           The usage limits for the enterprise in the given datacenter.
     * @return The usage limits for the enterprise in the given datacenter.
+    * @deprecated This method will be removed in fufure versions. Use
+    *             {@link EnterpriseApi#createLimits(EnterpriseDto, DatacenterLimitsDto)}
+    *             instead.
     */
+   @Deprecated
    @Named("limit:create")
    @POST
    @Produces(DatacenterLimitsDto.BASE_MEDIA_TYPE)
@@ -259,6 +264,26 @@ public interface EnterpriseApi extends Closeable {
    DatacenterLimitsDto createLimits(
          @EndpointLink("limits") @BinderParam(BindToPath.class) final EnterpriseDto enterprise,
          @QueryParam("datacenter") @ParamParser(ParseDatacenterId.class) final DatacenterDto datacenter,
+         @BinderParam(BindToXMLPayload.class) DatacenterLimitsDto limits);
+
+   /**
+    * Allows the given enterprise to use the given datacenter with the given
+    * limits.
+    * 
+    * @param enterprise
+    *           The enterprise.
+    * @param limits
+    *           The usage limits for the enterprise in a concrete datacenter.
+    * @return The usage limits for the enterprise in a concrete datacenter.
+    */
+   @SinceApiVersion("2.4")
+   @Named("limit:create")
+   @POST
+   @Produces(DatacenterLimitsDto.BASE_MEDIA_TYPE)
+   @Consumes(DatacenterLimitsDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   DatacenterLimitsDto createLimits(
+         @EndpointLink("limits") @BinderParam(BindToPath.class) final EnterpriseDto enterprise,
          @BinderParam(BindToXMLPayload.class) DatacenterLimitsDto limits);
 
    /**
@@ -278,6 +303,23 @@ public interface EnterpriseApi extends Closeable {
    DatacentersLimitsDto getLimits(
          @EndpointLink("limits") @BinderParam(BindToPath.class) final EnterpriseDto enterprise,
          @QueryParam("datacenter") @ParamParser(ParseDatacenterId.class) final DatacenterDto datacenter);
+
+   /**
+    * Get the given limit from the given enterprise.
+    * 
+    * @param enterprise
+    *           The enterprise.
+    * @param limitId
+    *           The id of the limit.
+    * @return The limit or <code>null</code> if it does not exist.
+    */
+   @Named("limit:get")
+   @GET
+   @Consumes(DatacenterLimitsDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   @Fallback(NullOnNotFoundOr404.class)
+   DatacenterLimitsDto getLimit(@EndpointLink("limits") @BinderParam(BindToPath.class) EnterpriseDto enterprise,
+         @BinderParam(AppendToPath.class) Integer limitId);
 
    /**
     * Retrieves limits for the given enterprise and any datacenter.

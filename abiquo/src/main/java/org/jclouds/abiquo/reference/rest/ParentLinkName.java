@@ -51,6 +51,8 @@ public class ParentLinkName {
 
    public static final String ICON = "icon";
 
+   public static final String LIMIT = "limit";
+
    public static final String PRIVATE_NETWORK = "privatenetwork";
 
    public static final String PUBLIC_NETWORK = "publicnetwork";

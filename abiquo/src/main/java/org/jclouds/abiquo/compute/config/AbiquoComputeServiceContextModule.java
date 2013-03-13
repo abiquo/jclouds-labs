@@ -21,8 +21,8 @@ package org.jclouds.abiquo.compute.config;
 
 import org.jclouds.abiquo.compute.functions.DatacenterToLocation;
 import org.jclouds.abiquo.compute.functions.VirtualDatacenterToLocation;
-import org.jclouds.abiquo.compute.functions.VirtualMachineTemplateToImage;
 import org.jclouds.abiquo.compute.functions.VirtualMachineTemplateInVirtualDatacenterToHardware;
+import org.jclouds.abiquo.compute.functions.VirtualMachineTemplateToImage;
 import org.jclouds.abiquo.compute.functions.VirtualMachineToNodeMetadata;
 import org.jclouds.abiquo.compute.options.AbiquoTemplateOptions;
 import org.jclouds.abiquo.compute.strategy.AbiquoComputeServiceAdapter;
