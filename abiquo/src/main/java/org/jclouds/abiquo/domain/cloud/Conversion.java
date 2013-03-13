@@ -33,7 +33,6 @@ import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.rest.ApiContext;
 
 import com.abiquo.model.enumerator.ConversionState;
-import com.abiquo.model.enumerator.DiskFormatType;
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.appslibrary.ConversionDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
@@ -107,11 +106,11 @@ public class Conversion extends DomainWithTasksWrapper<ConversionDto> {
       return target.getTargetSizeInBytes();
    }
 
-   public DiskFormatType getSourceFormat() {
+   public String getSourceFormat() {
       return target.getSourceFormat();
    }
 
-   public DiskFormatType getTargetFormat() {
+   public String getTargetFormat() {
       return target.getTargetFormat();
    }
 

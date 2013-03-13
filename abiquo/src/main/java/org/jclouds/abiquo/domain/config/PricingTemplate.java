@@ -112,6 +112,8 @@ public class PricingTemplate extends DomainWrapper<PricingTemplateDto> {
 
       private BigDecimal layer;
 
+      private BigDecimal repositoryGB;
+
       private boolean defaultTemplate;
 
       private Date lastUpdate;
@@ -192,6 +194,11 @@ public class PricingTemplate extends DomainWrapper<PricingTemplateDto> {
          return this;
       }
 
+      public Builder repositoryGB(final BigDecimal repositoryGB) {
+         this.repositoryGB = repositoryGB;
+         return this;
+      }
+
       public Builder defaultTemplate(final boolean defaultTemplate) {
          this.defaultTemplate = defaultTemplate;
          return this;
@@ -225,6 +232,7 @@ public class PricingTemplate extends DomainWrapper<PricingTemplateDto> {
          dto.setLayer(layer);
          dto.setDefaultTemplate(defaultTemplate);
          dto.setLastUpdate(lastUpdate);
+         dto.setRepositoryGB(repositoryGB);
 
          RESTLink link = currency.unwrap().searchLink("edit");
          checkNotNull(link, ValidationErrors.MISSING_REQUIRED_LINK);
@@ -242,8 +250,8 @@ public class PricingTemplate extends DomainWrapper<PricingTemplateDto> {
                .vcpu(in.getVlan()).chargingPeriod(in.getChargingPeriod()).minimumCharge(in.getMinimumCharge())
                .minimumChargePeriod(in.getMinimumChargePeriod()).showChangesBefore(in.isShowChangesBefore())
                .showMinimumCharge(in.isShowMinimumCharge()).publicIp(in.getPublicIp()).vcpu(in.getVcpu())
-               .memoryGB(in.getMemoryGB()).layer(in.getLayer()).defaultTemplate(in.isDefaultTemplate())
-               .lastUpdate(in.getLastUpdate());
+               .memoryGB(in.getMemoryGB()).layer(in.getLayer()).repositoryGB(in.getRepositoryGB())
+               .defaultTemplate(in.isDefaultTemplate()).lastUpdate(in.getLastUpdate());
          return builder;
       }
    }
@@ -382,6 +390,14 @@ public class PricingTemplate extends DomainWrapper<PricingTemplateDto> {
       target.setLayer(layer);
    }
 
+   public BigDecimal getRepositoryGB() {
+      return target.getRepositoryGB();
+   }
+
+   public void setRepositoryGB(final BigDecimal repositoryGB) {
+      target.setRepositoryGB(repositoryGB);
+   }
+
    @Override
    public String toString() {
       return "PricingTemplate [id=" + getId() + ", name=" + getName() + ", description=" + getDescription()
@@ -389,7 +405,7 @@ public class PricingTemplate extends DomainWrapper<PricingTemplateDto> {
             + ",  chargingPeriod =" + getChargingPeriod() + ", minimumChargePeriod=" + getMinimumChargePeriod()
             + ", showChangesBefore =" + isShowChangesBefore() + ", showMinimumCharge= " + isShowMinimumCharge()
             + ", minimumCharge = " + getMinimumCharge() + ", publicIp = " + getPublicIp() + ", vcpu =" + getVcpu()
-            + ", memoryGB= " + getMemoryGB() + ", layer= " + getLayer() + ", defaultTemplate= " + isDefaultTemplate()
-            + ", lastUpdate = " + getLastUpdate() + "]";
+            + ", memoryGB= " + getMemoryGB() + ", layer= " + getLayer() + ", repositoryGB= " + getRepositoryGB()
+            + ", defaultTemplate= " + isDefaultTemplate() + ", lastUpdate = " + getLastUpdate() + "]";
    }
 }

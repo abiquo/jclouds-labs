@@ -22,7 +22,6 @@ package org.jclouds.abiquo.domain;
 import static org.jclouds.abiquo.domain.DomainUtils.link;
 
 import com.abiquo.model.enumerator.ConversionState;
-import com.abiquo.model.enumerator.DiskFormatType;
 import com.abiquo.model.enumerator.OSType;
 import com.abiquo.model.enumerator.VMTemplateState;
 import com.abiquo.model.rest.RESTLink;
@@ -181,9 +180,9 @@ public class TemplateResources {
    public static ConversionDto conversionPut() {
       ConversionDto conversion = new ConversionDto();
       conversion.setState(ConversionState.ENQUEUED);
-      conversion.setSourceFormat(DiskFormatType.VMDK_STREAM_OPTIMIZED);
+      conversion.setSourceFormat("VMDK_STREAM_OPTIMIZED");
       conversion.setSourcePath("source/path.vmkd");
-      conversion.setTargetFormat(DiskFormatType.RAW);
+      conversion.setTargetFormat("RAW");
       conversion.setTargetPath("target/path.raw");
       conversion.setTargetSizeInBytes(1000000l);
       conversion

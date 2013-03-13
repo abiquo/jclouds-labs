@@ -36,7 +36,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.google.common.collect.Lists;
 
 /**
@@ -75,7 +74,7 @@ public class VirtualMachineStorageLiveApiTest extends BaseAbiquoApiLiveApiTest {
 
    @Test(dependsOnMethods = "testAttachVolume")
    public void testDetachVolume() {
-      AsyncTask task = env.virtualMachine.setVirtualDisks(Lists.<VirtualDisk<?>> newArrayList());
+      VirtualMachineTask task = env.virtualMachine.setVirtualDisks(Lists.<VirtualDisk<?>> newArrayList());
       assertNull(task);
 
       List<VirtualDisk<?>> attached = env.virtualMachine.listVirtualDisks();
@@ -99,7 +98,7 @@ public class VirtualMachineStorageLiveApiTest extends BaseAbiquoApiLiveApiTest {
    public void testDetachHardDisk() {
       skipIfHardDisksNotSupported();
 
-      AsyncTask task = env.virtualMachine.setVirtualDisks(Lists.<VirtualDisk<?>> newArrayList());
+      VirtualMachineTask task = env.virtualMachine.setVirtualDisks(Lists.<VirtualDisk<?>> newArrayList());
       assertNull(task);
 
       List<VirtualDisk<?>> attached = env.virtualMachine.listVirtualDisks();
@@ -112,7 +111,8 @@ public class VirtualMachineStorageLiveApiTest extends BaseAbiquoApiLiveApiTest {
 
       // Since the virtual machine is not deployed, this should not generate a
       // task
-      VirtualMachineTask task = env.virtualMachine.setVirtualDisks(Lists.<VirtualDisk<?>> newArrayList(hardDisk, volume));
+      VirtualMachineTask task = env.virtualMachine.setVirtualDisks(Lists
+            .<VirtualDisk<?>> newArrayList(hardDisk, volume));
       assertNull(task);
 
       List<VirtualDisk<?>> attached = env.virtualMachine.listVirtualDisks();
@@ -123,7 +123,8 @@ public class VirtualMachineStorageLiveApiTest extends BaseAbiquoApiLiveApiTest {
 
    @Test(dependsOnMethods = "testAttachHardDiskAndVolume")
    public void testReorderVirtualDisks() {
-      AsyncTask task = env.virtualMachine.setVirtualDisks(Lists.<VirtualDisk<?>> newArrayList(volume, hardDisk));
+      VirtualMachineTask task = env.virtualMachine.setVirtualDisks(Lists
+            .<VirtualDisk<?>> newArrayList(volume, hardDisk));
       assertNull(task);
 
       List<VirtualDisk<?>> attached = env.virtualMachine.listVirtualDisks();
@@ -179,7 +180,8 @@ public class VirtualMachineStorageLiveApiTest extends BaseAbiquoApiLiveApiTest {
    }
 
    protected static void skipIfHardDisksNotSupported() {
-      if (!env.machine.getType().equals(HypervisorType.VMX_04)) {
+      // TODO: Check against the plugin capabilities
+      if (!env.machine.getType().equals("VMX_04")) {
          throw new SkipException(
                "Cannot perform this test because hard disk actions are not available for this hypervisor");
       }

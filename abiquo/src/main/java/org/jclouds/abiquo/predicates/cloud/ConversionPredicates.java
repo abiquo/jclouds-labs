@@ -27,8 +27,6 @@ import org.jclouds.abiquo.domain.cloud.Conversion;
 import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
 
 import com.abiquo.model.enumerator.ConversionState;
-import com.abiquo.model.enumerator.DiskFormatType;
-import com.abiquo.model.enumerator.HypervisorType;
 import com.google.common.base.Predicate;
 
 /**
@@ -38,7 +36,7 @@ import com.google.common.base.Predicate;
  */
 public class ConversionPredicates {
 
-   public static Predicate<Conversion> sourceFormat(final DiskFormatType... formats) {
+   public static Predicate<Conversion> sourceFormat(final String... formats) {
       checkNotNull(formats, "formats must be defined");
 
       return new Predicate<Conversion>() {
@@ -49,7 +47,7 @@ public class ConversionPredicates {
       };
    }
 
-   public static Predicate<Conversion> targetFormat(final DiskFormatType... formats) {
+   public static Predicate<Conversion> targetFormat(final String... formats) {
       checkNotNull(formats, "formats must be defined");
 
       return new Predicate<Conversion>() {
@@ -71,13 +69,13 @@ public class ConversionPredicates {
       };
    }
 
-   public static Predicate<Conversion> compatible(final HypervisorType type) {
+   public static Predicate<Conversion> compatible(final String type) {
       checkNotNull(type, "type must be defined");
 
       return new Predicate<Conversion>() {
          @Override
          public boolean apply(final Conversion conversion) {
-            return type.isCompatible(conversion.getTargetFormat());
+            return true; // FIXME compatible
          }
       };
    }

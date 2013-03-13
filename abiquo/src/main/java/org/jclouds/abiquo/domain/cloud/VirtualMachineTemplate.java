@@ -44,9 +44,7 @@ import org.jclouds.rest.ApiContext;
 
 import com.abiquo.model.enumerator.ConversionState;
 import com.abiquo.model.enumerator.DiskControllerType;
-import com.abiquo.model.enumerator.DiskFormatType;
 import com.abiquo.model.enumerator.EthernetDriverType;
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.enumerator.OSType;
 import com.abiquo.model.enumerator.VMTemplateState;
 import com.abiquo.model.rest.RESTLink;
@@ -160,7 +158,7 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
     * @return the task to track the progress for the new virtual machine
     *         template creation process
     */
-   public AsyncTask promoteToMaster(final String promotedName) {
+   public VirtualMachineTemplateTask promoteToMaster(final String promotedName) {
 
       RESTLink vmtLink = new RESTLink(ParentLinkName.VIRTUAL_MACHINE_TEMPLATE, target.getEditLink().getHref());
       Integer repositoryId = target.getIdFromLink(ParentLinkName.DATACENTER_REPOSITORY);
@@ -176,7 +174,7 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
       AcceptedRequestDto<String> response = context.getApi().getVirtualMachineTemplateApi()
             .createVirtualMachineTemplate(enterpriseId, repositoryId, request);
 
-      return getTask(response);
+      return getTask(response).asVirtualMachineTemplateTask();
    }
 
    // Children access
@@ -295,7 +293,7 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
     * @return all the conversions of the virtual machine template applying the
     *         constrains
     */
-   public List<Conversion> listConversions(final HypervisorType hypervisor, final ConversionState state) {
+   public List<Conversion> listConversions(final String hypervisor, final ConversionState state) {
       ConversionsDto convs = context
             .getApi()
             .getVirtualMachineTemplateApi()
@@ -315,7 +313,7 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
     *           , desired target format for the request template
     * @return The task reference to track its progress
     */
-   public ConversionTask requestConversion(final DiskFormatType diskFormat) {
+   public ConversionTask requestConversion(final String diskFormat) {
       ConversionDto request = new ConversionDto();
       request.setTargetFormat(diskFormat);
 
@@ -353,8 +351,8 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
       return target.getDiskFileSize();
    }
 
-   public DiskFormatType getDiskFormatType() {
-      return DiskFormatType.valueOf(target.getDiskFormatType());
+   public String getDiskFormatType() {
+      return target.getDiskFormatType();
    }
 
    public Long getHdRequired() {

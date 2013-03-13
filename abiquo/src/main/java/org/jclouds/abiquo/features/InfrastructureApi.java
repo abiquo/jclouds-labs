@@ -65,7 +65,6 @@ import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.ResponseParser;
 import org.jclouds.rest.binders.BindToXMLPayload;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.enumerator.RemoteServiceType;
 import com.abiquo.server.core.cloud.HypervisorTypesDto;
 import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
@@ -217,8 +216,8 @@ public interface InfrastructureApi extends Closeable {
    @Fallback(PropagateAbiquoExceptionOnNotFoundOr4xx.class)
    MachineDto discoverSingleMachine(
          @EndpointLink("discoversingle") @BinderParam(BindToPath.class) DatacenterDto datacenter,
-         @QueryParam("ip") String ip, @QueryParam("hypervisor") HypervisorType hypervisorType,
-         @QueryParam("user") String user, @QueryParam("password") String password);
+         @QueryParam("ip") String ip, @QueryParam("hypervisor") String hypervisorType, @QueryParam("user") String user,
+         @QueryParam("password") String password);
 
    /**
     * Retrieve remote machine information.
@@ -249,8 +248,8 @@ public interface InfrastructureApi extends Closeable {
    @Fallback(PropagateAbiquoExceptionOnNotFoundOr4xx.class)
    MachineDto discoverSingleMachine(
          @EndpointLink("discoversingle") @BinderParam(BindToPath.class) DatacenterDto datacenter,
-         @QueryParam("ip") String ip, @QueryParam("hypervisor") HypervisorType hypervisorType,
-         @QueryParam("user") String user, @QueryParam("password") String password, MachineOptions options);
+         @QueryParam("ip") String ip, @QueryParam("hypervisor") String hypervisorType, @QueryParam("user") String user,
+         @QueryParam("password") String password, MachineOptions options);
 
    /**
     * Retrieve a list of remote machine information.
@@ -279,10 +278,10 @@ public interface InfrastructureApi extends Closeable {
    @Consumes(MachinesDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
    @Fallback(PropagateAbiquoExceptionOnNotFoundOr4xx.class)
-   MachineDto discoverMultipleMachines(
+   MachinesDto discoverMultipleMachines(
          @EndpointLink("discovermultiple") @BinderParam(BindToPath.class) DatacenterDto datacenter,
          @QueryParam("ipFrom") String ipFrom, @QueryParam("ipTo") String ipTo,
-         @QueryParam("hypervisor") HypervisorType hypervisorType, @QueryParam("user") String user,
+         @QueryParam("hypervisor") String hypervisorType, @QueryParam("user") String user,
          @QueryParam("password") String password);
 
    /**
@@ -317,7 +316,7 @@ public interface InfrastructureApi extends Closeable {
    MachinesDto discoverMultipleMachines(
          @EndpointLink("discovermultiple") @BinderParam(BindToPath.class) DatacenterDto datacenter,
          @QueryParam("ipFrom") String ipFrom, @QueryParam("ipTo") String ipTo,
-         @QueryParam("hypervisor") HypervisorType hypervisorType, @QueryParam("user") String user,
+         @QueryParam("hypervisor") String hypervisorType, @QueryParam("user") String user,
          @QueryParam("password") String password, MachineOptions options);
 
    /**
@@ -357,8 +356,8 @@ public interface InfrastructureApi extends Closeable {
    @Fallback(PropagateAbiquoExceptionOnNotFoundOr4xx.class)
    MachineStateDto checkMachineState(
          @EndpointLink("checkmachinestate") @BinderParam(BindToPath.class) DatacenterDto datacenter,
-         @QueryParam("ip") String ip, @QueryParam("hypervisor") HypervisorType hypervisorType,
-         @QueryParam("user") String user, @QueryParam("password") String password);
+         @QueryParam("ip") String ip, @QueryParam("hypervisor") String hypervisorType, @QueryParam("user") String user,
+         @QueryParam("password") String password);
 
    /**
     * Check the state of a remote machine. This machine does not need to be
@@ -386,8 +385,8 @@ public interface InfrastructureApi extends Closeable {
    @Fallback(PropagateAbiquoExceptionOnNotFoundOr4xx.class)
    MachineStateDto checkMachineState(
          @EndpointLink("checkmachinestate") @BinderParam(BindToPath.class) DatacenterDto datacenter,
-         @QueryParam("ip") String ip, @QueryParam("hypervisor") HypervisorType hypervisorType,
-         @QueryParam("user") String user, @QueryParam("password") String password, MachineOptions options);
+         @QueryParam("ip") String ip, @QueryParam("hypervisor") String hypervisorType, @QueryParam("user") String user,
+         @QueryParam("password") String password, MachineOptions options);
 
    /**
     * Check the ipmi configuration state of a remote machine. This machine does

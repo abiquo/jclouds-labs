@@ -40,7 +40,6 @@ import org.jclouds.domain.Location;
 import org.jclouds.rest.ApiContext;
 import org.testng.annotations.Test;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.enumerator.OSType;
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
@@ -72,7 +71,7 @@ public class VirtualMachineTemplateInVirtualDatacenterToHardwareTest {
 
       VirtualDatacenterDto vdcDto = new VirtualDatacenterDto();
       vdcDto.setId(6);
-      vdcDto.setHypervisorType(HypervisorType.VMX_04);
+      vdcDto.setHypervisorType("VMX_04");
       VirtualDatacenter vdc = wrap(context, VirtualDatacenter.class, vdcDto);
 
       Hardware hardware = new MockVirtualMachineTemplateInVirtualDatacenterToHardware()
@@ -111,7 +110,7 @@ public class VirtualMachineTemplateInVirtualDatacenterToHardwareTest {
 
       VirtualDatacenterDto vdcDto = new VirtualDatacenterDto();
       vdcDto.setId(6);
-      vdcDto.setHypervisorType(HypervisorType.VMX_04);
+      vdcDto.setHypervisorType("VMX_04");
       VirtualDatacenter vdc = wrap(context, VirtualDatacenter.class, vdcDto);
 
       Hardware hardware = new MockVirtualMachineTemplateInVirtualDatacenterToHardware()

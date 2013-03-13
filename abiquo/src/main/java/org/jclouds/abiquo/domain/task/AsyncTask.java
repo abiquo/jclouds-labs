@@ -34,8 +34,8 @@ import org.jclouds.rest.ApiContext;
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.model.transport.SingleResourceTransportDto;
 import com.abiquo.server.core.task.TaskDto;
-import com.abiquo.server.core.task.enums.TaskState;
-import com.abiquo.server.core.task.enums.TaskType;
+import com.abiquo.server.core.task.TaskState;
+import com.abiquo.server.core.task.TaskType;
 import com.google.inject.TypeLiteral;
 
 /**

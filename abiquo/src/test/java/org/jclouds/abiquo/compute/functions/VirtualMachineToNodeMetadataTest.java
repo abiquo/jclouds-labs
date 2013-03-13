@@ -48,7 +48,6 @@ import org.jclouds.rest.ApiContext;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.cloud.VirtualMachineState;
 import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
@@ -187,7 +186,7 @@ public class VirtualMachineToNodeMetadataTest {
 
    private VirtualDatacenter mockVirtualDatacenter() {
       VirtualDatacenter vdc = EasyMock.createMock(VirtualDatacenter.class);
-      expect(vdc.getHypervisorType()).andReturn(HypervisorType.VMX_04);
+      expect(vdc.getHypervisorType()).andReturn("VMX_04");
       expect(vdc.getDatacenter()).andReturn(null);
       replay(vdc);
       return vdc;

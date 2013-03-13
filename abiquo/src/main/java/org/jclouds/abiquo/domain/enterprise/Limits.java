@@ -156,8 +156,8 @@ public class Limits extends DomainWithLimitsWrapper<DatacenterLimitsDto> {
          dto.setStorageLimits(storageSoft, storageHard);
          dto.setVlansLimits(vlansSoft, vlansHard);
          dto.setPublicIPLimits(publicIpsSoft, publicIpsHard);
-         dto.setRepositoryHardLimitsInMb(repositoryHard);
-         dto.setRepositorySoftLimitsInMb(repositorySoft);
+         dto.setRepositoryHard(repositoryHard);
+         dto.setRepositorySoft(repositorySoft);
 
          dto.addLink(new RESTLink(ParentLinkName.DATACENTER, checkNotNull(datacenter.unwrap().getEditLink(),
                "missing edit link").getHref()));
@@ -186,24 +186,24 @@ public class Limits extends DomainWithLimitsWrapper<DatacenterLimitsDto> {
    }
 
    public long getRepositoryHard() {
-      return target.getRepositoryHardLimitsInMb();
+      return target.getRepositoryHard();
    }
 
    public long getRepositorySoft() {
-      return target.getRepositorySoftLimitsInMb();
+      return target.getRepositorySoft();
    }
 
    public void setRepositoryHard(final long repositoryHard) {
-      target.setRepositoryHardLimitsInMb(repositoryHard);
+      target.setRepositoryHard(repositoryHard);
    }
 
    public void setRepositoryLimits(final long soft, final long hard) {
-      target.setRepositoryHardLimitsInMb(hard);
-      target.setRepositorySoftLimitsInMb(soft);
+      target.setRepositoryHard(hard);
+      target.setRepositorySoft(soft);
    }
 
    public void setRepositorySoft(final long repositorySoft) {
-      target.setRepositorySoftLimitsInMb(repositorySoft);
+      target.setRepositorySoft(repositorySoft);
    }
 
    @Override

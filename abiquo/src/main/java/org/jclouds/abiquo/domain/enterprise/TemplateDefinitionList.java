@@ -29,9 +29,9 @@ import org.jclouds.abiquo.domain.cloud.TemplateDefinition;
 import org.jclouds.abiquo.domain.infrastructure.Datacenter;
 import org.jclouds.rest.ApiContext;
 
-import com.abiquo.am.model.TemplatesStateDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionsDto;
+import com.abiquo.server.core.appslibrary.TemplatesStateDto;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -116,6 +116,7 @@ public class TemplateDefinitionList extends DomainWrapper<TemplateDefinitionList
     *      TemplateDefinitionListResource-Refreshatemplatedefinitionlistfromtheurl
     *      </a>
     */
+   @Override
    public void refresh() {
       target = context.getApi().getEnterpriseApi().refreshTemplateDefinitionList(target);
    }
@@ -136,6 +137,7 @@ public class TemplateDefinitionList extends DomainWrapper<TemplateDefinitionList
     *      TemplateDefinitionListResource# TemplateDefinitionListResource-
     *      Retrievealistofthestatusofalltemplatestatuslist</a>
     */
+   @Deprecated
    public List<TemplateState> listStatus(final Datacenter datacenter) {
       TemplatesStateDto states = context.getApi().getEnterpriseApi()
             .listTemplateListStatus(target, datacenter.unwrap());
@@ -168,7 +170,10 @@ public class TemplateDefinitionList extends DomainWrapper<TemplateDefinitionList
     *      > http://community.abiquo.com/display/ABI20/
     *      TemplateDefinitionListResource# TemplateDefinitionListResource-
     *      Retrievealistofthestatusofalltemplatestatuslist</a>
+    * 
+    * @deprecated Will disappear in future Abiquo versions
     */
+   @Deprecated
    public List<TemplateState> listStatus(final Predicate<TemplateState> filter, final Datacenter datacenter) {
       return ImmutableList.copyOf(filter(listStatus(datacenter), filter));
    }

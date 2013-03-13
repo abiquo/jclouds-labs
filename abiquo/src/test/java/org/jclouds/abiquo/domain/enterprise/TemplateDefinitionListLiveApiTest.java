@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jclouds.abiquo.domain.cloud.TemplateDefinition;
 import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
-import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.VirtualMachineTemplateTask;
 import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
 import org.jclouds.abiquo.predicates.cloud.VirtualMachineTemplatePredicates;
 import org.jclouds.abiquo.predicates.enterprise.TemplateDefinitionListPredicates;
@@ -38,7 +38,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.abiquo.model.enumerator.VMTemplateState;
-import com.abiquo.server.core.task.enums.TaskState;
+import com.abiquo.server.core.task.TaskState;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
 
@@ -93,12 +93,11 @@ public class TemplateDefinitionListLiveApiTest extends BaseAbiquoApiLiveApiTest 
 
       assertEquals(templates.size(), 0, "template present in datacenter");
 
-      AsyncTask task = templateDef.downloadToRepository(env.datacenter);
+      VirtualMachineTemplateTask task = templateDef.downloadToRepository(env.datacenter);
       env.context.getMonitoringService().getAsyncTaskMonitor().awaitCompletion(30l, TimeUnit.MINUTES, task);
       assertEquals(task.getState(), TaskState.FINISHED_SUCCESSFULLY);
 
-      // FIXME: Wait until the tasks branch has been merged
-      VirtualMachineTemplate vmt = null;// task.getResult();
+      VirtualMachineTemplate vmt = task.getResult();
       try {
          assertVirtualMachineCreation(vmt, templateDef);
 

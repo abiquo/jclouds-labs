@@ -76,7 +76,7 @@ public class VirtualMachineTemplateInVirtualDatacenterToHardware implements
 
       // Location information
       builder.location(virtualDatacenterToLocation.apply(virtualDatacenter));
-      builder.hypervisor(virtualDatacenter.getHypervisorType().name());
+      builder.hypervisor(virtualDatacenter.getHypervisorType());
       builder.supportsImage(ImagePredicates.idEquals(template.getId().toString()));
       // already filtered in ''supportedImages''
       // builder.is64Bit(template.getOsType().is64Bit());

@@ -51,7 +51,6 @@ import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.ResponseParser;
 import org.jclouds.rest.binders.BindToXMLPayload;
 
-import com.abiquo.model.enumerator.DiskFormatType;
 import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.server.core.appslibrary.ConversionDto;
 import com.abiquo.server.core.appslibrary.ConversionsDto;
@@ -269,7 +268,7 @@ public interface VirtualMachineTemplateApi extends Closeable {
    @Fallback(NullOnNotFoundOr404.class)
    ConversionDto getConversion(
          @EndpointLink("conversions") @BinderParam(BindToPath.class) final VirtualMachineTemplateDto template,
-         @BinderParam(AppendToPath.class) DiskFormatType targetFormat);
+         @BinderParam(AppendToPath.class) String targetFormat);
 
    /**
     * Starts a V2V conversion of the current virtual machine template, or
@@ -291,6 +290,6 @@ public interface VirtualMachineTemplateApi extends Closeable {
    @Produces(ConversionDto.BASE_MEDIA_TYPE)
    AcceptedRequestDto<String> requestConversion(
          @EndpointLink("conversions") @BinderParam(BindToPath.class) final VirtualMachineTemplateDto template,
-         @BinderParam(AppendToPath.class) DiskFormatType targetFormat,
+         @BinderParam(AppendToPath.class) String targetFormat,
          @BinderParam(BindToXMLPayload.class) ConversionDto conversion);
 }
