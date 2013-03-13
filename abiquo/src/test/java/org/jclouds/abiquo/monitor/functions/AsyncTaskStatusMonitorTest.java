@@ -28,7 +28,7 @@ import org.jclouds.rest.RestContext;
 import org.testng.annotations.Test;
 
 import com.abiquo.server.core.task.TaskDto;
-import com.abiquo.server.core.task.enums.TaskState;
+import com.abiquo.server.core.task.TaskState;
 import com.google.common.base.Function;
 
 /**

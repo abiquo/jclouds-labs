@@ -193,7 +193,7 @@ public class CloudResources {
       template.setName("m0n0wall");
       template.setDiskFormatType(DiskFormatType.VMDK_FLAT.toString());
       template.setPath("1/abiquo-repository.abiquo.com/m0n0wall/m0n0wall-1.3b18-i386-flat.vmdk");
-      template.setDiskFileSize(27262976l);
+      template.setDiskFileSize(Long.valueOf(27262976));
       template.setCpuRequired(1);
       template.setRamRequired(128);
       template.setCpuRequired(27262976);

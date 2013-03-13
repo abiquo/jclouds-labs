@@ -31,8 +31,8 @@ import org.jclouds.rest.RestContext;
 
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.task.TaskDto;
-import com.abiquo.server.core.task.enums.TaskState;
-import com.abiquo.server.core.task.enums.TaskType;
+import com.abiquo.server.core.task.TaskState;
+import com.abiquo.server.core.task.TaskType;
 
 /**
  * Adds generic high level functionality to {TaskDto}.

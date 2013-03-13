@@ -25,7 +25,7 @@ import java.util.Arrays;
 
 import org.jclouds.abiquo.domain.task.AsyncTask;
 
-import com.abiquo.server.core.task.enums.TaskState;
+import com.abiquo.server.core.task.TaskState;
 import com.google.common.base.Predicate;
 
 /**

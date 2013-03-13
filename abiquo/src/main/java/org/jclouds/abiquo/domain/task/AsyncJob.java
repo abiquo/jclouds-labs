@@ -19,14 +19,14 @@
 
 package org.jclouds.abiquo.domain.task;
 
-import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.AbiquoApi;
+import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
 import org.jclouds.rest.RestContext;
 
-import com.abiquo.server.core.task.Job.JobState;
-import com.abiquo.server.core.task.Job.JobType;
 import com.abiquo.server.core.task.JobDto;
+import com.abiquo.server.core.task.JobState;
+import com.abiquo.server.core.task.JobType;
 
 /**
  * Adds generic high level functionality to {JobDto}.
