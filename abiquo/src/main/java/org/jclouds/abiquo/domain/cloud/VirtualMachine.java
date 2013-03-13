@@ -582,6 +582,8 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
 
       private Integer cpu;
 
+      private boolean vncEnabled;
+
       private Integer vncPort;
 
       private String vncAddress;
@@ -646,6 +648,11 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
       // VirtualMachine but should
       // never be used by the user. This fields are set automatically by Abiquo
 
+      private Builder vncEnabled(final boolean vdrpEnabled) {
+         this.vncEnabled = vdrpEnabled;
+         return this;
+      }
+
       private Builder vncPort(final int vdrpPort) {
          this.vncPort = vdrpPort;
          return this;
@@ -692,6 +699,8 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
             dto.setRam(ram);
          }
 
+         dto.setVdrpEnabled(vncEnabled);
+
          if (vncPort != null) {
             dto.setVdrpPort(vncPort);
          }
@@ -730,8 +739,9 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
       public static Builder fromVirtualMachine(final VirtualMachine in) {
          return VirtualMachine.builder(in.context, in.virtualAppliance, in.template).internalName(in.getInternalName())
                .nameLabel(in.getNameLabel()).description(in.getDescription()).ram(in.getRam()).cpu(in.getCpu())
-               .vncAddress(in.getVncAddress()).vncPort(in.getVncPort()).idState(in.getIdState()).idType(in.getIdType())
-               .password(in.getPassword()).keymap(in.getKeymap()).dvd(in.hasDvd());
+               .vncEnabled(in.getVncEnabled()).vncAddress(in.getVncAddress()).vncPort(in.getVncPort())
+               .idState(in.getIdState()).idType(in.getIdType()).password(in.getPassword()).keymap(in.getKeymap())
+               .dvd(in.hasDvd());
       }
    }
 
@@ -786,6 +796,10 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
       return target.getUuid();
    }
 
+   public boolean getVncEnabled() {
+      return target.getVdrpEnabled();
+   }
+
    public String getVncAddress() {
       return target.getVdrpIP();
    }
@@ -820,6 +834,10 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
 
    public void setKeymap(final String keymap) {
       target.setKeymap(keymap);
+   }
+
+   public void setVncEnabled(final boolean enabled) {
+      target.setVdrpEnabled(enabled);
    }
 
    private static VolumeManagementDto[] toVolumeDto(final Volume... volumes) {
@@ -886,10 +904,11 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
 
    @Override
    public String toString() {
+      String vncData = getVncEnabled() ? ", vncAddress=" + getVncAddress() + ", vncPort=" + getVncPort() : "";
       return "VirtualMachine [id=" + getId() + ", state=" + target.getState().name() + ", cpu=" + getCpu()
             + ", description=" + getDescription() + ", hdInBytes=" + getHdInBytes() + ", idType=" + getIdType()
             + ", nameLabel=" + getNameLabel() + ", internalName=" + getInternalName() + ", password=" + getPassword()
-            + ", ram=" + getRam() + ", uuid=" + getUuid() + ", vncAddress=" + getVncAddress() + ", vncPort="
-            + getVncPort() + ", keymap=" + getKeymap() + ", dvd=" + hasDvd() + "]";
+            + ", ram=" + getRam() + ", uuid=" + getUuid() + vncData + ", keymap=" + getKeymap() + ", dvd=" + hasDvd()
+            + "]";
    }
 }
