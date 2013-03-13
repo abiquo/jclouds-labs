@@ -37,12 +37,9 @@ import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.abiquo.binders.AppendToPath;
 import org.jclouds.abiquo.binders.BindToPath;
 import org.jclouds.abiquo.binders.BindToXMLPayloadAndPath;
-import org.jclouds.abiquo.binders.cloud.BindHardDiskRefsToPayload;
 import org.jclouds.abiquo.binders.cloud.BindMoveVolumeToPath;
-import org.jclouds.abiquo.binders.cloud.BindNetworkConfigurationRefToPayload;
 import org.jclouds.abiquo.binders.cloud.BindNetworkRefToPayload;
 import org.jclouds.abiquo.binders.cloud.BindVirtualDatacenterRefToPayload;
-import org.jclouds.abiquo.binders.cloud.BindVolumeRefsToPayload;
 import org.jclouds.abiquo.domain.cloud.options.VirtualApplianceOptions;
 import org.jclouds.abiquo.domain.cloud.options.VirtualDatacenterOptions;
 import org.jclouds.abiquo.domain.cloud.options.VirtualMachineOptions;
@@ -69,12 +66,15 @@ import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.model.transport.LinksDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplatesDto;
+import com.abiquo.server.core.cloud.LayerDto;
+import com.abiquo.server.core.cloud.LayersDto;
 import com.abiquo.server.core.cloud.VirtualApplianceDto;
 import com.abiquo.server.core.cloud.VirtualApplianceStateDto;
 import com.abiquo.server.core.cloud.VirtualAppliancesDto;
 import com.abiquo.server.core.cloud.VirtualDatacenterDto;
 import com.abiquo.server.core.cloud.VirtualDatacentersDto;
 import com.abiquo.server.core.cloud.VirtualMachineDto;
+import com.abiquo.server.core.cloud.VirtualMachineInstanceDto;
 import com.abiquo.server.core.cloud.VirtualMachineStateDto;
 import com.abiquo.server.core.cloud.VirtualMachineTaskDto;
 import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
@@ -622,6 +622,18 @@ public interface CloudApi extends Closeable {
    /*********************** Virtual Machine ***********************/
 
    /**
+    * List all virtual machines available to the current user.
+    * 
+    * @return The list of all virtual machines available to the current user.
+    */
+   @Named("vm:listall")
+   @GET
+   @Path("/virtualmachines")
+   @Consumes(VirtualMachinesWithNodeExtendedDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   VirtualMachinesWithNodeExtendedDto listAllVirtualMachines();
+
+   /**
     * List all virtual machines for a virtual appliance.
     * 
     * @param virtualAppliance
@@ -816,21 +828,6 @@ public interface CloudApi extends Closeable {
          @EndpointLink("configurations") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
 
    /**
-    * Sets the gateway network to be used by this virtual machine.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @param network
-    *           The gateway network to use.
-    */
-   @Named("vm:setgateway")
-   @PUT
-   @Produces(LinksDto.BASE_MEDIA_TYPE)
-   void setGatewayNetwork(
-         @EndpointLink("configurations") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
-         @BinderParam(BindNetworkConfigurationRefToPayload.class) VLANNetworkDto network);
-
-   /**
     * Reboot a virtual machine.
     * 
     * @param virtualMachine
@@ -843,6 +840,27 @@ public interface CloudApi extends Closeable {
    @JAXBResponseParser
    AcceptedRequestDto<String> rebootVirtualMachine(
          @EndpointLink("reset") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
+
+   /**
+    * Take a snapshot of the given virtual machine.
+    * <p>
+    * This will create a new virtual machine template in the appliance library
+    * based on the given virtual machine.
+    * 
+    * @param virtualMachine
+    *           The virtual machine to snapshot.
+    * @param snapshotConfig
+    *           The configuration of the snapshot.
+    * @return The task reference to the snapshot process.
+    */
+   @Named("vm:snapshot")
+   @POST
+   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
+   @Produces(VirtualMachineInstanceDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   AcceptedRequestDto<String> snapshotVirtualMachine(
+         @EndpointLink("instance") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
+         @BinderParam(BindToXMLPayload.class) VirtualMachineInstanceDto snapshotConfig);
 
    /******************* Virtual Machine Template ***********************/
 
@@ -875,49 +893,6 @@ public interface CloudApi extends Closeable {
          @EndpointLink("volumes") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
 
    /**
-    * Detach all volumes from the given virtual machine.
-    * <p>
-    * If the virtual machine is deployed, the operation will be executed
-    * asynchronously.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @return The task reference or <code>null</code> if the operation completed
-    *         synchronously.
-    */
-   @Named("vm:detachvolumes")
-   @DELETE
-   @ResponseParser(ReturnTaskReferenceOrNull.class)
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   AcceptedRequestDto<String> detachAllVolumes(
-         @EndpointLink("volumes") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
-
-   /**
-    * Replaces the current volumes attached to the virtual machine with the
-    * given ones.
-    * <p>
-    * If the virtual machine is deployed, the operation will be executed
-    * asynchronously.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @param options
-    *           virtual machine parameters
-    * @param volumes
-    *           The new volumes for the virtual machine.
-    * @return The task reference or <code>null</code> if the operation completed
-    *         synchronously.
-    */
-   @Named("vm:changevolumes")
-   @PUT
-   @ResponseParser(ReturnTaskReferenceOrNull.class)
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   @Produces(LinksDto.BASE_MEDIA_TYPE)
-   AcceptedRequestDto<String> replaceVolumes(
-         @EndpointLink("volumes") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
-         VirtualMachineOptions options, @BinderParam(BindVolumeRefsToPayload.class) VolumeManagementDto... volumes);
-
-   /**
     * List all hard disks attached to the given virtual machine.
     * 
     * @param virtualMachine
@@ -929,48 +904,7 @@ public interface CloudApi extends Closeable {
    @Consumes(DisksManagementDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
    DisksManagementDto listAttachedHardDisks(
-         @EndpointLink("disks") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
-
-   /**
-    * Detach all hard disks from the given virtual machine.
-    * <p>
-    * If the virtual machine is deployed, the operation will be executed
-    * asynchronously.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @return The task reference or <code>null</code> if the operation completed
-    *         synchronously.
-    */
-   @Named("vm:detachharddisks")
-   @DELETE
-   @ResponseParser(ReturnTaskReferenceOrNull.class)
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   AcceptedRequestDto<String> detachAllHardDisks(
-         @EndpointLink("disks") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
-
-   /**
-    * Replaces the current hard disks attached to the virtual machine with the
-    * given ones.
-    * <p>
-    * If the virtual machine is deployed, the operation will be executed
-    * asynchronously.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @param hardDisks
-    *           The new hard disks for the virtual machine.
-    * @return The task reference or <code>null</code> if the operation completed
-    *         synchronously.
-    */
-   @Named("vm:changeharddisks")
-   @PUT
-   @ResponseParser(ReturnTaskReferenceOrNull.class)
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   @Produces(LinksDto.BASE_MEDIA_TYPE)
-   AcceptedRequestDto<String> replaceHardDisks(
-         @EndpointLink("disks") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
-         @BinderParam(BindHardDiskRefsToPayload.class) DiskManagementDto... hardDisks);
+         @EndpointLink("harddisks") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
 
    /*********************** Hard disks ***********************/
 
@@ -1153,5 +1087,84 @@ public interface CloudApi extends Closeable {
    @JAXBResponseParser
    VolumeManagementDto moveVolume(@BinderParam(BindMoveVolumeToPath.class) VolumeManagementDto volume,
          @BinderParam(BindVirtualDatacenterRefToPayload.class) VirtualDatacenterDto newVirtualDatacenter);
+
+   /*********************** AntiAffinity ***********************/
+
+   /**
+    * Creates a new layer containing a single virtual machine.
+    * 
+    * @param virtualAppliance
+    *           The virtual appliance where the new layer will belong to
+    * 
+    * @param layer
+    *           The layer to be created. It requires a name and *a single*
+    *           virtual machine link
+    */
+   @Named("layer:create")
+   @POST
+   @Consumes(LayerDto.MEDIA_TYPE)
+   @Produces(LayerDto.MEDIA_TYPE)
+   @JAXBResponseParser
+   LayerDto createLayer(@EndpointLink("layers") @BinderParam(BindToPath.class) VirtualApplianceDto virtualAppliance,
+         @BinderParam(BindToXMLPayload.class) LayerDto layer);
+
+   /**
+    * Deletes a layer composed of a single virtual machine.
+    * 
+    * @param layer
+    *           The layer to be deleted
+    */
+   @Named("layer:delete")
+   @DELETE
+   void deleteLayer(@EndpointLink("edit") @BinderParam(BindToPath.class) LayerDto layer);
+
+   /**
+    * Antiaffinity related resource. Returns the list of layers and the set of
+    * virtual machines included in these layers
+    * 
+    * @param virtualAppliance
+    *           The virtual appliance.
+    * @return The layers and its virtual machines
+    */
+   @Named("layer:list")
+   @GET
+   @Consumes(LayersDto.MEDIA_TYPE)
+   @JAXBResponseParser
+   LayersDto listLayers(@EndpointLink("layers") @BinderParam(BindToPath.class) VirtualApplianceDto virtualAppliance);
+
+   /**
+    * Antiaffinity related resource. Returns the set of virtual machines
+    * included in the given layer
+    * 
+    * @param virtualAppliance
+    *           The virtual appliance.
+    * @param layerName
+    *           The name of the layer
+    * @return The requested layer name or <code>null</code> if it does not exist
+    */
+   @Named("layer:get")
+   @GET
+   @Consumes(LayerDto.MEDIA_TYPE)
+   @JAXBResponseParser
+   @Fallback(NullOnNotFoundOr404.class)
+   LayerDto getLayer(@EndpointLink("layers") @BinderParam(BindToPath.class) VirtualApplianceDto virtualAppliance,
+         @BinderParam(AppendToPath.class) String layerName);
+
+   /**
+    * Antiaffinity related resource. Modifies virtual machines layer name of a
+    * given layer.
+    * 
+    * @param virtualAppliance
+    *           The virtual appliance.
+    * @param layerName
+    *           The name of the layer
+    * @return Layer name modified and consequently its virtual machines
+    */
+   @Named("layer:update")
+   @PUT
+   @Consumes(LayerDto.MEDIA_TYPE)
+   @Produces(LayerDto.MEDIA_TYPE)
+   @JAXBResponseParser
+   LayerDto updateLayer(@EndpointLink("edit") @BinderParam(BindToXMLPayloadAndPath.class) LayerDto layer);
 
 }

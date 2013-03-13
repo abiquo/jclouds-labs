@@ -187,6 +187,10 @@ public class InfrastructureResources {
       tier.addLink(new RESTLink("edit", "http://localhost/api/admin/datacenters/1/storage/tiers/1"));
       tier.addLink(new RESTLink("datacenter", "http://localhost/api/admin/datacenters/1"));
       tier.addLink(new RESTLink("pools", "http://localhost/api/admin/datacenters/1/storage/tiers/1/pools"));
+      tier.addLink(new RESTLink("allowallenterprises",
+            "http://localhost/api/admin/datacenters/1/storage/tiers/1/action/allowallenterprises"));
+      tier.addLink(new RESTLink("restrictallenterprises",
+            "http://localhost/api/admin/datacenters/1/storage/tiers/1/action/restrictallenterprises"));
 
       return tier;
    }
@@ -380,6 +384,8 @@ public class InfrastructureResources {
       buffer.append(link("/admin/datacenters/1/storage/tiers/1", "edit"));
       buffer.append(link("/admin/datacenters/1", "datacenter"));
       buffer.append(link("/admin/datacenters/1/storage/tiers/1/pools", "pools"));
+      buffer.append(link("/admin/datacenters/1/storage/tiers/1/action/allowallenterprises", "allowallenterprises"));
+      buffer.append(link("/admin/datacenters/1/storage/tiers/1/action/restrictallenterprises", "restrictallenterprises"));
       buffer.append("<enabled>true</enabled>");
       buffer.append("<id>1</id>");
       buffer.append("<name>Tier</name>");

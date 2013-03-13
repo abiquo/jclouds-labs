@@ -22,20 +22,24 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 
+import java.io.IOException;
 import java.net.URI;
 
 import org.jclouds.abiquo.AbiquoApi;
+import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.HttpResponse;
 import org.testng.annotations.Test;
 
 import com.abiquo.model.rest.RESTLink;
+import com.abiquo.server.core.enterprise.EnterprisesDto;
 import com.abiquo.server.core.infrastructure.DatacenterDto;
 import com.abiquo.server.core.infrastructure.network.NetworkServiceTypeDto;
 import com.abiquo.server.core.infrastructure.network.NetworkServiceTypesDto;
+import com.abiquo.server.core.infrastructure.storage.TierDto;
 
 /**
- * xpect tests for the {@link InfrastructureApi} class.
+ * Expect tests for the {@link InfrastructureApi} class.
  * 
  * @author Ignasi Barrera
  */
@@ -191,6 +195,88 @@ public class InfrastructureApiExpectTest extends BaseAbiquoApiExpectTest<Infrast
       nst.addLink(editLink);
 
       api.deleteNetworkServiceType(nst);
+   }
+
+   public void testAllowTierToAllEnterprises() throws SecurityException, NoSuchMethodException, IOException {
+      InfrastructureApi api = requestSendsResponse(
+            HttpRequest
+                  .builder()
+                  .method("PUT")
+                  .endpoint(
+                        URI.create("http://localhost/api/admin/datacenters/1/storage/tiers/1/action/allowallenterprises"))
+                  .addHeader("Authorization", basicAuth).build(), HttpResponse.builder().statusCode(204).build());
+
+      TierDto tier = new TierDto();
+      RESTLink link = new RESTLink("allowallenterprises",
+            "http://localhost/api/admin/datacenters/1/storage/tiers/1/action/allowallenterprises");
+      tier.addLink(link);
+
+      api.allowTierToAllEnterprises(tier);
+   }
+
+   public void testRestrictTierToAllEnterprises() throws SecurityException, NoSuchMethodException, IOException {
+      InfrastructureApi api = requestSendsResponse(
+            HttpRequest
+                  .builder()
+                  .method("PUT")
+                  .endpoint(
+                        URI.create("http://localhost/api/admin/datacenters/1/storage/tiers/1/action/restrictallenterprises"))
+                  .addHeader("Authorization", basicAuth).addQueryParam("force", "true").build(), HttpResponse.builder()
+                  .statusCode(204).build());
+
+      TierDto tier = new TierDto();
+      RESTLink link = new RESTLink("restrictallenterprises",
+            "http://localhost/api/admin/datacenters/1/storage/tiers/1/action/restrictallenterprises");
+      tier.addLink(link);
+
+      api.restrictTierToAllEnterprises(tier, Boolean.TRUE);
+   }
+
+   public void testListAllowedEnterprisesByTier() {
+      InfrastructureApi api = requestSendsResponse(
+            HttpRequest.builder().method("GET")
+                  .endpoint(URI.create("http://localhost/api/admin/datacenters/1/storage/tiers/1/enterprises"))
+                  .addHeader("Authorization", basicAuth).addHeader("Accept", normalize(EnterprisesDto.MEDIA_TYPE))
+                  .build(),
+            HttpResponse
+                  .builder()
+                  .statusCode(200)
+                  .payload(
+                        payloadFromResourceWithContentType("/payloads/enterprisesbytier.xml",
+                              normalize(EnterprisesDto.MEDIA_TYPE))).build());
+
+      TierDto tier = new TierDto();
+      RESTLink link = new RESTLink("enterprises",
+            "http://localhost/api/admin/datacenters/1/storage/tiers/1/enterprises");
+      tier.addLink(link);
+      EnterprisesDto enterprises = api.listAllowedEnterprisesForTier(tier);
+
+      assertEquals(enterprises.getCollection().size(), 1);
+      assertEquals(enterprises.getCollection().get(0).getId(), Integer.valueOf(1));
+   }
+
+   public void testListAllowedEnterprisesByTierWithOptions() {
+      InfrastructureApi api = requestSendsResponse(
+            HttpRequest.builder().method("GET")
+                  .endpoint(URI.create("http://localhost/api/admin/datacenters/1/storage/tiers/1/enterprises"))
+                  .addHeader("Authorization", basicAuth).addHeader("Accept", normalize(EnterprisesDto.MEDIA_TYPE))
+                  .addQueryParam("has", "abi").addQueryParam("by", "name").addQueryParam("asc", "true").build(),
+            HttpResponse
+                  .builder()
+                  .statusCode(200)
+                  .payload(
+                        payloadFromResourceWithContentType("/payloads/enterprisesbytier.xml",
+                              normalize(EnterprisesDto.MEDIA_TYPE))).build());
+
+      TierDto tier = new TierDto();
+      RESTLink link = new RESTLink("enterprises",
+            "http://localhost/api/admin/datacenters/1/storage/tiers/1/enterprises");
+      tier.addLink(link);
+      EnterpriseOptions options = EnterpriseOptions.builder().has("abi").orderBy("name").ascendant(true).build();
+      EnterprisesDto enterprises = api.listAllowedEnterprisesForTier(tier, options);
+
+      assertEquals(enterprises.getCollection().size(), 1);
+      assertEquals(enterprises.getCollection().get(0).getId(), Integer.valueOf(1));
    }
 
    @Override

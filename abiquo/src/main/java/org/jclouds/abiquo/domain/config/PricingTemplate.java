@@ -110,6 +110,8 @@ public class PricingTemplate extends DomainWrapper<PricingTemplateDto> {
 
       private BigDecimal memoryGB;
 
+      private BigDecimal layer;
+
       private boolean defaultTemplate;
 
       private Date lastUpdate;
@@ -185,6 +187,11 @@ public class PricingTemplate extends DomainWrapper<PricingTemplateDto> {
          return this;
       }
 
+      public Builder layer(final BigDecimal layer) {
+         this.layer = layer;
+         return this;
+      }
+
       public Builder defaultTemplate(final boolean defaultTemplate) {
          this.defaultTemplate = defaultTemplate;
          return this;
@@ -215,6 +222,7 @@ public class PricingTemplate extends DomainWrapper<PricingTemplateDto> {
          dto.setPublicIp(publicIp);
          dto.setVcpu(vcpu);
          dto.setMemoryGB(memoryGB);
+         dto.setLayer(layer);
          dto.setDefaultTemplate(defaultTemplate);
          dto.setLastUpdate(lastUpdate);
 
@@ -234,7 +242,8 @@ public class PricingTemplate extends DomainWrapper<PricingTemplateDto> {
                .vcpu(in.getVlan()).chargingPeriod(in.getChargingPeriod()).minimumCharge(in.getMinimumCharge())
                .minimumChargePeriod(in.getMinimumChargePeriod()).showChangesBefore(in.isShowChangesBefore())
                .showMinimumCharge(in.isShowMinimumCharge()).publicIp(in.getPublicIp()).vcpu(in.getVcpu())
-               .memoryGB(in.getMemoryGB()).defaultTemplate(in.isDefaultTemplate()).lastUpdate(in.getLastUpdate());
+               .memoryGB(in.getMemoryGB()).layer(in.getLayer()).defaultTemplate(in.isDefaultTemplate())
+               .lastUpdate(in.getLastUpdate());
          return builder;
       }
    }
@@ -365,6 +374,14 @@ public class PricingTemplate extends DomainWrapper<PricingTemplateDto> {
       target.setLastUpdate(lastUpdate);
    }
 
+   public BigDecimal getLayer() {
+      return target.getLayer();
+   }
+
+   public void setLayer(final BigDecimal layer) {
+      target.setLayer(layer);
+   }
+
    @Override
    public String toString() {
       return "PricingTemplate [id=" + getId() + ", name=" + getName() + ", description=" + getDescription()
@@ -372,7 +389,7 @@ public class PricingTemplate extends DomainWrapper<PricingTemplateDto> {
             + ",  chargingPeriod =" + getChargingPeriod() + ", minimumChargePeriod=" + getMinimumChargePeriod()
             + ", showChangesBefore =" + isShowChangesBefore() + ", showMinimumCharge= " + isShowMinimumCharge()
             + ", minimumCharge = " + getMinimumCharge() + ", publicIp = " + getPublicIp() + ", vcpu =" + getVcpu()
-            + ", memoryGB= " + getMemoryGB() + ", defaultTemplate= " + isDefaultTemplate() + ", lastUpdate = "
-            + getLastUpdate() + "]";
+            + ", memoryGB= " + getMemoryGB() + ", layer= " + getLayer() + ", defaultTemplate= " + isDefaultTemplate()
+            + ", lastUpdate = " + getLastUpdate() + "]";
    }
 }

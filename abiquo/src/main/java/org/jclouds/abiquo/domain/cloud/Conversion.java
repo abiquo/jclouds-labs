@@ -25,7 +25,7 @@ import java.util.Date;
 
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.domain.DomainWithTasksWrapper;
-import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.ConversionTask;
 import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.http.HttpResponse;
@@ -85,7 +85,7 @@ public class Conversion extends DomainWithTasksWrapper<ConversionDto> {
     *      ConversionResource- UpdateConversion</a>
     * @return The task reference to track its progress
     */
-   public AsyncTask restartFailedConversion() {
+   public ConversionTask restartFailedConversion() {
       return getVirtualMachineTemplate().requestConversion(getTargetFormat());
    }
 

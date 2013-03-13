@@ -27,15 +27,14 @@ import org.jclouds.abiquo.domain.cloud.Volume;
 
 import com.abiquo.model.enumerator.VolumeState;
 import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 
 /**
- * Container for {@link Volume} filters.
+ * Container for virtual disk filters.
  * 
  * @author Ignasi Barrera
  */
-public class VolumePredicates {
-   public static Predicate<Volume> name(final String... names) {
+public class VirtualDiskPredicates {
+   public static Predicate<Volume> volumeName(final String... names) {
       checkNotNull(names, "names must be defined");
 
       return new Predicate<Volume>() {
@@ -46,37 +45,7 @@ public class VolumePredicates {
       };
    }
 
-   public static Predicate<Volume> greaterThan(final long sizeInMb) {
-      checkNotNull(sizeInMb, "sizeInMb must be defined");
-
-      return new Predicate<Volume>() {
-         @Override
-         public boolean apply(final Volume volume) {
-            return volume.getSizeInMB() > sizeInMb;
-         }
-      };
-   }
-
-   public static Predicate<Volume> greaterThanOrEqual(final long sizeInMb) {
-      checkNotNull(sizeInMb, "sizeInMb must be defined");
-
-      return new Predicate<Volume>() {
-         @Override
-         public boolean apply(final Volume volume) {
-            return volume.getSizeInMB() >= sizeInMb;
-         }
-      };
-   }
-
-   public static Predicate<Volume> lesserThan(final long sizeInMb) {
-      return Predicates.not(greaterThanOrEqual(sizeInMb));
-   }
-
-   public static Predicate<Volume> lesserThanOrEquals(final long sizeInMb) {
-      return Predicates.not(greaterThan(sizeInMb));
-   }
-
-   public static Predicate<Volume> state(final VolumeState... states) {
+   public static Predicate<Volume> volumeState(final VolumeState... states) {
       checkNotNull(states, "states must be defined");
 
       return new Predicate<Volume>() {

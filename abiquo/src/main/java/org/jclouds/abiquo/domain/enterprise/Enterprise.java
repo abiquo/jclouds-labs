@@ -62,6 +62,7 @@ import com.abiquo.server.core.infrastructure.DatacentersDto;
 import com.abiquo.server.core.infrastructure.MachinesDto;
 import com.abiquo.server.core.infrastructure.network.VLANNetworksDto;
 import com.google.common.base.Predicate;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.inject.TypeLiteral;
@@ -294,6 +295,18 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
    }
 
    /**
+    * Retrieve a single limit.
+    * 
+    * @param id
+    *           Unique ID of the limit in this enterprise.
+    * @return Limit with the given id or <code>null</code> if it does not exist.
+    */
+   public Limits getLimit(final Integer id) {
+      DatacenterLimitsDto limit = context.getApi().getEnterpriseApi().getLimit(target, id);
+      return wrap(context, Limits.class, limit);
+   }
+
+   /**
     * Retrieve the defined properties of the given enterprise.
     * 
     * @see API: <a href=
@@ -313,9 +326,8 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     * 
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/UserResource#UserResource-Retrievealistofusers"
-    *      >
-    *      http://community.abiquo.com/display/ABI20/UserResource#UserResource-
-    *      Retrievealistofusers </a>
+    *      > http://community.abiquo.com/display/ABI20/UserResource#UserResource
+    *      - Retrievealistofusers </a>
     * @return List of users of this enterprise.
     */
    public List<User> listUsers() {
@@ -330,9 +342,8 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     *           Filter to be applied to the list.
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/UserResource#UserResource-Retrievealistofusers"
-    *      >
-    *      http://community.abiquo.com/display/ABI20/UserResource#UserResource-
-    *      Retrievealistofusers </a>
+    *      > http://community.abiquo.com/display/ABI20/UserResource#UserResource
+    *      - Retrievealistofusers </a>
     * @return Filtered list of users of this enterprise.
     */
    public List<User> listUsers(final Predicate<User> filter) {
@@ -347,9 +358,8 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     *           Filter to be applied to the list.
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/UserResource#UserResource-Retrievealistofusers"
-    *      >
-    *      http://community.abiquo.com/display/ABI20/UserResource#UserResource-
-    *      Retrievealistofusers </a>
+    *      > http://community.abiquo.com/display/ABI20/UserResource#UserResource
+    *      - Retrievealistofusers </a>
     * @return First user matching the filter or <code>null</code> if there is
     *         none.
     */
@@ -408,22 +418,65 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
       return Iterables.getFirst(filter(listRoles(), filter), null);
    }
 
+   /**
+    * Retrieve the list of virtual machine templates in the repository of the
+    * given datacenter.
+    * 
+    * @param datacenter
+    *           Context of the repository
+    * @return list of virtual machine templates in the repository of the given
+    *         datacenter.
+    */
    public List<VirtualMachineTemplate> listTemplatesInRepository(final Datacenter datacenter) {
       VirtualMachineTemplatesDto dto = context.getApi().getVirtualMachineTemplateApi()
             .listVirtualMachineTemplates(target.getId(), datacenter.getId());
       return wrap(context, VirtualMachineTemplate.class, dto.getCollection());
    }
 
+   /**
+    * Retrieve a filtered list of virtual machine templates in the repository of
+    * this datacenter.
+    * 
+    * @param datacenter
+    *           Context of the repository
+    * @param filter
+    *           Filter to be applied to the list.
+    * @return Filtered list of virtual machine templates in the repository of
+    *         the given datacenter.
+    */
    public List<VirtualMachineTemplate> listTemplatesInRepository(final Datacenter datacenter,
          final Predicate<VirtualMachineTemplate> filter) {
       return ImmutableList.copyOf(filter(listTemplatesInRepository(datacenter), filter));
    }
 
+   /**
+    * Retrieve the first virtual machine template within the list of virtual
+    * machine templates in the repository of the given datacenter.
+    * 
+    * @param datacenter
+    *           Context of the repository
+    * @param filter
+    *           Filter to be applied to the list.
+    * @return First virtual machine template matching the filter or
+    *         <code>null</code> if there is none.
+    */
    public VirtualMachineTemplate findTemplateInRepository(final Datacenter datacenter,
          final Predicate<VirtualMachineTemplate> filter) {
       return Iterables.getFirst(filter(listTemplatesInRepository(datacenter), filter), null);
    }
 
+   /**
+    * Retrieve a single virtual machine template in of this enterprise from the
+    * given datacenter.
+    * 
+    * @param datacenter
+    *           Context of the repository
+    * @param id
+    *           Unique ID of the template in the datacenter repository for the
+    *           given enterprise.
+    * @return Virtual machine template with the given id in the given enterprise
+    *         or <code>null</code> if it does not exist.
+    */
    public VirtualMachineTemplate getTemplateInRepository(final Datacenter datacenter, final Integer id) {
       VirtualMachineTemplateDto template = context.getApi().getVirtualMachineTemplateApi()
             .getVirtualMachineTemplate(target.getId(), datacenter.getId(), id);
@@ -644,14 +697,14 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     *      </a>
     */
    public Limits allowDatacenter(final Datacenter datacenter) {
-      DatacenterLimitsDto dto;
+      DatacenterLimitsDto dto = null;
 
       try {
          // Create new limits
-         Limits limits = Limits.builder(context).build();
+         Limits limits = Limits.builder(context, datacenter).build();
 
          // Save new limits
-         dto = context.getApi().getEnterpriseApi().createLimits(target, datacenter.unwrap(), limits.unwrap());
+         dto = context.getApi().getEnterpriseApi().createLimits(target, limits.unwrap());
       } catch (AbiquoException ex) {
          // Controlled error to allow duplicated authorizations
          if (ex.hasError("LIMIT-7")) {
@@ -659,7 +712,7 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
             // Should be only one limit
             dto = limits.getCollection().get(0);
          } else {
-            throw ex;
+            throw Throwables.propagate(ex);
          }
       }
 

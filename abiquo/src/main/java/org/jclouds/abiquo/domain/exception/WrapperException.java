@@ -29,7 +29,6 @@ import com.abiquo.model.transport.SingleResourceTransportDto;
  * @author Ignasi Barrera
  */
 public class WrapperException extends RuntimeException {
-
    private static final long serialVersionUID = 3756802225851609583L;
 
    private Class<? extends DomainWrapper<?>> wrapperClass;

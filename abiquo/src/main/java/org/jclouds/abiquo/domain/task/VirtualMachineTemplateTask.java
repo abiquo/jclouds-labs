@@ -17,30 +17,28 @@
  * under the License.
  */
 
-package org.jclouds.abiquo.binders.cloud;
+package org.jclouds.abiquo.domain.task;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import org.jclouds.abiquo.AbiquoApi;
+import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
+import org.jclouds.rest.ApiContext;
 
-import org.jclouds.abiquo.binders.BindRefsToPayload;
-import org.jclouds.xml.XMLParser;
+import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
+import com.abiquo.server.core.task.TaskDto;
 
 /**
- * Bind multiple {@link DiskManagementDto} objects to the payload of the request
- * as a list of links.
+ * Task that produces a {@link VirtualMachineTemplate}.
  * 
  * @author Ignasi Barrera
  */
-@Singleton
-public class BindHardDiskRefsToPayload extends BindRefsToPayload {
-   @Inject
-   public BindHardDiskRefsToPayload(final XMLParser xmlParser) {
-      super(xmlParser);
+public class VirtualMachineTemplateTask extends AsyncTask<VirtualMachineTemplate, VirtualMachineTemplateDto> {
+   protected VirtualMachineTemplateTask(final ApiContext<AbiquoApi> context, final TaskDto target) {
+      super(context, target, VirtualMachineTemplate.class, VirtualMachineTemplateDto.class);
    }
 
    @Override
-   protected String getRelToUse(final Object input) {
-      return "disk";
+   public String toString() {
+      return "VirtualMachineTemplate" + super.toString();
    }
 
 }
