@@ -37,12 +37,9 @@ import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.abiquo.binders.AppendToPath;
 import org.jclouds.abiquo.binders.BindToPath;
 import org.jclouds.abiquo.binders.BindToXMLPayloadAndPath;
-import org.jclouds.abiquo.binders.cloud.BindHardDiskRefsToPayload;
 import org.jclouds.abiquo.binders.cloud.BindMoveVolumeToPath;
-import org.jclouds.abiquo.binders.cloud.BindNetworkConfigurationRefToPayload;
 import org.jclouds.abiquo.binders.cloud.BindNetworkRefToPayload;
 import org.jclouds.abiquo.binders.cloud.BindVirtualDatacenterRefToPayload;
-import org.jclouds.abiquo.binders.cloud.BindVolumeRefsToPayload;
 import org.jclouds.abiquo.domain.cloud.options.VirtualApplianceOptions;
 import org.jclouds.abiquo.domain.cloud.options.VirtualDatacenterOptions;
 import org.jclouds.abiquo.domain.cloud.options.VirtualMachineOptions;
@@ -816,21 +813,6 @@ public interface CloudApi extends Closeable {
          @EndpointLink("configurations") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
 
    /**
-    * Sets the gateway network to be used by this virtual machine.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @param network
-    *           The gateway network to use.
-    */
-   @Named("vm:setgateway")
-   @PUT
-   @Produces(LinksDto.BASE_MEDIA_TYPE)
-   void setGatewayNetwork(
-         @EndpointLink("configurations") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
-         @BinderParam(BindNetworkConfigurationRefToPayload.class) VLANNetworkDto network);
-
-   /**
     * Reboot a virtual machine.
     * 
     * @param virtualMachine
@@ -875,49 +857,6 @@ public interface CloudApi extends Closeable {
          @EndpointLink("volumes") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
 
    /**
-    * Detach all volumes from the given virtual machine.
-    * <p>
-    * If the virtual machine is deployed, the operation will be executed
-    * asynchronously.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @return The task reference or <code>null</code> if the operation completed
-    *         synchronously.
-    */
-   @Named("vm:detachvolumes")
-   @DELETE
-   @ResponseParser(ReturnTaskReferenceOrNull.class)
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   AcceptedRequestDto<String> detachAllVolumes(
-         @EndpointLink("volumes") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
-
-   /**
-    * Replaces the current volumes attached to the virtual machine with the
-    * given ones.
-    * <p>
-    * If the virtual machine is deployed, the operation will be executed
-    * asynchronously.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @param options
-    *           virtual machine parameters
-    * @param volumes
-    *           The new volumes for the virtual machine.
-    * @return The task reference or <code>null</code> if the operation completed
-    *         synchronously.
-    */
-   @Named("vm:changevolumes")
-   @PUT
-   @ResponseParser(ReturnTaskReferenceOrNull.class)
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   @Produces(LinksDto.BASE_MEDIA_TYPE)
-   AcceptedRequestDto<String> replaceVolumes(
-         @EndpointLink("volumes") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
-         VirtualMachineOptions options, @BinderParam(BindVolumeRefsToPayload.class) VolumeManagementDto... volumes);
-
-   /**
     * List all hard disks attached to the given virtual machine.
     * 
     * @param virtualMachine
@@ -929,48 +868,7 @@ public interface CloudApi extends Closeable {
    @Consumes(DisksManagementDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
    DisksManagementDto listAttachedHardDisks(
-         @EndpointLink("disks") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
-
-   /**
-    * Detach all hard disks from the given virtual machine.
-    * <p>
-    * If the virtual machine is deployed, the operation will be executed
-    * asynchronously.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @return The task reference or <code>null</code> if the operation completed
-    *         synchronously.
-    */
-   @Named("vm:detachharddisks")
-   @DELETE
-   @ResponseParser(ReturnTaskReferenceOrNull.class)
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   AcceptedRequestDto<String> detachAllHardDisks(
-         @EndpointLink("disks") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
-
-   /**
-    * Replaces the current hard disks attached to the virtual machine with the
-    * given ones.
-    * <p>
-    * If the virtual machine is deployed, the operation will be executed
-    * asynchronously.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @param hardDisks
-    *           The new hard disks for the virtual machine.
-    * @return The task reference or <code>null</code> if the operation completed
-    *         synchronously.
-    */
-   @Named("vm:changeharddisks")
-   @PUT
-   @ResponseParser(ReturnTaskReferenceOrNull.class)
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   @Produces(LinksDto.BASE_MEDIA_TYPE)
-   AcceptedRequestDto<String> replaceHardDisks(
-         @EndpointLink("disks") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
-         @BinderParam(BindHardDiskRefsToPayload.class) DiskManagementDto... hardDisks);
+         @EndpointLink("harddisks") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
 
    /*********************** Hard disks ***********************/
 

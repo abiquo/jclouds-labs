@@ -117,7 +117,7 @@ public class CloudResources {
       virtualMachine.setId(1);
       virtualMachine.addLink(new RESTLink("deploy",
             "http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/action/deploy"));
-      virtualMachine.addLink(new RESTLink("disks",
+      virtualMachine.addLink(new RESTLink("harddisks",
             "http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/storage/disks"));
       virtualMachine.addLink(new RESTLink("edit",
             "http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1"));
@@ -343,7 +343,7 @@ public class CloudResources {
       StringBuilder buffer = new StringBuilder();
       buffer.append("<virtualMachine>");
       buffer.append(link("/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/action/deploy", "deploy"));
-      buffer.append(link("/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/storage/disks", "disks"));
+      buffer.append(link("/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/storage/disks", "harddisks"));
       buffer.append(link("/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1", "edit"));
       buffer.append(link("/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/state", "state"));
       buffer.append(link("/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/action/reset", "reset"));

@@ -22,7 +22,6 @@ package org.jclouds.abiquo.domain.cloud;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.jclouds.abiquo.AbiquoApi;
@@ -40,9 +39,11 @@ import org.jclouds.abiquo.predicates.LinkPredicates;
 import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.abiquo.strategy.cloud.ListAttachedNics;
+import org.jclouds.abiquo.strategy.cloud.ListAttachedVirtualDisks;
 import org.jclouds.http.HttpResponse;
 import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.rest.ApiContext;
+import org.jclouds.rest.annotations.SinceApiVersion;
 
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.model.transport.AcceptedRequestDto;
@@ -54,15 +55,12 @@ import com.abiquo.server.core.cloud.VirtualMachineStateDto;
 import com.abiquo.server.core.cloud.VirtualMachineTaskDto;
 import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
 import com.abiquo.server.core.enterprise.EnterpriseDto;
+import com.abiquo.server.core.infrastructure.network.NicDto;
 import com.abiquo.server.core.infrastructure.network.UnmanagedIpDto;
 import com.abiquo.server.core.infrastructure.network.VMNetworkConfigurationDto;
 import com.abiquo.server.core.infrastructure.network.VMNetworkConfigurationsDto;
 import com.abiquo.server.core.infrastructure.storage.DiskManagementDto;
-import com.abiquo.server.core.infrastructure.storage.DisksManagementDto;
 import com.abiquo.server.core.infrastructure.storage.DvdManagementDto;
-import com.abiquo.server.core.infrastructure.storage.VolumeManagementDto;
-import com.abiquo.server.core.infrastructure.storage.VolumesManagementDto;
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
@@ -71,13 +69,13 @@ import com.google.common.collect.Lists;
 import com.google.inject.TypeLiteral;
 
 /**
- * Adds high level functionality to {@link VirtualMachineWithNodeExtendedDto}.
+ * Represents a virtual machine.
+ * <p>
+ * This class provides access to all virtual machine operations such as state
+ * changes and resource attachment (ips, virtual disks, etc.).
  * 
  * @author Ignasi Barrera
  * @author Francesc Montserrat
- * @see API: <a
- *      href="http://community.abiquo.com/display/ABI20/VirtualMachineResource">
- *      http://community.abiquo.com/display/ABI20/VirtualMachineResource</a>
  */
 public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNodeExtendedDto> {
    /** The virtual appliance where the virtual machine belongs. */
@@ -96,12 +94,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    // Domain operations
 
    /**
-    * Delete the virtual machine.
-    * 
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/VirtualMachineResource#VirtualMachineResource-Deleteavirtualmachine"
-    *      > http://community.abiquo.com/display/ABI20/VirtualMachineResource#
-    *      VirtualMachineResource -Deleteavirtualmachine</a>
+    * Deletes the virtual machine.
     */
    public void delete() {
       context.getApi().getCloudApi().deleteVirtualMachine(target);
@@ -109,12 +102,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    }
 
    /**
-    * Create a new virtual machine in Abiquo.
-    * 
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/VirtualMachineResource#VirtualMachineResource-Createavirtualmachine"
-    *      > http://community.abiquo.com/display/ABI20/VirtualMachineResource#
-    *      VirtualMachineResource-Createavirtualmachine</a>
+    * Creates a new virtual machine.
     */
    public void save() {
       checkNotNull(template, ValidationErrors.NULL_RESOURCE + VirtualMachineTemplate.class);
@@ -126,21 +114,15 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    }
 
    /**
-    * Update virtual machine information in the server with the data from this
-    * virtual machine. This is an asynchronous call. This method returns a
-    * {@link org.jclouds.abiquo.domain.task.AsyncTask} object that keeps track
-    * of the task completion. Please refer to the documentation for details.
+    * Update virtual machine information.
+    * <p>
+    * This method will generate an asynchronous task to keep track of the
+    * progress of the operation.
     * 
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/VirtualMachineResource#VirtualMachineResource-Modifyavirtualmachine"
-    *      > http://community.abiquo.com/display/ABI20/VirtualMachineResource#
-    *      VirtualMachineResource-Modifyavirtualmachine</a>
-    * @see github: <a href=
-    *      "https://github.com/abiquo/jclouds-abiquo/wiki/Asynchronous-monitor-example"
-    *      > https://github.com/abiquo/jclouds-abiquo/wiki/Asynchronous-monitor-
-    *      example</a>
     * @return The task reference or <code>null</code> if the operation completed
     *         synchronously.
+    * @see MonitoringService
+    * @see VirtualMachineMonitor
     */
    public AsyncTask update() {
       AcceptedRequestDto<String> taskRef = context.getApi().getCloudApi().updateVirtualMachine(target);
@@ -148,23 +130,19 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    }
 
    /**
-    * Update virtual machine information in the server with the data from this
-    * virtual machine. This is an asynchronous call. This method returns a
-    * {@link org.jclouds.abiquo.domain.task.AsyncTask} object that keeps track
-    * of the task completion. Please refer to the documentation for details.
+    * Update virtual machine information.
+    * <p>
+    * This method will generate an asynchronous task to keep track of the
+    * progress of the operation.
     * 
     * @param force
-    *           Force update.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/VirtualMachineResource#VirtualMachineResource-Modifyavirtualmachine"
-    *      > http://community.abiquo.com/display/ABI20/VirtualMachineResource#
-    *      VirtualMachineResource-Modifyavirtualmachine</a>
-    * @see github: <a href=
-    *      "https://github.com/abiquo/jclouds-abiquo/wiki/Asynchronous-monitor-example"
-    *      > https://github.com/abiquo/jclouds-abiquo/wiki/Asynchronous-monitor-
-    *      example</a>
+    *           If the operation must be executed even if the soft limits are
+    *           exceeded.
+    * 
     * @return The task reference or <code>null</code> if the operation completed
     *         synchronously.
+    * @see MonitoringService
+    * @see VirtualMachineMonitor
     */
    public AsyncTask update(final boolean force) {
       AcceptedRequestDto<String> taskRef = context.getApi().getCloudApi()
@@ -174,22 +152,16 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
 
    /**
     * Change the state of the virtual machine. This is an asynchronous call.
-    * This method returns a {@link org.jclouds.abiquo.domain.task.AsyncTask}
-    * object that keeps track of the task completion. Please refer to the
-    * documentation for details.
+    * <p>
+    * This method will generate an asynchronous task to keep track of the
+    * progress of the operation.
     * 
     * @param state
-    *           The new state of the virtual machine.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/VirtualMachineResource#VirtualMachineResource-Changethestateofavirtualmachine"
-    *      > http://community.abiquo.com/display/ABI20/VirtualMachineResource#
-    *      VirtualMachineResource-Changethestateofavirtualmachine</a>
-    * @see github: <a href=
-    *      "https://github.com/abiquo/jclouds-abiquo/wiki/Asynchronous-monitor-example"
-    *      > https://github.com/abiquo/jclouds-abiquo/wiki/Asynchronous-monitor-
-    *      example</a>
+    *           The new state for the virtual machine.
     * @return The task reference or <code>null</code> if the operation completed
     *         synchronously.
+    * @see MonitoringService
+    * @see VirtualMachineMonitor
     */
    public AsyncTask changeState(final VirtualMachineState state) {
       VirtualMachineStateDto dto = new VirtualMachineStateDto();
@@ -203,10 +175,6 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    /**
     * Retrieve the state of the virtual machine.
     * 
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/VirtualMachineResource#VirtualMachineResource-Retrievethestateofthevirtualmachine"
-    *      > http://community.abiquo.com/display/ABI20/VirtualMachineResource#
-    *      VirtualMachineResource-Retrievethestateofthevirtualmachine</a>
     * @return Current state of the virtual machine.
     */
    public VirtualMachineState getState() {
@@ -222,10 +190,6 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    /**
     * Retrieve the virtual appliance where this virtual machine is.
     * 
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/VirtualApplianceResource#VirtualApplianceResource-Retrieveavirtualappliance"
-    *      > http://community.abiquo.com/display/ABI20/VirtualApplianceResource#
-    *      VirtualApplianceResource-Retrieveavirtualappliance</a>
     * @return The virtual appliance where this virtual machine is.
     */
    public VirtualAppliance getVirtualAppliance() {
@@ -243,10 +207,6 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    /**
     * Retrieve the virtual datacenter where this virtual machine is.
     * 
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/VirtualDatacenterResource#VirtualDatacenterResource-Retireveavirtualdatacenter"
-    *      > http://community.abiquo.com/display/ABI20/VirtualDatacenterResource
-    *      # VirtualDatacenterResource-Retireveavirtualdatacenter</a>
     * @return The virtual datacenter where this virtual machine is.
     */
    public VirtualDatacenter getVirtualDatacenter() {
@@ -258,10 +218,6 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    /**
     * Retrieve the enterprise of this virtual machine.
     * 
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/EnterpriseResource#EnterpriseResource-RetrieveanEnterprise"
-    *      > http://community.abiquo.com/display/ABI20/EnterpriseResource#
-    *      EnterpriseResource- RetrieveanEnterprise</a>
     * @return Enterprise of this virtual machine.
     */
    public Enterprise getEnterprise() {
@@ -282,34 +238,6 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
 
    // Children access
 
-   public List<HardDisk> listAttachedHardDisks() {
-      refresh();
-      DisksManagementDto hardDisks = context.getApi().getCloudApi().listAttachedHardDisks(target);
-      return wrap(context, HardDisk.class, hardDisks.getCollection());
-   }
-
-   public List<HardDisk> listAttachedHardDisks(final Predicate<HardDisk> filter) {
-      return ImmutableList.copyOf(filter(listAttachedHardDisks(), filter));
-   }
-
-   public HardDisk findAttachedHardDisk(final Predicate<HardDisk> filter) {
-      return Iterables.getFirst(filter(listAttachedHardDisks(), filter), null);
-   }
-
-   public List<Volume> listAttachedVolumes() {
-      refresh();
-      VolumesManagementDto volumes = context.getApi().getCloudApi().listAttachedVolumes(target);
-      return wrap(context, Volume.class, volumes.getCollection());
-   }
-
-   public List<Volume> listAttachedVolumes(final Predicate<Volume> filter) {
-      return ImmutableList.copyOf(filter(listAttachedVolumes(), filter));
-   }
-
-   public Volume findAttachedVolume(final Predicate<Volume> filter) {
-      return Iterables.getFirst(filter(listAttachedVolumes(), filter), null);
-   }
-
    public List<Ip<?, ?>> listAttachedNics() {
       // The strategy will refresh the vm. There is no need to do it here
       ListAttachedNics strategy = context.utils().injector().getInstance(ListAttachedNics.class);
@@ -324,12 +252,41 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
       return Iterables.getFirst(filter(listAttachedNics(), filter), null);
    }
 
+   @SinceApiVersion("2.4")
+   public List<VirtualDisk<?>> listVirtualDisks() {
+      // The strategy will refresh the vm. There is no need to do it here
+      ListAttachedVirtualDisks strategy = context.utils().injector().getInstance(ListAttachedVirtualDisks.class);
+      return Lists.newLinkedList(strategy.execute(this));
+   }
+
+   public List<VirtualDisk<?>> listVirtualDisks(final Predicate<VirtualDisk<?>> filter) {
+      return Lists.newLinkedList(filter(listVirtualDisks(), filter));
+   }
+
+   public VirtualDisk<?> findVirtualDisk(final Predicate<VirtualDisk<?>> filter) {
+      return Iterables.getFirst(filter(listVirtualDisks(), filter), null);
+   }
+
    // Actions
 
+   /**
+    * Deploy the virtual machine.
+    * 
+    * @return An async task reference to keep track of the deploy operation.
+    */
    public AsyncTask deploy() {
       return deploy(false);
    }
 
+   /**
+    * Deploy the virtual machine.
+    * 
+    * @param forceEnterpriseSoftLimits
+    *           If the deploy operation must be performed even if the soft
+    *           limits for the tenant are exceeded.
+    * 
+    * @return An async task reference to keep track of the deploy operation.
+    */
    public AsyncTask deploy(final boolean forceEnterpriseSoftLimits) {
       VirtualMachineTaskDto force = new VirtualMachineTaskDto();
       force.setForceEnterpriseSoftLimits(forceEnterpriseSoftLimits);
@@ -339,10 +296,23 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
       return getTask(response);
    }
 
+   /**
+    * Deploy the virtual machine.
+    * 
+    * @return An async task reference to keep track of the deploy operation.
+    */
    public AsyncTask undeploy() {
       return undeploy(false);
    }
 
+   /**
+    * Deploy the virtual machine.
+    * 
+    * @param forceUndeploy
+    *           If the operation must be forced.
+    * 
+    * @return An async task reference to keep track of the deploy operation.
+    */
    public AsyncTask undeploy(final boolean forceUndeploy) {
       VirtualMachineTaskDto force = new VirtualMachineTaskDto();
       force.setForceUndeploy(forceUndeploy);
@@ -353,20 +323,11 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    }
 
    /**
-    * Reboot a virtual machine. This is an asynchronous call. This method
-    * returns a {@link org.jclouds.abiquo.domain.task.AsyncTask} object that
-    * keeps track of the task completion. Please refer to the documentation for
-    * details.
+    * Reboots a virtual machine.
+    * <p>
+    * This method will generate an asynchronous task to keep track of the
+    * progress of the operation.
     * 
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/VirtualMachineResource#VirtualMachineResource-Resetavirtualmachine"
-    *      > http://community.abiquo.com/display/ABI20/Rack+Resource#/
-    *      VirtualMachineResource#
-    *      VirtualMachineResource-Resetavirtualmachine</a>
-    * @see github: <a href=
-    *      "https://github.com/abiquo/jclouds-abiquo/wiki/Asynchronous-monitor-example"
-    *      > https://github.com/abiquo/jclouds-abiquo/wiki/Asynchronous-monitor-
-    *      example</a>
     * @return The task reference or <code>null</code> if the operation completed
     *         synchronously.
     */
@@ -374,68 +335,6 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
       AcceptedRequestDto<String> response = context.getApi().getCloudApi().rebootVirtualMachine(unwrap());
 
       return getTask(response);
-   }
-
-   public AsyncTask attachHardDisks(final HardDisk... hardDisks) {
-      List<HardDisk> expected = Lists.newArrayList(listAttachedHardDisks());
-      expected.addAll(Arrays.asList(hardDisks));
-
-      HardDisk[] disks = new HardDisk[expected.size()];
-      return setHardDisks(expected.toArray(disks));
-   }
-
-   public AsyncTask detachAllHardDisks() {
-      AcceptedRequestDto<String> taskRef = context.getApi().getCloudApi().detachAllHardDisks(target);
-      return taskRef == null ? null : getTask(taskRef);
-   }
-
-   public AsyncTask detachHardDisks(final HardDisk... hardDisks) {
-      List<HardDisk> expected = Lists.newArrayList(listAttachedHardDisks());
-      Iterables.removeIf(expected, hardDiskIdIn(hardDisks));
-
-      HardDisk[] disks = new HardDisk[expected.size()];
-      return setHardDisks(expected.toArray(disks));
-   }
-
-   public AsyncTask setHardDisks(final HardDisk... hardDisks) {
-      AcceptedRequestDto<String> taskRef = context.getApi().getCloudApi()
-            .replaceHardDisks(target, toHardDiskDto(hardDisks));
-      return taskRef == null ? null : getTask(taskRef);
-   }
-
-   public AsyncTask attachVolumes(final Volume... volumes) {
-      List<Volume> expected = Lists.newArrayList(listAttachedVolumes());
-      expected.addAll(Arrays.asList(volumes));
-
-      Volume[] vols = new Volume[expected.size()];
-      return setVolumes(true, expected.toArray(vols));
-   }
-
-   public AsyncTask detachAllVolumes() {
-      AcceptedRequestDto<String> taskRef = context.getApi().getCloudApi().detachAllVolumes(target);
-      return taskRef == null ? null : getTask(taskRef);
-   }
-
-   public AsyncTask detachVolumes(final Volume... volumes) {
-      List<Volume> expected = Lists.newArrayList(listAttachedVolumes());
-      Iterables.removeIf(expected, volumeIdIn(volumes));
-
-      Volume[] vols = new Volume[expected.size()];
-      return setVolumes(true, expected.toArray(vols));
-   }
-
-   public AsyncTask setVolumes(final Boolean forceSoftLimits, final Volume... volumes) {
-      AcceptedRequestDto<String> taskRef = context
-            .getApi()
-            .getCloudApi()
-            .replaceVolumes(target, VirtualMachineOptions.builder().force(forceSoftLimits).build(),
-                  toVolumeDto(volumes));
-
-      return taskRef == null ? null : getTask(taskRef);
-   }
-
-   public AsyncTask setVolumes(final Volume... volumes) {
-      return setVolumes(true, volumes);
    }
 
    public AsyncTask setNics(final List<? extends Ip<?, ?>> ips) {
@@ -470,7 +369,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
       if (ips != null) {
          for (i = 0; i < ips.size(); i++) {
             RESTLink source = LinkUtils.getSelfLink(ips.get(i).unwrap());
-            RESTLink link = new RESTLink("nic" + i, source.getHref());
+            RESTLink link = new RESTLink(NicDto.REL_PREFIX + i, source.getHref());
             link.setType(ips.get(i).unwrap().getBaseMediaType());
             target.addLink(link);
          }
@@ -482,7 +381,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
             RESTLink source = checkNotNull(unmanaged.unwrap().searchLink("ips"), ValidationErrors.MISSING_REQUIRED_LINK
                   + "ips");
 
-            RESTLink link = new RESTLink("nic" + i, source.getHref());
+            RESTLink link = new RESTLink(NicDto.REL_PREFIX + i, source.getHref());
             link.setType(UnmanagedIpDto.BASE_MEDIA_TYPE);
             target.addLink(link);
             i++;
@@ -525,8 +424,26 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    // TODO: Get current gateway network
 
    public void setGatewayNetwork(final Network<?> network) {
-      context.getApi().getCloudApi().setGatewayNetwork(target, network.unwrap());
-      refresh(); // First refresh the target and its links
+      setNics(network, listAttachedNics());
+   }
+
+   @SinceApiVersion("2.4")
+   public AsyncTask setVirtualDisks(List<? extends VirtualDisk<?>> virtualDisks) {
+      checkNotNull(virtualDisks, "virtualDisk list can not be null");
+      // Remove current disk links
+      Iterables.removeIf(target.getLinks(), LinkPredicates.isDisk());
+
+      // Add the given virtual disks in the appropriate order
+      for (int i = 0; i < virtualDisks.size(); i++) {
+         VirtualDisk<?> virtualDisk = virtualDisks.get(i);
+         RESTLink source = LinkUtils.getSelfLink(virtualDisk.unwrap());
+         RESTLink link = new RESTLink(DiskManagementDto.REL_PREFIX + i, source.getHref());
+         link.setType(virtualDisk.unwrap().getBaseMediaType());
+         target.addLink(link);
+      }
+
+      // Apply the configuration to the virtual machine
+      return update(true);
    }
 
    /**
@@ -820,68 +737,6 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
 
    public void setKeymap(final String keymap) {
       target.setKeymap(keymap);
-   }
-
-   private static VolumeManagementDto[] toVolumeDto(final Volume... volumes) {
-      checkNotNull(volumes, "must provide at least one volume");
-
-      VolumeManagementDto[] dtos = new VolumeManagementDto[volumes.length];
-      for (int i = 0; i < volumes.length; i++) {
-         dtos[i] = volumes[i].unwrap();
-      }
-
-      return dtos;
-   }
-
-   private static DiskManagementDto[] toHardDiskDto(final HardDisk... hardDisks) {
-      checkNotNull(hardDisks, "must provide at least one hard disk");
-
-      DiskManagementDto[] dtos = new DiskManagementDto[hardDisks.length];
-      for (int i = 0; i < hardDisks.length; i++) {
-         dtos[i] = hardDisks[i].unwrap();
-      }
-
-      return dtos;
-   }
-
-   private static Predicate<Volume> volumeIdIn(final Volume... volumes) {
-      return new Predicate<Volume>() {
-         List<Integer> ids = volumeIds(Arrays.asList(volumes));
-
-         @Override
-         public boolean apply(final Volume input) {
-            return ids.contains(input.getId());
-         }
-      };
-   }
-
-   private static Predicate<HardDisk> hardDiskIdIn(final HardDisk... hardDisks) {
-      return new Predicate<HardDisk>() {
-         List<Integer> ids = hardDisksIds(Arrays.asList(hardDisks));
-
-         @Override
-         public boolean apply(final HardDisk input) {
-            return ids.contains(input.getId());
-         }
-      };
-   }
-
-   private static List<Integer> volumeIds(final List<Volume> volumes) {
-      return Lists.transform(volumes, new Function<Volume, Integer>() {
-         @Override
-         public Integer apply(final Volume input) {
-            return input.getId();
-         }
-      });
-   }
-
-   private static List<Integer> hardDisksIds(final List<HardDisk> HardDisk) {
-      return Lists.transform(HardDisk, new Function<HardDisk, Integer>() {
-         @Override
-         public Integer apply(final HardDisk input) {
-            return input.getId();
-         }
-      });
    }
 
    @Override

@@ -22,7 +22,6 @@ package org.jclouds.abiquo.domain.cloud;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.jclouds.abiquo.AbiquoApi;
-import org.jclouds.abiquo.domain.DomainWrapper;
 import org.jclouds.abiquo.domain.infrastructure.Tier;
 import org.jclouds.abiquo.domain.task.AsyncTask;
 import org.jclouds.abiquo.reference.ValidationErrors;
@@ -38,14 +37,14 @@ import com.abiquo.server.core.infrastructure.storage.TierDto;
 import com.abiquo.server.core.infrastructure.storage.VolumeManagementDto;
 
 /**
- * Adds high level functionality to {@link VolumeManagementDto}.
+ * Represents a block device attached to a virtual machine.
+ * <p>
+ * All data stored in the volume is persistent and will not be lost when the
+ * virtual machine is destroyed.
  * 
  * @author Ignasi Barrera
- * @see API: <a
- *      href="http://community.abiquo.com/display/ABI20/Volume+Resource">
- *      http://community.abiquo.com/display/ABI20/Volume+Resource</a>
  */
-public class Volume extends DomainWrapper<VolumeManagementDto> {
+public class Volume extends VirtualDisk<VolumeManagementDto> {
    /** The default state for volumes. */
    public static final VolumeState DEFAULT_STATE = VolumeState.DETACHED;
 
@@ -64,15 +63,34 @@ public class Volume extends DomainWrapper<VolumeManagementDto> {
 
    // Domain operations
 
+   /**
+    * Deletes the volume, and the data it contains.
+    */
    public void delete() {
       context.getApi().getCloudApi().deleteVolume(target);
       target = null;
    }
 
+   /**
+    * Creates the new (and unformatted) block device.
+    */
    public void save() {
       target = context.getApi().getCloudApi().createVolume(virtualDatacenter.unwrap(), target);
    }
 
+   /**
+    * Updates the current volume.
+    * <p>
+    * The size of the volume can be increased, but after the resize finishes,
+    * the file system may need to be manually expanded in order to see the new
+    * size.
+    * 
+    * @return <code>null</code> if the volume is not attached to a running
+    *         virtual machine, or an asynchronous task reference if the volume
+    *         is attached to the virtual machine. In the latter case, a
+    *         reconfigure operation on the virtual machine will be executed in
+    *         order to let it get noticed of the new size of the volume.
+    */
    public AsyncTask update() {
       AcceptedRequestDto<String> taskRef = context.getApi().getCloudApi().updateVolume(target);
       return taskRef == null ? null : getTask(taskRef);
@@ -81,10 +99,7 @@ public class Volume extends DomainWrapper<VolumeManagementDto> {
    // Parent access
 
    /**
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/Virtual+Datacenter+Resource#VirtualDatacenterResource-RetrieveaVirtualDatacenter"
-    *      > http://community.abiquo.com/display/ABI20/Virtual+Datacenter+
-    *      Resource# VirtualDatacenterResource-RetrieveaVirtualDatacenter</a>
+    * Returns the virtual datacenter where the volume resides.
     */
    public VirtualDatacenter getVirtualDatacenter() {
       Integer virtualDatacenterId = target.getIdFromLink(ParentLinkName.VIRTUAL_DATACENTER);
@@ -94,7 +109,7 @@ public class Volume extends DomainWrapper<VolumeManagementDto> {
    }
 
    /**
-    * TODO javadoc link
+    * Returns the storage tier (service level) where the volume resides.
     */
    public Tier getTier() {
       Integer tierId = target.getIdFromLink(ParentLinkName.TIER);
@@ -180,6 +195,7 @@ public class Volume extends DomainWrapper<VolumeManagementDto> {
 
    // Delegate methods
 
+   @Override
    public Integer getId() {
       return target.getId();
    }
@@ -196,11 +212,12 @@ public class Volume extends DomainWrapper<VolumeManagementDto> {
       target.setName(name);
    }
 
-   public long getSizeInMB() {
+   @Override
+   public Long getSizeInMb() {
       return target.getSizeInMB();
    }
 
-   public void setSizeInMB(final long sizeInMB) {
+   public void setSizeInMb(final long sizeInMB) {
       target.setSizeInMB(sizeInMB);
    }
 
@@ -213,8 +230,13 @@ public class Volume extends DomainWrapper<VolumeManagementDto> {
    }
 
    @Override
+   public Integer getSequence() {
+      return target.getSequence();
+   }
+
+   @Override
    public String toString() {
-      return "Volume [id=" + getId() + ", state=" + getState() + ", name=" + getName() + ", sizeInMB=" + getSizeInMB()
+      return "Volume [id=" + getId() + ", state=" + getState() + ", name=" + getName() + ", sizeInMb=" + getSizeInMb()
             + ", description=" + getDescription() + "]";
    }
 

@@ -32,7 +32,7 @@ import org.jclouds.abiquo.domain.infrastructure.Tier;
 import org.jclouds.abiquo.domain.network.PrivateNetwork;
 import org.jclouds.abiquo.domain.task.AsyncTask;
 import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
-import org.jclouds.abiquo.predicates.cloud.VolumePredicates;
+import org.jclouds.abiquo.predicates.cloud.VirtualDiskPredicates;
 import org.jclouds.abiquo.predicates.infrastructure.TierPredicates;
 import org.testng.annotations.Test;
 
@@ -74,7 +74,7 @@ public class VolumeLiveApiTest extends BaseAbiquoApiLiveApiTest {
 
    @Test(dependsOnMethods = "testFilterVolumes")
    public void testUpdateVolume() {
-      Volume volume = env.virtualDatacenter.findVolume(VolumePredicates.name(PREFIX + "Hawaian volume"));
+      Volume volume = env.virtualDatacenter.findVolume(VirtualDiskPredicates.volumeName(PREFIX + "Hawaian volume"));
       assertNotNull(volume);
 
       volume.setName("Hawaian volume updated");
@@ -92,12 +92,13 @@ public class VolumeLiveApiTest extends BaseAbiquoApiLiveApiTest {
       PrivateNetwork network = PrivateNetwork.builder(env.context.getApiContext()).name("DefaultNetwork")
             .gateway("192.168.1.1").address("192.168.1.0").mask(24).build();
 
-      VirtualDatacenter newVdc = VirtualDatacenter.builder(env.context.getApiContext(), env.datacenter, env.enterprise)
-            .name("New VDC").network(network).hypervisorType(env.machine.getType()).build();
+      VirtualDatacenter newVdc = VirtualDatacenter
+            .builder(env.context.getApiContext(), env.datacenter, env.defaultEnterprise).name("New VDC")
+            .network(network).hypervisorType(env.machine.getType()).build();
       newVdc.save();
       assertNotNull(newVdc.getId());
 
-      Volume volume = env.virtualDatacenter.findVolume(VolumePredicates.name("Hawaian volume updated"));
+      Volume volume = env.virtualDatacenter.findVolume(VirtualDiskPredicates.volumeName("Hawaian volume updated"));
       assertNotNull(volume);
 
       volume.moveTo(newVdc);
@@ -118,7 +119,7 @@ public class VolumeLiveApiTest extends BaseAbiquoApiLiveApiTest {
 
    @Test(dependsOnMethods = "testMoveVolume")
    public void testDeleteVolume() {
-      Volume volume = env.virtualDatacenter.findVolume(VolumePredicates.name("Hawaian volume updated"));
+      Volume volume = env.virtualDatacenter.findVolume(VirtualDiskPredicates.volumeName("Hawaian volume updated"));
       assertNotNull(volume);
 
       Integer id = volume.getId();

@@ -22,7 +22,6 @@ package org.jclouds.abiquo.domain.cloud;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.jclouds.abiquo.AbiquoApi;
-import org.jclouds.abiquo.domain.DomainWrapper;
 import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.rest.ApiContext;
@@ -38,11 +37,8 @@ import com.abiquo.server.core.infrastructure.storage.DiskManagementDto;
  * storage, a persistent {@link Volume} should be used instead.
  * 
  * @author Ignasi Barrera
- * @see API: <a
- *      href="http://community.abiquo.com/display/ABI20/Hard+Disks+Resource">
- *      http://community.abiquo.com/display/ABI20/Hard+Disks+Resource</a>
  */
-public class HardDisk extends DomainWrapper<DiskManagementDto> {
+public class HardDisk extends VirtualDisk<DiskManagementDto> {
    /** The virtual datacenter where the hard disk belongs. */
    private VirtualDatacenter virtualDatacenter;
 
@@ -77,11 +73,6 @@ public class HardDisk extends DomainWrapper<DiskManagementDto> {
 
    /**
     * Gets the virtual datacenter where the hard disk belongs to.
-    * 
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/Virtual+Datacenter+Resource#VirtualDatacenterResource-RetrieveaVirtualDatacenter"
-    *      > http://community.abiquo.com/display/ABI20/Virtual+Datacenter+
-    *      Resource# VirtualDatacenterResource-RetrieveaVirtualDatacenter</a>
     */
    public VirtualDatacenter getVirtualDatacenter() {
       Integer virtualDatacenterId = target.getIdFromLink(ParentLinkName.VIRTUAL_DATACENTER);
@@ -132,6 +123,7 @@ public class HardDisk extends DomainWrapper<DiskManagementDto> {
    /**
     * Returns the id of the hard disk.
     */
+   @Override
    public Integer getId() {
       // TODO: DiskManagementDto does not have an id field
       return target.getEditLink() == null ? null : target.getIdFromLink("edit");
@@ -140,6 +132,7 @@ public class HardDisk extends DomainWrapper<DiskManagementDto> {
    /**
     * Returns the size of the hard disk in MB.
     */
+   @Override
    public Long getSizeInMb() {
       return target.getSizeInMb();
    }
@@ -150,6 +143,7 @@ public class HardDisk extends DomainWrapper<DiskManagementDto> {
     * It will be computed when attaching the hard disk to a virtual machine and
     * will determine the attachment order of the disk in the virtual machine.
     */
+   @Override
    public Integer getSequence() {
       return target.getSequence();
    }

@@ -24,6 +24,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Arrays;
 
 import com.abiquo.model.rest.RESTLink;
+import com.abiquo.server.core.infrastructure.network.NicDto;
+import com.abiquo.server.core.infrastructure.storage.DiskManagementDto;
 import com.google.common.base.Predicate;
 
 /**
@@ -47,7 +49,16 @@ public class LinkPredicates {
       return new Predicate<RESTLink>() {
          @Override
          public boolean apply(final RESTLink link) {
-            return link.getRel().matches("^nic[0-9]+$");
+            return link.getRel().matches("^" + NicDto.REL_PREFIX + "[0-9]+$");
+         }
+      };
+   }
+
+   public static Predicate<RESTLink> isDisk() {
+      return new Predicate<RESTLink>() {
+         @Override
+         public boolean apply(final RESTLink link) {
+            return link.getRel().matches("^" + DiskManagementDto.REL_PREFIX + "[0-9]+$");
          }
       };
    }
