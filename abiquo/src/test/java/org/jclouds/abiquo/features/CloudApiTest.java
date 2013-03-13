@@ -1120,7 +1120,6 @@ public class CloudApiTest extends BaseAbiquoApiTest<CloudApi> {
 
    public void testGetHardDisk() throws SecurityException, NoSuchMethodException, IOException {
       Invokable<?, ?> method = method(CloudApi.class, "getHardDisk", VirtualDatacenterDto.class, Integer.class);
-      ;
       GeneratedHttpRequest request = processor.apply(Invocation.create(method,
             ImmutableList.<Object> of(CloudResources.virtualDatacenterPut(), 1)));
 

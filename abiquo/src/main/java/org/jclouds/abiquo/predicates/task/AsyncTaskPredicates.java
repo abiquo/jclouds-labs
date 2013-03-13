@@ -26,6 +26,7 @@ import java.util.Arrays;
 import org.jclouds.abiquo.domain.task.AsyncTask;
 
 import com.abiquo.server.core.task.enums.TaskState;
+import com.abiquo.server.core.task.enums.TaskType;
 import com.google.common.base.Predicate;
 
 /**
@@ -34,13 +35,24 @@ import com.google.common.base.Predicate;
  * @author Ignasi Barrera
  */
 public class AsyncTaskPredicates {
-   public static Predicate<AsyncTask> state(final TaskState... states) {
+   public static Predicate<AsyncTask<?, ?>> state(final TaskState... states) {
       checkNotNull(states, "states must be defined");
 
-      return new Predicate<AsyncTask>() {
+      return new Predicate<AsyncTask<?, ?>>() {
          @Override
-         public boolean apply(final AsyncTask task) {
+         public boolean apply(final AsyncTask<?, ?> task) {
             return Arrays.asList(states).contains(task.getState());
+         }
+      };
+   }
+
+   public static Predicate<AsyncTask<?, ?>> type(final TaskType... types) {
+      checkNotNull(types, "types must be defined");
+
+      return new Predicate<AsyncTask<?, ?>>() {
+         @Override
+         public boolean apply(final AsyncTask<?, ?> task) {
+            return Arrays.asList(types).contains(task.getType());
          }
       };
    }

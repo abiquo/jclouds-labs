@@ -24,7 +24,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
 import org.jclouds.abiquo.domain.infrastructure.Tier;
-import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.VirtualMachineTask;
 import org.jclouds.abiquo.reference.ValidationErrors;
 
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
@@ -73,9 +73,9 @@ public class Volume extends DomainWrapper<VolumeManagementDto> {
       target = context.getApi().getCloudApi().createVolume(virtualDatacenter.unwrap(), target);
    }
 
-   public AsyncTask update() {
+   public VirtualMachineTask update() {
       AcceptedRequestDto<String> taskRef = context.getApi().getCloudApi().updateVolume(target);
-      return taskRef == null ? null : getTask(taskRef);
+      return taskRef == null ? null : getTask(taskRef).asVirtualMachineTask();
    }
 
    // Parent access
@@ -93,9 +93,6 @@ public class Volume extends DomainWrapper<VolumeManagementDto> {
       return virtualDatacenter;
    }
 
-   /**
-    * TODO javadoc link
-    */
    public Tier getTier() {
       Integer tierId = target.getIdFromLink(ParentLinkName.TIER);
       TierDto dto = context.getApi().getCloudApi().getStorageTier(virtualDatacenter.unwrap(), tierId);

@@ -35,7 +35,8 @@ import org.jclouds.abiquo.domain.config.CostCode;
 import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.domain.infrastructure.Datacenter;
 import org.jclouds.abiquo.domain.infrastructure.Tier;
-import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.ConversionTask;
+import org.jclouds.abiquo.domain.task.VirtualMachineTemplateTask;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.http.HttpResponse;
 import org.jclouds.http.functions.ParseXMLWithJAXB;
@@ -88,23 +89,15 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
       target = context.getApi().getVirtualMachineTemplateApi().updateVirtualMachineTemplate(target);
    }
 
-   /**
-    * TODO
-    * 
-    * @param vdc
-    * @param volume
-    * @param persistentTemplateName
-    * @param persistentVolumeName
-    * @return
-    */
-   public AsyncTask makePersistent(final VirtualDatacenter vdc, final Volume volume, final String persistentTemplateName) {
+   public VirtualMachineTemplateTask makePersistent(final VirtualDatacenter vdc, final Volume volume,
+         final String persistentTemplateName) {
       RESTLink storageLink = volume.unwrap().getEditLink();
       storageLink.setRel("volume");
       return makePersistent(vdc, storageLink, persistentTemplateName, null);
    }
 
-   public AsyncTask makePersistent(final VirtualDatacenter vdc, final Tier tier, final String persistentTemplateName,
-         final String persistentVolumeName) {
+   public VirtualMachineTemplateTask makePersistent(final VirtualDatacenter vdc, final Tier tier,
+         final String persistentTemplateName, final String persistentVolumeName) {
       // infrastructure
       RESTLink storageLink = tier.unwrap().getEditLink();
       if (storageLink == null) {
@@ -115,7 +108,7 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
       return makePersistent(vdc, storageLink, persistentTemplateName, persistentVolumeName);
    }
 
-   private AsyncTask makePersistent(final VirtualDatacenter vdc, final RESTLink storageLink,
+   private VirtualMachineTemplateTask makePersistent(final VirtualDatacenter vdc, final RESTLink storageLink,
          final String persistentTemplateName, final String persistentVolumeName) {
       VirtualMachineTemplatePersistentDto persistentData = new VirtualMachineTemplatePersistentDto();
       persistentData.setPersistentTemplateName(persistentTemplateName);
@@ -147,7 +140,7 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
       AcceptedRequestDto<String> response = context.getApi().getVirtualMachineTemplateApi()
             .createPersistentVirtualMachineTemplate(idEnt, idDcRepo, persistentData);
 
-      return getTask(response);
+      return getTask(response).asVirtualMachineTemplateTask();
    }
 
    // Children access
@@ -286,14 +279,14 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
     *           , desired target format for the request template
     * @return The task reference to track its progress
     */
-   public AsyncTask requestConversion(final DiskFormatType diskFormat) {
+   public ConversionTask requestConversion(final DiskFormatType diskFormat) {
       ConversionDto request = new ConversionDto();
       request.setTargetFormat(diskFormat);
 
       AcceptedRequestDto<String> taskRef = context.getApi().getVirtualMachineTemplateApi()
             .requestConversion(target, diskFormat, request);
 
-      return taskRef == null ? null : getTask(taskRef);
+      return taskRef == null ? null : getTask(taskRef).asConversionTask();
    }
 
    public CostCode getCostCode() {

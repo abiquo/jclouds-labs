@@ -33,6 +33,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jclouds.abiquo.domain.exception.AbiquoException;
 import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.VirtualMachineTask;
 import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
 import org.testng.annotations.Test;
 
@@ -61,7 +62,7 @@ public class VirtualMachineLiveApiTest extends BaseAbiquoApiLiveApiTest {
    }
 
    public void testGetTasks() {
-      List<AsyncTask> tasks = env.virtualMachine.listTasks();
+      List<AsyncTask<?, ?>> tasks = env.virtualMachine.listTasks();
       assertNotNull(tasks);
    }
 
@@ -103,7 +104,7 @@ public class VirtualMachineLiveApiTest extends BaseAbiquoApiLiveApiTest {
       try {
          VirtualMachine vm = env.virtualAppliance.getVirtualMachine(env.virtualMachine.getId());
          vm.setCpu(7);
-         AsyncTask task = vm.update(true);
+         VirtualMachineTask task = vm.update(true);
 
          assertNull(task);
          assertEquals(vm.getCpu(), 7);
