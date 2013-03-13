@@ -69,6 +69,8 @@ import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.model.transport.LinksDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplatesDto;
+import com.abiquo.server.core.cloud.LayerDto;
+import com.abiquo.server.core.cloud.LayersDto;
 import com.abiquo.server.core.cloud.VirtualApplianceDto;
 import com.abiquo.server.core.cloud.VirtualApplianceStateDto;
 import com.abiquo.server.core.cloud.VirtualAppliancesDto;
@@ -622,6 +624,18 @@ public interface CloudApi extends Closeable {
    /*********************** Virtual Machine ***********************/
 
    /**
+    * List all virtual machines available to the current user.
+    * 
+    * @return The list of all virtual machines available to the current user.
+    */
+   @Named("vm:listall")
+   @GET
+   @Path("/virtualmachines")
+   @Consumes(VirtualMachinesWithNodeExtendedDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   VirtualMachinesWithNodeExtendedDto listAllVirtualMachines();
+
+   /**
     * List all virtual machines for a virtual appliance.
     * 
     * @param virtualAppliance
@@ -1153,5 +1167,84 @@ public interface CloudApi extends Closeable {
    @JAXBResponseParser
    VolumeManagementDto moveVolume(@BinderParam(BindMoveVolumeToPath.class) VolumeManagementDto volume,
          @BinderParam(BindVirtualDatacenterRefToPayload.class) VirtualDatacenterDto newVirtualDatacenter);
+
+   /*********************** AntiAffinity ***********************/
+
+   /**
+    * Creates a new layer containing a single virtual machine.
+    * 
+    * @param virtualAppliance
+    *           The virtual appliance where the new layer will belong to
+    * 
+    * @param layer
+    *           The layer to be created. It requires a name and *a single*
+    *           virtual machine link
+    */
+   @Named("layer:create")
+   @POST
+   @Consumes(LayerDto.MEDIA_TYPE)
+   @Produces(LayerDto.MEDIA_TYPE)
+   @JAXBResponseParser
+   LayerDto createLayer(@EndpointLink("layers") @BinderParam(BindToPath.class) VirtualApplianceDto virtualAppliance,
+         @BinderParam(BindToXMLPayload.class) LayerDto layer);
+
+   /**
+    * Deletes a layer composed of a single virtual machine.
+    * 
+    * @param layer
+    *           The layer to be deleted
+    */
+   @Named("layer:delete")
+   @DELETE
+   void deleteLayer(@EndpointLink("edit") @BinderParam(BindToPath.class) LayerDto layer);
+
+   /**
+    * Antiaffinity related resource. Returns the list of layers and the set of
+    * virtual machines included in these layers
+    * 
+    * @param virtualAppliance
+    *           The virtual appliance.
+    * @return The layers and its virtual machines
+    */
+   @Named("layer:list")
+   @GET
+   @Consumes(LayersDto.MEDIA_TYPE)
+   @JAXBResponseParser
+   LayersDto listLayers(@EndpointLink("layers") @BinderParam(BindToPath.class) VirtualApplianceDto virtualAppliance);
+
+   /**
+    * Antiaffinity related resource. Returns the set of virtual machines
+    * included in the given layer
+    * 
+    * @param virtualAppliance
+    *           The virtual appliance.
+    * @param layerName
+    *           The name of the layer
+    * @return The requested layer name or <code>null</code> if it does not exist
+    */
+   @Named("layer:get")
+   @GET
+   @Consumes(LayerDto.MEDIA_TYPE)
+   @JAXBResponseParser
+   @Fallback(NullOnNotFoundOr404.class)
+   LayerDto getLayer(@EndpointLink("layers") @BinderParam(BindToPath.class) VirtualApplianceDto virtualAppliance,
+         @BinderParam(AppendToPath.class) String layerName);
+
+   /**
+    * Antiaffinity related resource. Modifies virtual machines layer name of a
+    * given layer.
+    * 
+    * @param virtualAppliance
+    *           The virtual appliance.
+    * @param layerName
+    *           The name of the layer
+    * @return Layer name modified and consequently its virtual machines
+    */
+   @Named("layer:update")
+   @PUT
+   @Consumes(LayerDto.MEDIA_TYPE)
+   @Produces(LayerDto.MEDIA_TYPE)
+   @JAXBResponseParser
+   LayerDto updateLayer(@EndpointLink("edit") @BinderParam(BindToXMLPayloadAndPath.class) LayerDto layer);
 
 }

@@ -25,6 +25,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 import java.util.List;
@@ -38,6 +39,7 @@ import org.testng.annotations.Test;
 
 import com.abiquo.server.core.cloud.VirtualMachineDto;
 import com.abiquo.server.core.cloud.VirtualMachineState;
+import com.google.common.collect.Iterables;
 
 /**
  * Live integration tests for the {@link VirtualMachine} domain class.
@@ -46,6 +48,11 @@ import com.abiquo.server.core.cloud.VirtualMachineState;
  */
 @Test(groups = "api", testName = "VirtualMachineLiveApiTest")
 public class VirtualMachineLiveApiTest extends BaseAbiquoApiLiveApiTest {
+   public void testListAllVirtualMachines() {
+      Iterable<VirtualMachine> vms = env.context.getCloudService().listVirtualMachines();
+      assertTrue(Iterables.size(vms) > 1);
+   }
+
    public void testHasDataFromNode() {
       assertNotNull(env.virtualMachine.getNameLabel());
       assertNotNull(env.virtualMachine.getInternalName());

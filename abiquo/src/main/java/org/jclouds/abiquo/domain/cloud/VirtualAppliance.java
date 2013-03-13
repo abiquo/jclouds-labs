@@ -34,6 +34,8 @@ import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.rest.ApiContext;
 
 import com.abiquo.model.transport.AcceptedRequestDto;
+import com.abiquo.server.core.cloud.LayerDto;
+import com.abiquo.server.core.cloud.LayersDto;
 import com.abiquo.server.core.cloud.VirtualApplianceDto;
 import com.abiquo.server.core.cloud.VirtualApplianceState;
 import com.abiquo.server.core.cloud.VirtualApplianceStateDto;
@@ -203,6 +205,28 @@ public class VirtualAppliance extends DomainWrapper<VirtualApplianceDto> {
    public VirtualMachine getVirtualMachine(final Integer id) {
       VirtualMachineWithNodeExtendedDto vm = context.getApi().getCloudApi().getVirtualMachine(target, id);
       return wrap(context, VirtualMachine.class, vm);
+   }
+
+   /**
+    * Gets a list of layers with its virtual machines
+    * 
+    * @return The list of layers and virtual machines of each one.
+    */
+   public List<Layer> listLayers() {
+      LayersDto layers = context.getApi().getCloudApi().listLayers(target);
+      return wrap(context, Layer.class, layers.getCollection());
+   }
+
+   /**
+    * Gets a concrete layer with its virtual machines
+    * 
+    * @param layerName
+    *           Layer's name
+    * @return The requested layer
+    */
+   public Layer getLayer(final String layerName) {
+      LayerDto layer = context.getApi().getCloudApi().getLayer(target, layerName);
+      return wrap(context, Layer.class, layer);
    }
 
    // Actions

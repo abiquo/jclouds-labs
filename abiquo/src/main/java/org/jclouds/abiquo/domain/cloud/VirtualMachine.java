@@ -43,10 +43,12 @@ import org.jclouds.abiquo.strategy.cloud.ListAttachedNics;
 import org.jclouds.http.HttpResponse;
 import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.rest.ApiContext;
+import org.jclouds.rest.annotations.SinceApiVersion;
 
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
+import com.abiquo.server.core.cloud.LayerDto;
 import com.abiquo.server.core.cloud.VirtualApplianceDto;
 import com.abiquo.server.core.cloud.VirtualDatacenterDto;
 import com.abiquo.server.core.cloud.VirtualMachineState;
@@ -63,6 +65,7 @@ import com.abiquo.server.core.infrastructure.storage.DvdManagementDto;
 import com.abiquo.server.core.infrastructure.storage.VolumeManagementDto;
 import com.abiquo.server.core.infrastructure.storage.VolumesManagementDto;
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
@@ -278,6 +281,45 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    public VirtualMachineTemplate getTemplate() {
       VirtualMachineTemplateDto dto = context.getApi().getCloudApi().getVirtualMachineTemplate(target);
       return wrap(context, VirtualMachineTemplate.class, dto);
+   }
+
+   /**
+    * Retrieve the layer of this virtual machine if present.
+    * 
+    * @return the layer if present.
+    * */
+   @SinceApiVersion("2.4")
+   public Optional<Layer> getLayer() {
+      RESTLink layerLink = target.searchLink(ParentLinkName.LAYER);
+      if (layerLink != null) {
+         // layerlink.getIdFromLink
+         String href = layerLink.getHref();
+         String layerName = href.substring(href.lastIndexOf("/") + 1,
+               href.endsWith("/") ? href.length() - 1 : href.length());
+
+         LayerDto dto = context.getApi().getCloudApi().getLayer(virtualAppliance.unwrap(), layerName);
+         return Optional.of(wrap(context, Layer.class, dto));
+      } else {
+         return Optional.absent();
+      }
+   }
+
+   /**
+    * Updates the virtual machine to include it into an anti-affinity group.
+    * 
+    * @param layer
+    *           The new anti-affinity group.
+    */
+   @SinceApiVersion("2.4")
+   public AsyncTask setLayer(Layer layer) {
+      RESTLink newlayerLink = layer.unwrap().getEditLink();
+      RESTLink layerLink = target.searchLink(ParentLinkName.LAYER);
+      if (layerLink != null) {
+         layerLink.setHref(newlayerLink.getHref());
+      } else {
+         target.addLink(new RESTLink(ParentLinkName.LAYER, newlayerLink.getHref()));
+      }
+      return update(true);
    }
 
    // Children access
@@ -598,6 +640,8 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
 
       private boolean dvd;
 
+      private Layer layer;
+
       public Builder(final ApiContext<AbiquoApi> context, final VirtualAppliance virtualAppliance,
             final VirtualMachineTemplate template) {
          super();
@@ -642,9 +686,13 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
          return this;
       }
 
-      // This methods are used only to build a builder from an existing
-      // VirtualMachine but should
-      // never be used by the user. This fields are set automatically by Abiquo
+      public Builder layer(final Layer layer) {
+         this.layer = layer;
+         return this;
+      }
+
+      // VirtualMachine but should never be used by the user. This fields are
+      // set automatically by Abiquo
 
       private Builder vncPort(final int vdrpPort) {
          this.vncPort = vdrpPort;
@@ -712,6 +760,10 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
          dto.setKeymap(keymap);
          dto.setUuid(uuid);
 
+         if (layer != null) {
+            dto.addLink(new RESTLink(ParentLinkName.LAYER, layer.unwrap().getEditLink().getHref()));
+         }
+
          // DVD
          if (dvd) {
             DvdManagementDto dvd = new DvdManagementDto();
@@ -731,7 +783,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
          return VirtualMachine.builder(in.context, in.virtualAppliance, in.template).internalName(in.getInternalName())
                .nameLabel(in.getNameLabel()).description(in.getDescription()).ram(in.getRam()).cpu(in.getCpu())
                .vncAddress(in.getVncAddress()).vncPort(in.getVncPort()).idState(in.getIdState()).idType(in.getIdType())
-               .password(in.getPassword()).keymap(in.getKeymap()).dvd(in.hasDvd());
+               .password(in.getPassword()).keymap(in.getKeymap()).dvd(in.hasDvd()).layer(in.getLayer().orNull());
       }
    }
 

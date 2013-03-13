@@ -69,7 +69,7 @@ public class PricingTemplateLiveApiTest extends BaseAbiquoApiLiveApiTest {
             .description("description").hdGB(zero).standingChargePeriod(zero).vlan(zero)
             .chargingPeriod(PricingPeriod.MONTH).minimumChargePeriod(zero).showChangesBefore(true)
             .showMinimumCharge(false).minimumCharge(PricingPeriod.WEEK).publicIp(zero).vcpu(zero).memoryGB(zero)
-            .defaultTemplate(true).lastUpdate(new Date()).build();
+            .layer(zero).defaultTemplate(true).lastUpdate(new Date()).build();
 
       pricingTemplate.save();
    }

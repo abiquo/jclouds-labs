@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<layer>
+    <link rel="virtualmachine" href="http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1"/>
+    <name>layer1</name>
+</layer>
+
