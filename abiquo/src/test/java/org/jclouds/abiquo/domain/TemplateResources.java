@@ -30,6 +30,7 @@ import com.abiquo.server.core.appslibrary.ConversionDto;
 import com.abiquo.server.core.appslibrary.DatacenterRepositoryDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplatePersistentDto;
+import com.abiquo.server.core.appslibrary.VirtualMachineTemplateRequestDto;
 
 /**
  * VM template domain utilities.
@@ -58,12 +59,13 @@ public class TemplateResources {
 
    public static VirtualMachineTemplateDto virtualMachineTemplatePut() {
       VirtualMachineTemplateDto template = new VirtualMachineTemplateDto();
-      template.setName("Template");
       template.setId(1);
+      template.setName("Template");
       template.setDescription("Description");
       template.addLink(new RESTLink("edit",
             "http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates/1"));
       template.addLink(new RESTLink("enterprise", "http://localhost/api/admin/enterprises/1"));
+      template.addLink(new RESTLink("datacenter", "http://localhost/api/datacenters/1"));
       template.addLink(new RESTLink("conversions", "http://localhost/api/admin/enterprises/1"
             + "/datacenterrepositories/1/virtualmachinetemplates/1/conversions"));
       template.addLink(new RESTLink("tasks", "http://localhost/api/admin/enterprises/1"
@@ -80,6 +82,12 @@ public class TemplateResources {
       template.setDiskFileSize(30l);
 
       template.setCostCode(0);
+      template.setDiskFormatType("RAW");
+      template.setOsType(OSType.MACOS);
+      template.setLoginUser("myuser");
+      template.setLoginPassword("mypass");
+      template.setState(VMTemplateState.DONE);
+
       return template;
    }
 
@@ -88,9 +96,9 @@ public class TemplateResources {
       buffer.append("<virtualMachineTemplate>");
       buffer.append(link("/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates/1", "edit"));
       buffer.append(link("/admin/enterprises/1", "enterprise"));
+      buffer.append(link("/datacenters/1", "datacenter"));
       buffer.append(link("/admin/enterprises/1" + "/datacenterrepositories/1/virtualmachinetemplates/1/conversions",
             "conversions"));
-
       buffer.append(link("/admin/enterprises/1" + "/datacenterrepositories/1/virtualmachinetemplates/1/tasks", "tasks"));
       buffer.append(link(new RESTLink("diskfile", "http://somewher.com/file.vmdk")));
       buffer.append("<id>1</id>");
@@ -134,6 +142,39 @@ public class TemplateResources {
       buffer.append("<persistentTemplateName>New persistent template name</persistentTemplateName>");
       buffer.append("<persistentVolumeName>New persistent volume name</persistentVolumeName>");
       buffer.append("</virtualmachinetemplatepersistent>");
+      return buffer.toString();
+   }
+
+   public static VirtualMachineTemplateRequestDto templateRequestDownloadData() {
+      VirtualMachineTemplateRequestDto templateRequest = new VirtualMachineTemplateRequestDto();
+      templateRequest.addLink(new RESTLink("templatedefinition",
+            "http://localhost/api/admin/enterprises/1/appslib/templateDefinitions/1"));
+      return templateRequest;
+   }
+
+   public static String templateRequestDownloadPlayload() {
+      StringBuffer buffer = new StringBuffer();
+      buffer.append("<virtualmachinetemplaterequest>");
+      buffer.append(link("/admin/enterprises/1/appslib/templateDefinitions/1", "templatedefinition"));
+      buffer.append("</virtualmachinetemplaterequest>");
+      return buffer.toString();
+   }
+
+   public static VirtualMachineTemplateRequestDto templateRequestPromoteData() {
+      VirtualMachineTemplateRequestDto templateRequest = new VirtualMachineTemplateRequestDto();
+      templateRequest.addLink(new RESTLink("virtualmachinetemplate",
+            "http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates/1"));
+      templateRequest.setPromotedName("myname");
+      return templateRequest;
+   }
+
+   public static String templateRequestPromotePlayload() {
+      StringBuffer buffer = new StringBuffer();
+      buffer.append("<virtualmachinetemplaterequest>");
+      buffer.append(link("/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates/1",
+            "virtualmachinetemplate"));
+      buffer.append("<promotedName>myname</promotedName>");
+      buffer.append("</virtualmachinetemplaterequest>");
       return buffer.toString();
    }
 

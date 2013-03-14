@@ -43,6 +43,8 @@ public class ParentLinkName {
 
    public static final String VIRTUAL_MACHINE_TEMPLATE = "virtualmachinetemplate";
 
+   public static final String TEMPLATE_DEFINITION = "templateDefinition";
+
    public static final String DATACENTER_REPOSITORY = "datacenterrepository";
 
    public static final String COST_CODE = "costcode";

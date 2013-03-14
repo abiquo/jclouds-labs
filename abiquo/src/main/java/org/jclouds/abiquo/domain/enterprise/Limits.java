@@ -49,9 +49,8 @@ public class Limits extends DomainWithLimitsWrapper<DatacenterLimitsDto> {
    /**
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/Datacenter+Limits+Resource#DatacenterLimitsResource-UpdatesanexistingLimitforanenterpriseinadatacenter"
-    *      >
-    *      http://community.abiquo.com/display/ABI20/Datacenter+Limits+Resource
-    *      #DatacenterLimitsResource
+    *      > http://community.abiquo.com/display/ABI20/Datacenter+Limits+
+    *      Resource #DatacenterLimitsResource
     *      -UpdatesanexistingLimitforanenterpriseinadatacenter</a>
     */
    public void update() {

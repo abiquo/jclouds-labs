@@ -16,26 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.jclouds.abiquo.compute.functions;
 
-package org.jclouds.abiquo.domain.options.search.reference;
+import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
+import org.jclouds.domain.LoginCredentials;
+
+import com.google.common.base.Function;
+import com.google.inject.Singleton;
 
 /**
- * Available fields to order search results.
- * 
- * @author Francesc Montserrat
- * @author Ignasi Barrera
+ * Transforms a {@link VirtualMachineTemplate} into an {@link LoginCredentials}.
  */
-public enum OrderBy {
-   NAME("name"), ID("id"), VIRTUALDATACENTER("virtualdatacenter"), VIRTUALMACHINE("virtualmachine"), VIRTUALAPPLIANCE(
-         "virtualappliance"), TIER("tier"), TOTALSIZE("totalsize"), STATE("state");
+@Singleton
+public class VirtualMachineTemplateToLoginCredentials implements Function<VirtualMachineTemplate, LoginCredentials> {
 
-   public String value;
+   @Override
+   public LoginCredentials apply(final VirtualMachineTemplate virtualMachineTemplate) {
 
-   public String getValue() {
-      return value;
-   }
-
-   private OrderBy(final String value) {
-      this.value = value;
+      return LoginCredentials.builder().identity(virtualMachineTemplate.getLoginUser())
+            .password(virtualMachineTemplate.getLoginPassword()).build();
    }
 }

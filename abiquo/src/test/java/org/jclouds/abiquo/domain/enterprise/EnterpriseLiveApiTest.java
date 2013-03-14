@@ -165,4 +165,5 @@ public class EnterpriseLiveApiTest extends BaseAbiquoApiLiveApiTest {
       List<VirtualAppliance> vapps = env.defaultEnterprise.listVirtualAppliances();
       assertTrue(vapps.size() > 0);
    }
+
 }

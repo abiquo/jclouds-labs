@@ -24,12 +24,23 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import org.jclouds.abiquo.domain.cloud.TemplateDefinition;
+import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
+import org.jclouds.abiquo.domain.task.AsyncTask;
 import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
+import org.jclouds.abiquo.predicates.cloud.VirtualMachineTemplatePredicates;
 import org.jclouds.abiquo.predicates.enterprise.TemplateDefinitionListPredicates;
+import org.jclouds.abiquo.util.Config;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import com.abiquo.model.enumerator.VMTemplateState;
+import com.abiquo.server.core.task.enums.TaskState;
+import com.google.common.collect.Ordering;
+import com.google.common.primitives.Longs;
 
 /**
  * Live integration tests for the {@link TemplateDefinitionList} domain class.
@@ -58,7 +69,8 @@ public class TemplateDefinitionListLiveApiTest extends BaseAbiquoApiLiveApiTest 
    @BeforeClass
    public void setup() {
       list = TemplateDefinitionList.builder(env.context.getApiContext(), env.enterprise).name("myList")
-            .url("http://virtualapp-repository.com/vapp1.ovf").build();
+            .url(Config.get("abiquo.template.repository", "http://template-repository.herokuapp.com/ovfindex.xml"))
+            .build();
 
       list.save();
 
@@ -71,4 +83,57 @@ public class TemplateDefinitionListLiveApiTest extends BaseAbiquoApiLiveApiTest 
       list.delete();
       assertNull(env.enterprise.getTemplateDefinitionList(idTemplateList));
    }
+
+   @Test
+   public void testDownload() {
+      TemplateDefinition templateDef = templateBySize().min(list.listDefinitions());
+
+      List<VirtualMachineTemplate> templates = env.enterprise.listTemplatesInRepository(env.datacenter,
+            VirtualMachineTemplatePredicates.templateDefinition(templateDef));
+
+      assertEquals(templates.size(), 0, "template present in datacenter");
+
+      AsyncTask task = templateDef.downloadToRepository(env.datacenter);
+      env.context.getMonitoringService().getAsyncTaskMonitor().awaitCompletion(30l, TimeUnit.MINUTES, task);
+      assertEquals(task.getState(), TaskState.FINISHED_SUCCESSFULLY);
+
+      // FIXME: Wait until the tasks branch has been merged
+      VirtualMachineTemplate vmt = null;// task.getResult();
+      try {
+         assertVirtualMachineCreation(vmt, templateDef);
+
+         templates = env.enterprise.listTemplatesInRepository(env.datacenter,
+               VirtualMachineTemplatePredicates.templateDefinition(templateDef));
+         assertEquals(templates.size(), 1, "template not present in datacenter");
+      } finally {
+         // FIXME: wait until conversions are finished before deleting
+         vmt.delete();
+      }
+   }
+
+   private void assertVirtualMachineCreation(VirtualMachineTemplate template, TemplateDefinition templateDef) {
+      assertEquals(template.getState(), VMTemplateState.DONE);
+      assertEquals(template.getUrl().get(), templateDef.getUrl());
+      assertEquals(template.getName(), templateDef.getName());
+      assertEquals(template.getDescription(), templateDef.getDescription());
+      assertEquals(template.getLoginUser(), templateDef.getLoginUser());
+      assertEquals(template.getLoginPassword(), templateDef.getLoginPassword());
+      assertEquals(template.getDiskFileSize() / 1048576, templateDef.getDiskFileSize());
+      assertEquals(template.getDiskFormatType(), templateDef.getDiskFormatType());
+      assertEquals(template.getEthernetDriverType(), templateDef.getEthernetDriverType());
+      assertEquals(template.getDiskControllerType(), templateDef.getDiskControllerType());
+      assertEquals(template.getIconUrl(), templateDef.getIconUrl());
+      assertEquals(template.getOsType(), templateDef.getOsType());
+      assertEquals(template.getOsVersion(), templateDef.getOsVersion());
+   }
+
+   private static Ordering<TemplateDefinition> templateBySize() {
+      return new Ordering<TemplateDefinition>() {
+         @Override
+         public int compare(final TemplateDefinition left, final TemplateDefinition right) {
+            return Longs.compare(left.getDiskFileSize(), right.getDiskFileSize());
+         }
+      };
+   }
+
 }

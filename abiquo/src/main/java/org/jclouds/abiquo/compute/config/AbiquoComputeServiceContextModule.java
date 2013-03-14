@@ -21,8 +21,11 @@ package org.jclouds.abiquo.compute.config;
 
 import org.jclouds.abiquo.compute.functions.DatacenterToLocation;
 import org.jclouds.abiquo.compute.functions.VirtualDatacenterToLocation;
-import org.jclouds.abiquo.compute.functions.VirtualMachineTemplateToImage;
 import org.jclouds.abiquo.compute.functions.VirtualMachineTemplateInVirtualDatacenterToHardware;
+import org.jclouds.abiquo.compute.functions.VirtualMachineTemplateToImage;
+import org.jclouds.abiquo.compute.functions.VirtualMachineTemplateToLoginCredentials;
+import org.jclouds.abiquo.compute.functions.VirtualMachineTemplateToOperatingSystem;
+import org.jclouds.abiquo.compute.functions.VirtualMachineTemplateToStatus;
 import org.jclouds.abiquo.compute.functions.VirtualMachineToNodeMetadata;
 import org.jclouds.abiquo.compute.options.AbiquoTemplateOptions;
 import org.jclouds.abiquo.compute.strategy.AbiquoComputeServiceAdapter;
@@ -36,8 +39,10 @@ import org.jclouds.compute.config.ComputeServiceAdapterContextModule;
 import org.jclouds.compute.domain.Hardware;
 import org.jclouds.compute.domain.Image;
 import org.jclouds.compute.domain.NodeMetadata;
+import org.jclouds.compute.domain.OperatingSystem;
 import org.jclouds.compute.options.TemplateOptions;
 import org.jclouds.domain.Location;
+import org.jclouds.domain.LoginCredentials;
 import org.jclouds.location.suppliers.ImplicitLocationSupplier;
 import org.jclouds.location.suppliers.implicit.OnlyLocationOrFirstZone;
 
@@ -62,6 +67,12 @@ public class AbiquoComputeServiceContextModule
             }).to(AbiquoComputeServiceAdapter.class);
       bind(new TypeLiteral<Function<VirtualMachine, NodeMetadata>>() {
       }).to(VirtualMachineToNodeMetadata.class);
+      bind(new TypeLiteral<Function<VirtualMachineTemplate, Image.Status>>() {
+      }).to(VirtualMachineTemplateToStatus.class);
+      bind(new TypeLiteral<Function<VirtualMachineTemplate, LoginCredentials>>() {
+      }).to(VirtualMachineTemplateToLoginCredentials.class);
+      bind(new TypeLiteral<Function<VirtualMachineTemplate, OperatingSystem>>() {
+      }).to(VirtualMachineTemplateToOperatingSystem.class);
       bind(new TypeLiteral<Function<VirtualMachineTemplate, Image>>() {
       }).to(VirtualMachineTemplateToImage.class);
       bind(new TypeLiteral<Function<VirtualMachineTemplateInVirtualDatacenter, Hardware>>() {

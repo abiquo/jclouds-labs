@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<templateDefinition>
+    <link href="http://localhost:80/api/config/categories/6" rel="category" title="OS"/>
+    <url>http://abiquo-repository.abiquo.com/centos5/centos5.ovf</url>
+    <name>Centos 5.6 x86_64</name>
+    <description>Centos 5.  Log in as 'root' with password 'abiquo'.</description>
+    <productName>Centos 5.6 x86_64</productName>
+    <iconUrl>http://abiquo-repository.abiquo.com/centos5/centos.png</iconUrl>
+    <diskFormatType>QCOW2_SPARSE</diskFormatType>
+    <diskFileSize>614</diskFileSize>
+    <osType>CENTOS_64</osType>
+    <ethernetDriverType>E1000</ethernetDriverType>
+    <diskControllerType>IDE</diskControllerType>
+</templateDefinition>

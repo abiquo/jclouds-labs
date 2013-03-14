@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<templateDefinitions>
+    <templateDefinition>
+        <link title="OS" rel="category" type="application/vnd.abiquo.category+xml" href="http://localhost/api/config/categories/6"/>
+        <link rel="edit" type="application/vnd.abiquo.templatedefinition+xml" href="http://localhost/api/admin/enterprises/1/appslib/templateDefinitions/1"/>
+        <link rel="enterprise" type="application/vnd.abiquo.enterprise+xml" href="http://localhost/api/admin/enterprises/1"/>
+        <id>1</id>
+        <url>http://abiquo-repository.abiquo.com/centos5/centos5.ovf</url>
+        <name>Centos 5.6 x86_64</name>
+        <description>Centos 5.  Log in as 'root' with password 'abiquo'.</description>
+        <productName>Centos 5.6 x86_64</productName>
+        <iconUrl>http://abiquo-repository.abiquo.com/centos5/centos.png</iconUrl>
+        <diskFormatType>QCOW2_SPARSE</diskFormatType>
+        <diskFileSize>614</diskFileSize>
+        <osType>CENTOS_64</osType>
+        <ethernetDriverType>E1000</ethernetDriverType>
+        <diskControllerType>IDE</diskControllerType>
+    </templateDefinition>
+</templateDefinitions>

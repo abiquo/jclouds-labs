@@ -36,6 +36,7 @@ import org.jclouds.compute.domain.Image.Status;
 import org.jclouds.compute.domain.ImageBuilder;
 import org.jclouds.compute.domain.OperatingSystem;
 import org.jclouds.domain.Location;
+import org.jclouds.domain.LoginCredentials;
 
 import com.abiquo.model.rest.RESTLink;
 import com.google.common.base.Function;
@@ -54,11 +55,23 @@ public class VirtualMachineTemplateToImage implements Function<VirtualMachineTem
 
    private final Supplier<Map<Integer, Datacenter>> regionMap;
 
+   private final Function<VirtualMachineTemplate, OperatingSystem> operatingSystem;
+
+   private final Function<VirtualMachineTemplate, LoginCredentials> loginCredentials;
+
+   private final Function<VirtualMachineTemplate, Status> status;
+
    @Inject
    public VirtualMachineTemplateToImage(final Function<Datacenter, Location> datacenterToLocation,
-         @Memoized final Supplier<Map<Integer, Datacenter>> regionMap) {
+         @Memoized final Supplier<Map<Integer, Datacenter>> regionMap,
+         final Function<VirtualMachineTemplate, OperatingSystem> operatingSystem,
+         final Function<VirtualMachineTemplate, LoginCredentials> loginCredentials,
+         final Function<VirtualMachineTemplate, Status> status) {
       this.datacenterToLocation = checkNotNull(datacenterToLocation, "datacenterToLocation");
       this.regionMap = checkNotNull(regionMap, "regionMap");
+      this.operatingSystem = checkNotNull(operatingSystem, "operatingSystem");
+      this.loginCredentials = checkNotNull(loginCredentials, "loginCredentials");
+      this.status = checkNotNull(status, "status");
    }
 
    @Override
@@ -71,21 +84,15 @@ public class VirtualMachineTemplateToImage implements Function<VirtualMachineTem
       // Location information
       Datacenter region = regionMap.get().get(template.unwrap().getIdFromLink(ParentLinkName.DATACENTER));
       builder.location(datacenterToLocation.apply(region));
-
-      // Only conversions have a status
-      builder.status(Status.AVAILABLE);
-      builder.backendStatus(Status.AVAILABLE.name()); // Abiquo images do not
-                                                      // have a status
+      builder.operatingSystem(operatingSystem.apply(template));
+      builder.defaultCredentials(loginCredentials.apply(template));
+      builder.status(status.apply(template));
+      builder.backendStatus(template.getState().name());
 
       RESTLink downloadLink = template.unwrap().searchLink("diskfile");
       builder.uri(downloadLink == null ? null : URI.create(downloadLink.getHref()));
 
-      // TODO: Operating system not implemented in Abiquo Templates
-      // TODO: Image credentials still not present in Abiquo template metadata
-      // Will be added in Abiquo 2.4:
-      // http://jira.abiquo.com/browse/ABICLOUDPREMIUM-3647
-      builder.operatingSystem(OperatingSystem.builder().description(template.getName()).build());
-
       return builder.build();
    }
+
 }

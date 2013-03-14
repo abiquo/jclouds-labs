@@ -28,8 +28,6 @@ import java.util.List;
 
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
-import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
-import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.domain.enterprise.Limits;
 import org.jclouds.abiquo.domain.infrastructure.options.DatacenterOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.IpmiOptions;
@@ -47,8 +45,6 @@ import com.abiquo.model.enumerator.MachineState;
 import com.abiquo.model.enumerator.NetworkType;
 import com.abiquo.model.enumerator.RemoteServiceType;
 import com.abiquo.model.enumerator.VlanTagAvailabilityType;
-import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
-import com.abiquo.server.core.appslibrary.VirtualMachineTemplatesDto;
 import com.abiquo.server.core.cloud.HypervisorTypeDto;
 import com.abiquo.server.core.cloud.HypervisorTypesDto;
 import com.abiquo.server.core.enterprise.DatacentersLimitsDto;
@@ -582,9 +578,8 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     * 
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/TierResource#TierResource-Retrievethelistoftiers"
-    *      >
-    *      http://community.abiquo.com/display/ABI20/TierResource#TierResource-
-    *      Retrievethelistoftiers </a>
+    *      > http://community.abiquo.com/display/ABI20/TierResource#TierResource
+    *      - Retrievethelistoftiers </a>
     * @return List of tiers in this datacenter.
     */
    public List<Tier> listTiers() {
@@ -599,9 +594,8 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *           Filter to be applied to the list.
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/TierResource#TierResource-Retrievethelistoftiers"
-    *      >
-    *      http://community.abiquo.com/display/ABI20/TierResource#TierResource-
-    *      Retrievethelistoftiers </a>
+    *      > http://community.abiquo.com/display/ABI20/TierResource#TierResource
+    *      - Retrievethelistoftiers </a>
     * @return Filtered list of tiers in this datacenter.
     */
    public List<Tier> listTiers(final Predicate<Tier> filter) {
@@ -1062,91 +1056,6 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
       MachineIpmiStateDto dto = context.getApi().getInfrastructureApi()
             .checkMachineIpmiState(target, ip, user, password, options);
       return dto.getState();
-   }
-
-   /**
-    * Retrieve the list of virtual machine templates in the repository of this
-    * datacenter.
-    * 
-    * @param enterprise
-    *           Owner of the templates.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/VirtualMachineTemplateResource#VirtualMachineTemplateResource-Retrieveallvirtualmachinetemplates"
-    *      > http://community.abiquo.com/display/ABI20/
-    *      VirtualMachineTemplateResource#
-    *      VirtualMachineTemplateResource-Retrieveallvirtualmachinetemplates</a>
-    * @return List of virtual machine templates in the repository of this
-    *         datacenter.
-    */
-   public List<VirtualMachineTemplate> listTemplatesInRepository(final Enterprise enterprise) {
-      VirtualMachineTemplatesDto dto = context.getApi().getVirtualMachineTemplateApi()
-            .listVirtualMachineTemplates(enterprise.getId(), target.getId());
-      return wrap(context, VirtualMachineTemplate.class, dto.getCollection());
-   }
-
-   /**
-    * Retrieve a filtered list of virtual machine templates in the repository of
-    * this datacenter.
-    * 
-    * @param enterprise
-    *           Owner of the templates.
-    * @param filter
-    *           Filter to be applied to the list.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/VirtualMachineTemplateResource#VirtualMachineTemplateResource-Retrieveallvirtualmachinetemplates"
-    *      > http://community.abiquo.com/display/ABI20/
-    *      VirtualMachineTemplateResource#
-    *      VirtualMachineTemplateResource-Retrieveallvirtualmachinetemplates</a>
-    * @return Filtered list of virtual machine templates in the repository of
-    *         this datacenter.
-    */
-   public List<VirtualMachineTemplate> listTemplatesInRepository(final Enterprise enterprise,
-         final Predicate<VirtualMachineTemplate> filter) {
-      return ImmutableList.copyOf(filter(listTemplatesInRepository(enterprise), filter));
-   }
-
-   /**
-    * Retrieve the first virtual machine template within the list of templates
-    * of this datacenter from the given enterprise.
-    * 
-    * @param enterprise
-    *           Owner of the templates.
-    * @param filter
-    *           Filter to be applied to the list.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/VirtualMachineTemplateResource#VirtualMachineTemplateResource-Retrieveallvirtualmachinetemplates"
-    *      > http://community.abiquo.com/display/ABI20/
-    *      VirtualMachineTemplateResource#
-    *      VirtualMachineTemplateResource-Retrieveallvirtualmachinetemplates</a>
-    * @return First virtual machine template matching the filter or
-    *         <code>null</code> if there is none.
-    */
-   public VirtualMachineTemplate findTemplateInRepository(final Enterprise enterprise,
-         final Predicate<VirtualMachineTemplate> filter) {
-      return getFirst(filter(listTemplatesInRepository(enterprise), filter), null);
-   }
-
-   /**
-    * Retrieve a single virtual machine template in of this datacenter from the
-    * given enterprise.
-    * 
-    * @param enterprise
-    *           Owner of the templates.
-    * @param id
-    *           Unique ID of the template in the datacenter repository for the
-    *           given enterprise.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/VirtualMachineTemplateResource#VirtualMachineTemplateResource-Retrieveallvirtualmachinetemplates"
-    *      > http://community.abiquo.com/display/ABI20/
-    *      VirtualMachineTemplateResource#
-    *      VirtualMachineTemplateResource-Retrieveallvirtualmachinetemplates</a>
-    * @return Virtual machine template with the given id in the given enterprise
-    *         or <code>null</code> if it does not exist.
-    */
-   public VirtualMachineTemplate getTemplateInRepository(final Enterprise enterprise, final Integer id) {
-      VirtualMachineTemplateDto template = context.getApi().getVirtualMachineTemplateApi()
-            .getVirtualMachineTemplate(enterprise.getId(), target.getId(), id);
-      return wrap(context, VirtualMachineTemplate.class, template);
    }
 
    // Builder

@@ -141,6 +141,8 @@ public class VirtualMachineToNodeMetadataTest {
 
       expect(image.getId()).andReturn("1");
       expect(image.getOperatingSystem()).andReturn(null);
+      expect(image.getDefaultCredentials()).andReturn(null);
+
       expect(templateToImage.apply(anyObject(VirtualMachineTemplate.class))).andReturn(image);
 
       replay(image);

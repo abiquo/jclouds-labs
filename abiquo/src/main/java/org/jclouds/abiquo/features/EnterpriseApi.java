@@ -50,8 +50,10 @@ import org.jclouds.rest.binders.BindToXMLPayload;
 
 import com.abiquo.am.model.TemplatesStateDto;
 import com.abiquo.server.core.appslibrary.DatacenterRepositoryDto;
+import com.abiquo.server.core.appslibrary.TemplateDefinitionDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListsDto;
+import com.abiquo.server.core.appslibrary.TemplateDefinitionsDto;
 import com.abiquo.server.core.cloud.VirtualAppliancesDto;
 import com.abiquo.server.core.cloud.VirtualDatacentersDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
@@ -500,6 +502,8 @@ public interface EnterpriseApi extends Closeable {
    MachinesDto listReservedMachines(
          @EndpointLink("reservedmachines") @BinderParam(BindToPath.class) EnterpriseDto enterprise);
 
+   /*********************** Template definition list ***********************/
+
    /**
     * List all template definitions in apps library.
     * 
@@ -549,6 +553,22 @@ public interface EnterpriseApi extends Closeable {
          @EndpointLink("edit") @BinderParam(BindToXMLPayloadAndPath.class) TemplateDefinitionListDto templateList);
 
    /**
+    * Refresh an existing template definition list using the source
+    * ''ovfindex.xml'' url.
+    * 
+    * @param template
+    *           The template to be update, require ''url'' set.
+    * @return The updated template list after fetching new template definitions
+    *         form the ovfindex source.
+    */
+   @Named("templatedefinitionlist:refresh")
+   @PUT
+   @Consumes(TemplateDefinitionListDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   TemplateDefinitionListDto refreshTemplateDefinitionList(
+         @EndpointLink("edit") @BinderParam(BindToPath.class) TemplateDefinitionListDto templateList);
+
+   /**
     * Deletes existing user.
     * 
     * @param user
@@ -593,4 +613,77 @@ public interface EnterpriseApi extends Closeable {
    TemplatesStateDto listTemplateListStatus(
          @EndpointLink("repositoryStatus") @BinderParam(BindToPath.class) TemplateDefinitionListDto templateList,
          @QueryParam("datacenterId") @ParamParser(ParseDatacenterId.class) DatacenterDto datacenter);
+
+   /*********************** Template definition ************************/
+
+   /**
+    * Template Definitions are a summarized version of the OVF Envelope format.
+    * list all Template Definitions for a given enterprise.
+    * 
+    * @return The list of template definitions
+    */
+   @Named("templatedefinition:list")
+   @GET
+   @Consumes(TemplateDefinitionsDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   TemplateDefinitionsDto listTemplateDefinitions(
+         @EndpointLink("appslib/templateDefinitions") @BinderParam(BindToPath.class) EnterpriseDto enterprise);
+
+   /**
+    * Creates a template definition
+    * 
+    * @param templateDefinition
+    * @return The created template definition
+    */
+   @Named("templatedefinition:create")
+   @POST
+   @Produces(TemplateDefinitionDto.BASE_MEDIA_TYPE)
+   @Consumes(TemplateDefinitionDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   TemplateDefinitionDto createTemplateDefinition(
+         @EndpointLink("appslib/templateDefinitions") @BinderParam(BindToPath.class) EnterpriseDto enterprise,
+         @BinderParam(BindToXMLPayload.class) TemplateDefinitionDto templateDefinition);
+
+   /**
+    * Updates an existing template definition
+    * 
+    * @param templateDefinition
+    *           The new attributes for the templateDefinition.
+    * @return The updated templateDefinition.
+    */
+   @Named("templatedefinition:update")
+   @PUT
+   @Produces(TemplateDefinitionDto.BASE_MEDIA_TYPE)
+   @Consumes(TemplateDefinitionDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   TemplateDefinitionDto updateTemplateDefinition(
+         @EndpointLink("edit") @BinderParam(BindToXMLPayloadAndPath.class) TemplateDefinitionDto templateDefinition);
+
+   /**
+    * Get the given template definition
+    * 
+    * @param enterprise
+    *           The enterprise
+    * @param templateDefinitionId
+    *           The id of the template definition.
+    * @return The template definition or <code>null</code> if it does not exist.
+    */
+   @Named("templatedefinition:get")
+   @GET
+   @Consumes(TemplateDefinitionDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   @Fallback(NullOnNotFoundOr404.class)
+   TemplateDefinitionDto getTemplateDefinition(
+         @EndpointLink("appslib/templateDefinitions") @BinderParam(BindToPath.class) EnterpriseDto enterprise,
+         @BinderParam(AppendToPath.class) Integer templateDefinitionId);
+
+   /**
+    * Deletes an existing template definition
+    * 
+    * @param templateDefinition
+    */
+   @Named("templatedefinition:delete")
+   @DELETE
+   void deleteTemplateDefinition(
+         @EndpointLink("edit") @BinderParam(BindToPath.class) TemplateDefinitionDto templateDefinition);
 }
