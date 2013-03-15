@@ -29,8 +29,8 @@ import org.jclouds.abiquo.domain.network.options.NetworkOptions;
 import org.jclouds.abiquo.domain.options.search.FilterOptions;
 import org.jclouds.abiquo.reference.annotations.EnterpriseEdition;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.enumerator.RemoteServiceType;
+import com.abiquo.server.core.cloud.HypervisorTypeDto;
 import com.abiquo.server.core.cloud.HypervisorTypesDto;
 import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
@@ -148,7 +148,7 @@ public interface InfrastructureApi {
     *           Password to authenticate.
     * @return The physical machine.
     */
-   MachineDto discoverSingleMachine(DatacenterDto datacenter, String ip, HypervisorType hypervisorType, String user,
+   MachineDto discoverSingleMachine(DatacenterDto datacenter, String ip, String hypervisorType, String user,
          String password);
 
    /**
@@ -173,7 +173,7 @@ public interface InfrastructureApi {
     *           Optional query params.
     * @return The physical machine.
     */
-   MachineDto discoverSingleMachine(DatacenterDto datacenter, String ip, HypervisorType hypervisorType, String user,
+   MachineDto discoverSingleMachine(DatacenterDto datacenter, String ip, String hypervisorType, String user,
          String password, MachineOptions options);
 
    /**
@@ -199,7 +199,7 @@ public interface InfrastructureApi {
     * @return The physical machine list.
     */
    MachinesDto discoverMultipleMachines(final DatacenterDto datacenter, final String ipFrom, final String ipTo,
-         final HypervisorType hypervisorType, final String user, final String password);
+         final String hypervisorType, final String user, final String password);
 
    /**
     * Retrieve a list of remote machine information.
@@ -226,7 +226,7 @@ public interface InfrastructureApi {
     * @return The physical machine list.
     */
    MachinesDto discoverMultipleMachines(final DatacenterDto datacenter, final String ipFrom, final String ipTo,
-         final HypervisorType hypervisorType, final String user, final String password, final MachineOptions options);
+         final String hypervisorType, final String user, final String password, final MachineOptions options);
 
    /**
     * Retrieves limits for the given datacenter and any enterprise.
@@ -254,7 +254,7 @@ public interface InfrastructureApi {
     *           Password to authenticate.
     * @return The physical machine state information.
     */
-   MachineStateDto checkMachineState(DatacenterDto datacenter, String ip, HypervisorType hypervisorType, String user,
+   MachineStateDto checkMachineState(DatacenterDto datacenter, String ip, String hypervisorType, String user,
          String password);
 
    /**
@@ -276,7 +276,7 @@ public interface InfrastructureApi {
     *           Optional query params.
     * @return The physical machine state information.
     */
-   MachineStateDto checkMachineState(DatacenterDto datacenter, String ip, HypervisorType hypervisorType, String user,
+   MachineStateDto checkMachineState(DatacenterDto datacenter, String ip, String hypervisorType, String user,
          String password, MachineOptions options);
 
    /**

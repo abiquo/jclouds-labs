@@ -21,8 +21,6 @@ package org.jclouds.abiquo.domain;
 
 import static org.jclouds.abiquo.domain.DomainUtils.link;
 
-import com.abiquo.model.enumerator.DiskFormatType;
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.enumerator.VolumeState;
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
@@ -47,7 +45,7 @@ public class CloudResources {
    public static VirtualDatacenterDto virtualDatacenterPost() {
       VirtualDatacenterDto virtualDatacenter = new VirtualDatacenterDto();
       virtualDatacenter.setName("VDC");
-      virtualDatacenter.setHypervisorType(HypervisorType.KVM);
+      virtualDatacenter.setHypervisorType("KVM");
       virtualDatacenter.setVlan(NetworkResources.vlanPost());
       return virtualDatacenter;
    }
@@ -208,7 +206,7 @@ public class CloudResources {
       VirtualMachineTemplateDto template = new VirtualMachineTemplateDto();
       template.setId(10);
       template.setName("m0n0wall");
-      template.setDiskFormatType(DiskFormatType.VMDK_FLAT.toString());
+      template.setDiskFormatType("VMDK_FLAT");
       template.setPath("1/abiquo-repository.abiquo.com/m0n0wall/m0n0wall-1.3b18-i386-flat.vmdk");
       template.setDiskFileSize(27262976l);
       template.setCpuRequired(1);

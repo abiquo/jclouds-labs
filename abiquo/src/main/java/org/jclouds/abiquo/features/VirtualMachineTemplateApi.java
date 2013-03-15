@@ -25,7 +25,6 @@ import org.jclouds.abiquo.domain.cloud.options.ConversionOptions;
 import org.jclouds.abiquo.domain.cloud.options.VirtualMachineTemplateOptions;
 import org.jclouds.abiquo.domain.infrastructure.Datacenter;
 
-import com.abiquo.model.enumerator.DiskFormatType;
 import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.server.core.appslibrary.ConversionDto;
 import com.abiquo.server.core.appslibrary.ConversionsDto;
@@ -183,7 +182,7 @@ public interface VirtualMachineTemplateApi {
     * @return The conversions for the virtual machine template with the desired
     *         target disk format type.
     */
-   ConversionDto getConversion(VirtualMachineTemplateDto template, DiskFormatType targetFormat);
+   ConversionDto getConversion(VirtualMachineTemplateDto template, String targetFormat);
 
    /**
     * Starts a V2V conversion of the current virtual machine template, or
@@ -198,6 +197,6 @@ public interface VirtualMachineTemplateApi {
     * @return an accepted request with a link to track the progress of the
     *         conversion tasks.
     */
-   AcceptedRequestDto<String> requestConversion(VirtualMachineTemplateDto template, DiskFormatType targetFormat,
+   AcceptedRequestDto<String> requestConversion(VirtualMachineTemplateDto template, String targetFormat,
          ConversionDto conversion);
 }

@@ -39,7 +39,6 @@ import org.jclouds.http.HttpResponse;
 import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.rest.RestContext;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.enumerator.MachineState;
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
@@ -318,7 +317,7 @@ public class Machine extends AbstractPhysicalMachine {
 
       private String ipService;
 
-      private HypervisorType type;
+      private String type;
 
       private String user;
 
@@ -438,12 +437,11 @@ public class Machine extends AbstractPhysicalMachine {
          return this;
       }
 
-      public Builder hypervisorType(final HypervisorType hypervisorType) {
+      public Builder hypervisorType(final String hypervisorType) {
          this.type = hypervisorType;
-
          // Sets default hypervisor port
          if (this.port == null) {
-            this.port = hypervisorType.defaultPort;
+             this.port = hypervisorType.defaultPort;
          }
 
          return this;

@@ -36,7 +36,6 @@ import org.jclouds.abiquo.predicates.cloud.VirtualDatacenterPredicates;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.rest.RestContext;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.server.core.infrastructure.DatacenterDto;
 import com.google.common.base.Predicate;
 

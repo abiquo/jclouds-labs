@@ -46,7 +46,6 @@ import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.ResponseParser;
 import org.jclouds.rest.binders.BindToXMLPayload;
 
-import com.abiquo.model.enumerator.DiskFormatType;
 import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.server.core.appslibrary.ConversionDto;
 import com.abiquo.server.core.appslibrary.ConversionsDto;
@@ -195,7 +194,7 @@ public interface VirtualMachineTemplateAsyncApi {
    @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<ConversionDto> getConversion(
          @EndpointLink("conversions") @BinderParam(BindToPath.class) final VirtualMachineTemplateDto template,
-         @BinderParam(AppendToPath.class) DiskFormatType targetFormat);
+         @BinderParam(AppendToPath.class) String targetFormat);
 
    /**
     * @see VirtualMachineTemplateApi#updateConversion(ConversionDto)
@@ -207,6 +206,6 @@ public interface VirtualMachineTemplateAsyncApi {
    @Produces(ConversionDto.BASE_MEDIA_TYPE)
    ListenableFuture<AcceptedRequestDto<String>> requestConversion(
          @EndpointLink("conversions") @BinderParam(BindToPath.class) final VirtualMachineTemplateDto template,
-         @BinderParam(AppendToPath.class) DiskFormatType targetFormat,
+         @BinderParam(AppendToPath.class) String targetFormat,
          @BinderParam(BindToXMLPayload.class) ConversionDto conversion);
 }

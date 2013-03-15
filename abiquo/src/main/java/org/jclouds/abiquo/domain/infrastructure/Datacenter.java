@@ -44,7 +44,6 @@ import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.abiquo.reference.annotations.EnterpriseEdition;
 import org.jclouds.rest.RestContext;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.enumerator.MachineIpmiState;
 import com.abiquo.model.enumerator.MachineState;
 import com.abiquo.model.enumerator.NetworkType;
@@ -806,12 +805,11 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     * @throws Exception
     *            If the hypervisor type information cannot be retrieved.
     */
-   public HypervisorType getHypervisorType(final String ip) {
+   public String getHypervisorType(final String ip) {
       DatacenterOptions options = DatacenterOptions.builder().ip(ip).build();
 
-      String type = context.getApi().getInfrastructureApi().getHypervisorTypeFromMachine(target, options);
+      return context.getApi().getInfrastructureApi().getHypervisorTypeFromMachine(target, options);
 
-      return HypervisorType.valueOf(type);
    }
 
    /**
@@ -824,7 +822,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     * @return List of available hypervisor types in the datacenter.
     */
    @EnterpriseEdition
-   public List<HypervisorType> listAvailableHypervisors() {
+   public List<String> listAvailableHypervisors() {
       HypervisorTypesDto types = context.getApi().getInfrastructureApi().getHypervisorTypes(target);
 
       return getHypervisorTypes(types);
@@ -842,7 +840,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     * @return Filtered list of available hypervisor types in the datacenter.
     */
    @EnterpriseEdition
-   public List<HypervisorType> listAvailableHypervisors(final Predicate<HypervisorType> filter) {
+   public List<String> listAvailableHypervisors(final Predicate<String> filter) {
       return ImmutableList.copyOf(filter(listAvailableHypervisors(), filter));
    }
 
@@ -860,15 +858,15 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *         there is none.
     */
    @EnterpriseEdition
-   public HypervisorType findHypervisor(final Predicate<HypervisorType> filter) {
+   public String findHypervisor(final Predicate<String> filter) {
       return getFirst(filter(listAvailableHypervisors(), filter), null);
    }
 
-   private List<HypervisorType> getHypervisorTypes(final HypervisorTypesDto dtos) {
-      return ImmutableList.copyOf(transform(dtos.getCollection(), new Function<HypervisorTypeDto, HypervisorType>() {
+   private List<String> getHypervisorTypes(final HypervisorTypesDto dtos) {
+      return ImmutableList.copyOf(transform(dtos.getCollection(), new Function<HypervisorTypeDto, String>() {
          @Override
-         public HypervisorType apply(HypervisorTypeDto input) {
-            return HypervisorType.fromId(input.getId());
+         public String apply(HypervisorTypeDto input) {
+            return input.getName();
          }
       }));
    }
@@ -892,7 +890,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
     *      DatacenterResource- Retrieveremotemachineinformation</a>
     */
-   public Machine discoverSingleMachine(final String ip, final HypervisorType hypervisorType, final String user,
+   public Machine discoverSingleMachine(final String ip, final String hypervisorType, final String user,
          final String password) {
       return discoverSingleMachine(ip, hypervisorType, user, password, hypervisorType.defaultPort);
    }
@@ -918,7 +916,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
     *      DatacenterResource- Retrieveremotemachineinformation</a>
     */
-   public Machine discoverSingleMachine(final String ip, final HypervisorType hypervisorType, final String user,
+   public Machine discoverSingleMachine(final String ip, final String hypervisorType, final String user,
          final String password, final int port) {
       MachineDto dto = context
             .getApi()
@@ -955,7 +953,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      DatacenterResource- Retrievealistofremotemachineinformation</a>
     */
    public List<Machine> discoverMultipleMachines(final String ipFrom, final String ipTo,
-         final HypervisorType hypervisorType, final String user, final String password) {
+         final String hypervisorType, final String user, final String password) {
       return discoverMultipleMachines(ipFrom, ipTo, hypervisorType, user, password, hypervisorType.defaultPort);
    }
 
@@ -983,7 +981,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      DatacenterResource- Retrievealistofremotemachineinformation</a>
     */
    public List<Machine> discoverMultipleMachines(final String ipFrom, final String ipTo,
-         final HypervisorType hypervisorType, final String user, final String password, final int port) {
+         final String hypervisorType, final String user, final String password, final int port) {
       MachinesDto dto = context
             .getApi()
             .getInfrastructureApi()
@@ -1020,7 +1018,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
     *      DatacenterResource- Checkthestatefromremotemachine</a>
     */
-   public MachineState checkMachineState(final String ip, final HypervisorType hypervisorType, final String user,
+   public MachineState checkMachineState(final String ip, final String hypervisorType, final String user,
          final String password) {
       return checkMachineState(ip, hypervisorType, user, password,
             MachineOptions.builder().port(hypervisorType.defaultPort).build());
@@ -1049,7 +1047,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
     *      DatacenterResource- Checkthestatefromremotemachine</a>
     */
-   public MachineState checkMachineState(final String ip, final HypervisorType hypervisorType, final String user,
+   public MachineState checkMachineState(final String ip, final String hypervisorType, final String user,
          final String password, final MachineOptions options) {
       MachineStateDto dto = context.getApi().getInfrastructureApi()
             .checkMachineState(target, ip, hypervisorType, user, password, options);

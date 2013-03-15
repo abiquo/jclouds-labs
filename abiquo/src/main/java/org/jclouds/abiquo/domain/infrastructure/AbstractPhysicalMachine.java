@@ -30,7 +30,6 @@ import org.jclouds.abiquo.predicates.infrastructure.DatastorePredicates;
 import org.jclouds.abiquo.predicates.infrastructure.NetworkInterfacePredicates;
 import org.jclouds.rest.RestContext;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.enumerator.MachineIpmiState;
 import com.abiquo.model.enumerator.MachineState;
 import com.abiquo.server.core.infrastructure.DatastoresDto;
@@ -148,7 +147,7 @@ public abstract class AbstractPhysicalMachine extends DomainWrapper<MachineDto> 
       return target.getState();
    }
 
-   public HypervisorType getType() {
+   public String getType() {
       return target.getType();
    }
 
@@ -222,7 +221,7 @@ public abstract class AbstractPhysicalMachine extends DomainWrapper<MachineDto> 
       target.setState(state);
    }
 
-   public void setType(final HypervisorType type) {
+   public void setType(final String type) {
       target.setType(type);
    }
 

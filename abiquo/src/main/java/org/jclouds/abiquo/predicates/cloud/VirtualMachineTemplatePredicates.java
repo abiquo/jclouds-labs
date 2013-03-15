@@ -27,7 +27,6 @@ import java.util.Collection;
 import org.jclouds.abiquo.domain.cloud.TemplateDefinition;
 import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
 
-import com.abiquo.model.enumerator.DiskFormatType;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -60,7 +59,7 @@ public class VirtualMachineTemplatePredicates {
       };
    }
 
-   public static Predicate<VirtualMachineTemplate> diskFormat(final DiskFormatType... formats) {
+   public static Predicate<VirtualMachineTemplate> diskFormat(final String... formats) {
       checkNotNull(formats, "formats must be defined");
 
       return new Predicate<VirtualMachineTemplate>() {

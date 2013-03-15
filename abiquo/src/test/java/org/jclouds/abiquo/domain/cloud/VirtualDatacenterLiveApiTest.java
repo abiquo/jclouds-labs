@@ -40,7 +40,6 @@ import org.jclouds.abiquo.predicates.cloud.VirtualMachineTemplatePredicates;
 import org.jclouds.abiquo.predicates.network.IpPredicates;
 import org.testng.annotations.Test;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.server.core.cloud.VirtualDatacenterDto;
 
 /**
@@ -88,11 +87,11 @@ public class VirtualDatacenterLiveApiTest extends BaseAbiquoApiLiveApiTest {
 
       Datacenter datacenter = datacenters.get(0);
 
-      List<HypervisorType> hypervisors = datacenter.listAvailableHypervisors();
+      List<String> hypervisors = datacenter.listAvailableHypervisors();
       assertNotNull(datacenters);
       assertTrue(size(datacenters) > 0);
 
-      HypervisorType hypervisor = hypervisors.get(0);
+      String hypervisor = hypervisors.get(0);
 
       PrivateNetwork network = PrivateNetwork.builder(env.enterpriseAdminContext.getApiContext())
             .name("DefaultNetwork").gateway("192.168.1.1").address("192.168.1.0").mask(24).build();
@@ -110,7 +109,7 @@ public class VirtualDatacenterLiveApiTest extends BaseAbiquoApiLiveApiTest {
    }
 
    public void testCreateFromVirtualDatacenter() {
-      HypervisorType hypervisor = env.virtualDatacenter.getHypervisorType();
+      String hypervisor = env.virtualDatacenter.getHypervisorType();
 
       Enterprise enterprise = env.user.getEnterprise();
       assertNotNull(enterprise);
