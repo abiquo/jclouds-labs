@@ -441,7 +441,7 @@ public class Machine extends AbstractPhysicalMachine {
          this.type = hypervisorType;
          // Sets default hypervisor port
          if (this.port == null) {
-             this.port = hypervisorType.defaultPort;
+             this.port = 443; // FIXME defaultPort
          }
 
          return this;

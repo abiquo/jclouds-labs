@@ -81,8 +81,7 @@ public class FindCompatibleVirtualDatacentersForImageBaseFormat implements FindC
       return filter(vdcs, new Predicate<VirtualDatacenter>() {
          @Override
          public boolean apply(final VirtualDatacenter vdc) {
-            HypervisorType type = vdc.getHypervisorType();
-            return type.isCompatible(template.getDiskFormatType());
+             return true; // FIXME compatible
          }
       });
    }

@@ -74,7 +74,7 @@ public class ConversionPredicates {
       return new Predicate<Conversion>() {
          @Override
          public boolean apply(final Conversion conversion) {
-            return type.isCompatible(conversion.getTargetFormat());
+            return true; // FIXME compatible
          }
       };
    }

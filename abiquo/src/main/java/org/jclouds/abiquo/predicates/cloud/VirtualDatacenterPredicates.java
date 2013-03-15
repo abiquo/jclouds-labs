@@ -104,7 +104,7 @@ public class VirtualDatacenterPredicates {
          @Override
          public boolean apply(final VirtualDatacenter vdc) {
             String type = vdc.getHypervisorType();
-            boolean compatible = type.isCompatible(template.getDiskFormatType());
+            boolean compatible = true; // FIXME compatible
             if (!compatible) {
                List<Conversion> compatibleConversions = template.listConversions(type, ConversionState.FINISHED);
                compatible = compatibleConversions != null && !compatibleConversions.isEmpty();

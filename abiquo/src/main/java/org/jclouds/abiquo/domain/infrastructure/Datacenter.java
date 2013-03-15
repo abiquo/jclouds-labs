@@ -892,7 +892,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     */
    public Machine discoverSingleMachine(final String ip, final String hypervisorType, final String user,
          final String password) {
-      return discoverSingleMachine(ip, hypervisorType, user, password, hypervisorType.defaultPort);
+      return discoverSingleMachine(ip, hypervisorType, user, password, 443); // FIXME defaultPort
    }
 
    /**
@@ -954,7 +954,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     */
    public List<Machine> discoverMultipleMachines(final String ipFrom, final String ipTo,
          final String hypervisorType, final String user, final String password) {
-      return discoverMultipleMachines(ipFrom, ipTo, hypervisorType, user, password, hypervisorType.defaultPort);
+      return discoverMultipleMachines(ipFrom, ipTo, hypervisorType, user, password, 443); // FIXME defaultPort
    }
 
    /**
@@ -1021,7 +1021,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
    public MachineState checkMachineState(final String ip, final String hypervisorType, final String user,
          final String password) {
       return checkMachineState(ip, hypervisorType, user, password,
-            MachineOptions.builder().port(hypervisorType.defaultPort).build());
+            MachineOptions.builder().port(443).build()); // FIXME defaultPort
    }
 
    /**
