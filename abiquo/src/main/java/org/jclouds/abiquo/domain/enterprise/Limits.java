@@ -48,174 +48,197 @@ import com.google.common.collect.Iterables;
  * 
  * @author Ignasi Barrera
  * @author Francesc Montserrat
- * @see API: <a
- *      href="http://community.abiquo.com/display/ABI20/Datacenter+Limits+Resource"
- *      >
+ * @see API: <a href="http://community.abiquo.com/display/ABI20/Datacenter+Limits+Resource" >
  *      http://community.abiquo.com/display/ABI20/Datacenter+Limits+Resource</a>
  */
-public class Limits extends DomainWithLimitsWrapper<DatacenterLimitsDto> {
-   /**
-    * Constructor to be used only by the builder.
-    */
-   protected Limits(final RestContext<AbiquoApi, AbiquoAsyncApi> context, final DatacenterLimitsDto target) {
-      super(context, target);
-   }
+public class Limits extends DomainWithLimitsWrapper<DatacenterLimitsDto>
+{
+    /**
+     * Constructor to be used only by the builder.
+     */
+    protected Limits(final RestContext<AbiquoApi, AbiquoAsyncApi> context,
+        final DatacenterLimitsDto target)
+    {
+        super(context, target);
+    }
 
-   // Domain operations
+    // Domain operations
 
-   /**
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/Datacenter+Limits+Resource#DatacenterLimitsResource-UpdatesanexistingLimitforanenterpriseinadatacenter"
-    *      > http://community.abiquo.com/display/ABI20/Datacenter+Limits+
-    *      Resource #DatacenterLimitsResource
-    *      -UpdatesanexistingLimitforanenterpriseinadatacenter</a>
-    */
-   public void update() {
-      target = context.getApi().getEnterpriseApi().updateLimits(target);
-   }
+    /**
+     * @see API: <a href=
+     *      "http://community.abiquo.com/display/ABI20/Datacenter+Limits+Resource#DatacenterLimitsResource-UpdatesanexistingLimitforanenterpriseinadatacenter"
+     *      > http://community.abiquo.com/display/ABI20/Datacenter+Limits+Resource
+     *      #DatacenterLimitsResource -UpdatesanexistingLimitforanenterpriseinadatacenter</a>
+     */
+    public void update()
+    {
+        target = context.getApi().getEnterpriseApi().updateLimits(target);
+    }
 
-   /**
-    * Allows a list of tiers to be used by an enterprise
-    * 
-    * @param tiers
-    *           The list of tiers to be allowed
-    */
-   @SinceApiVersion("2.4")
-   public void setAllowedTiers(List<Tier> tiers) {
-      checkNotNull(tiers, ValidationErrors.NULL_RESOURCE + List.class + " of " + Tier.class);
+    /**
+     * Allows a list of tiers to be used by an enterprise
+     * 
+     * @param tiers The list of tiers to be allowed
+     */
+    @SinceApiVersion("2.4")
+    public void setAllowedTiers(final List<Tier> tiers)
+    {
+        checkNotNull(tiers, ValidationErrors.NULL_RESOURCE + List.class + " of " + Tier.class);
 
-      Iterables.removeIf(target.getLinks(), LinkPredicates.rel(ParentLinkName.TIER));
+        Iterables.removeIf(target.getLinks(), LinkPredicates.rel(ParentLinkName.TIER));
 
-      for (Tier tier : tiers) {
-         checkNotNull(tier.unwrap().getEditLink(), ValidationErrors.MISSING_REQUIRED_LINK + "edit");
-         RESTLink link = new RESTLink(ParentLinkName.TIER, tier.unwrap().getEditLink().getHref());
-         target.addLink(link);
-      }
+        for (Tier tier : tiers)
+        {
+            checkNotNull(tier.unwrap().getEditLink(), ValidationErrors.MISSING_REQUIRED_LINK
+                + "edit");
+            RESTLink link =
+                new RESTLink(ParentLinkName.TIER, tier.unwrap().getEditLink().getHref());
+            target.addLink(link);
+        }
 
-      context.getApi().getEnterpriseApi().updateLimits(target);
-   }
+        context.getApi().getEnterpriseApi().updateLimits(target);
+    }
 
-   /**
-    * Retrieve a list of all allowed tiers
-    * 
-    * @return a list of all allowed tiers
-    */
-   @SinceApiVersion("2.4")
-   public List<Tier> getAllowedTiers() {
-      ListAllowedTiers strategy = context.getUtils().getInjector().getInstance(ListAllowedTiers.class);
-      return ImmutableList.copyOf(strategy.execute(this));
-   }
+    /**
+     * Retrieve a list of all allowed tiers
+     * 
+     * @return a list of all allowed tiers
+     */
+    @SinceApiVersion("2.4")
+    public List<Tier> getAllowedTiers()
+    {
+        ListAllowedTiers strategy =
+            context.getUtils().getInjector().getInstance(ListAllowedTiers.class);
+        return ImmutableList.copyOf(strategy.execute(this));
+    }
 
-   // ParentAccess
+    // ParentAccess
 
-   public Enterprise getEnterprise() {
-      Integer enterpriseId = target.getIdFromLink(ParentLinkName.ENTERPRISE);
-      checkNotNull(enterpriseId, ValidationErrors.MISSING_REQUIRED_LINK);
-      EnterpriseDto dto = context.getApi().getEnterpriseApi().getEnterprise(enterpriseId);
-      return wrap(context, Enterprise.class, dto);
-   }
+    public Enterprise getEnterprise()
+    {
+        Integer enterpriseId = target.getIdFromLink(ParentLinkName.ENTERPRISE);
+        checkNotNull(enterpriseId, ValidationErrors.MISSING_REQUIRED_LINK);
+        EnterpriseDto dto = context.getApi().getEnterpriseApi().getEnterprise(enterpriseId);
+        return wrap(context, Enterprise.class, dto);
+    }
 
-   public Datacenter getDatacenter() {
-      Integer datacenterId = target.getIdFromLink(ParentLinkName.DATACENTER);
-      checkNotNull(datacenterId, ValidationErrors.MISSING_REQUIRED_LINK);
-      DatacenterDto dto = context.getApi().getInfrastructureApi().getDatacenter(datacenterId);
-      return wrap(context, Datacenter.class, dto);
-   }
+    public Datacenter getDatacenter()
+    {
+        Integer datacenterId = target.getIdFromLink(ParentLinkName.DATACENTER);
+        checkNotNull(datacenterId, ValidationErrors.MISSING_REQUIRED_LINK);
+        DatacenterDto dto = context.getApi().getInfrastructureApi().getDatacenter(datacenterId);
+        return wrap(context, Datacenter.class, dto);
+    }
 
-   // Builder
+    // Builder
 
-   public static Builder builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context, Datacenter datacenter) {
-      return new Builder(context, datacenter);
-   }
+    public static Builder builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context,
+        final Datacenter datacenter)
+    {
+        return new Builder(context, datacenter);
+    }
 
-   public static class Builder extends LimitsBuilder<Builder> {
-      private RestContext<AbiquoApi, AbiquoAsyncApi> context;
+    public static class Builder extends LimitsBuilder<Builder>
+    {
+        private RestContext<AbiquoApi, AbiquoAsyncApi> context;
 
-      protected Long repositorySoft = Long.valueOf(DEFAULT_LIMITS);
+        protected Long repositorySoft = Long.valueOf(DEFAULT_LIMITS);
 
-      protected Long repositoryHard = Long.valueOf(DEFAULT_LIMITS);
+        protected Long repositoryHard = Long.valueOf(DEFAULT_LIMITS);
 
-      protected Datacenter datacenter;
+        protected Datacenter datacenter;
 
-      public Builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context, Datacenter datacenter) {
-         super();
-         this.context = context;
-         this.datacenter = checkNotNull(datacenter, "datacenter");
-      }
+        public Builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context,
+            final Datacenter datacenter)
+        {
+            super();
+            this.context = context;
+            this.datacenter = checkNotNull(datacenter, "datacenter");
+        }
 
-      public Builder repositoryLimits(final long soft, final long hard) {
-         this.repositorySoft = soft;
-         this.repositoryHard = hard;
-         return this;
-      }
+        public Builder repositoryLimits(final long soft, final long hard)
+        {
+            this.repositorySoft = soft;
+            this.repositoryHard = hard;
+            return this;
+        }
 
-      public Limits build() {
-         DatacenterLimitsDto dto = new DatacenterLimitsDto();
-         dto.setRamLimitsInMb(ramSoftLimitInMb, ramHardLimitInMb);
-         dto.setCpuCountLimits(cpuCountSoftLimit, cpuCountHardLimit);
-         dto.setHdLimitsInMb(hdSoftLimitInMb, hdHardLimitInMb);
-         dto.setStorageLimits(storageSoft, storageHard);
-         dto.setVlansLimits(vlansSoft, vlansHard);
-         dto.setPublicIPLimits(publicIpsSoft, publicIpsHard);
-         dto.setRepositoryHardLimitsInMb(repositoryHard);
-         dto.setRepositorySoftLimitsInMb(repositorySoft);
+        public Limits build()
+        {
+            DatacenterLimitsDto dto = new DatacenterLimitsDto();
+            dto.setRamLimitsInMb(ramSoftLimitInMb, ramHardLimitInMb);
+            dto.setCpuCountLimits(cpuCountSoftLimit, cpuCountHardLimit);
+            dto.setHdLimitsInMb(hdSoftLimitInMb, hdHardLimitInMb);
+            dto.setStorageLimits(storageSoft, storageHard);
+            dto.setVlansLimits(vlansSoft, vlansHard);
+            dto.setPublicIPLimits(publicIpsSoft, publicIpsHard);
+            dto.setRepositoryLimits(repositorySoft, repositoryHard);
 
-         dto.addLink(new RESTLink(ParentLinkName.DATACENTER, checkNotNull(datacenter.unwrap().getEditLink(),
-               "missing edit link").getHref()));
+            dto.addLink(new RESTLink(ParentLinkName.DATACENTER, checkNotNull(
+                datacenter.unwrap().getEditLink(), "missing edit link").getHref()));
 
-         Limits limits = new Limits(context, dto);
+            Limits limits = new Limits(context, dto);
 
-         return limits;
-      }
+            return limits;
+        }
 
-      public static Builder fromLimits(final Limits in) {
-         return Limits.builder(in.context, in.getDatacenter())
-               .ramLimits(in.getRamSoftLimitInMb(), in.getRamHardLimitInMb())
-               .cpuCountLimits(in.getCpuCountSoftLimit(), in.getCpuCountHardLimit())
-               .hdLimitsInMb(in.getHdSoftLimitInMb(), in.getHdHardLimitInMb())
-               .storageLimits(in.getStorageSoft(), in.getStorageHard())
-               .vlansLimits(in.getVlansSoft(), in.getVlansHard())
-               .publicIpsLimits(in.getPublicIpsSoft(), in.getPublicIpsHard())
-               .repositoryLimits(in.getRepositorySoft(), in.getRepositoryHard());
-      }
-   }
+        public static Builder fromEnterprise(final Limits in)
+        {
+            return Limits.builder(in.context, in.getDatacenter())
+                .ramLimits(in.getRamSoftLimitInMb(), in.getRamHardLimitInMb())
+                .cpuCountLimits(in.getCpuCountSoftLimit(), in.getCpuCountHardLimit())
+                .hdLimitsInMb(in.getHdSoftLimitInMb(), in.getHdHardLimitInMb())
+                .storageLimits(in.getStorageSoft(), in.getStorageHard())
+                .vlansLimits(in.getVlansSoft(), in.getVlansHard())
+                .publicIpsLimits(in.getPublicIpsSoft(), in.getPublicIpsHard())
+                .repositoryLimits(in.getRepositorySoft(), in.getRepositoryHard());
+        }
+    }
 
-   // Delegate methods
+    // Delegate methods
 
-   public Integer getId() {
-      return target.getId();
-   }
+    public Integer getId()
+    {
+        return target.getId();
+    }
 
-   public long getRepositoryHard() {
-      return target.getRepositoryHardLimitsInMb();
-   }
+    public long getRepositoryHard()
+    {
+        return target.getRepositoryHard();
+    }
 
-   public long getRepositorySoft() {
-      return target.getRepositorySoftLimitsInMb();
-   }
+    public long getRepositorySoft()
+    {
+        return target.getRepositorySoft();
+    }
 
-   public void setRepositoryHard(final long repositoryHard) {
-      target.setRepositoryHardLimitsInMb(repositoryHard);
-   }
+    public void setRepositoryHard(final long repositoryHard)
+    {
+        target.setRepositoryHard(repositoryHard);
+    }
 
-   public void setRepositoryLimits(final long soft, final long hard) {
-      target.setRepositoryHardLimitsInMb(hard);
-      target.setRepositorySoftLimitsInMb(soft);
-   }
+    public void setRepositoryLimits(final long soft, final long hard)
+    {
+        target.setRepositoryHard(hard);
+        target.setRepositorySoft(soft);
+    }
 
-   public void setRepositorySoft(final long repositorySoft) {
-      target.setRepositorySoftLimitsInMb(repositorySoft);
-   }
+    public void setRepositorySoft(final long repositorySoft)
+    {
+        target.setRepositorySoft(repositorySoft);
+    }
 
-   @Override
-   public String toString() {
-      return "Limits [id=" + getId() + ", repositoryHard=" + getRepositoryHard() + ", repositorySoft="
-            + getRepositorySoft() + ", cpuCountHard=" + getCpuCountHardLimit() + ", cpuCountSoft="
-            + getCpuCountSoftLimit() + ", hdHardInMB=" + getHdHardLimitInMb() + ", hdSoftInMB=" + getHdSoftLimitInMb()
-            + ", publicIPsHard=" + getPublicIpsHard() + ", publicIpsSoft=" + getPublicIpsSoft() + ", ramHardInMB="
-            + getRamHardLimitInMb() + ", ramSoftInMB=" + getRamSoftLimitInMb() + ", storageHard=" + getStorageHard()
-            + ", storageSoft=" + getStorageSoft() + ", vlansHard=" + getVlansHard() + ", vlansSoft=" + getVlansSoft()
-            + "]";
-   }
+    @Override
+    public String toString()
+    {
+        return "Limits [id=" + getId() + ", repositoryHard=" + getRepositoryHard()
+            + ", repositorySoft=" + getRepositorySoft() + ", cpuCountHard="
+            + getCpuCountHardLimit() + ", cpuCountSoft=" + getCpuCountSoftLimit() + ", hdHardInMB="
+            + getHdHardLimitInMb() + ", hdSoftInMB=" + getHdSoftLimitInMb() + ", publicIPsHard="
+            + getPublicIpsHard() + ", publicIpsSoft=" + getPublicIpsSoft() + ", ramHardInMB="
+            + getRamHardLimitInMb() + ", ramSoftInMB=" + getRamSoftLimitInMb() + ", storageHard="
+            + getStorageHard() + ", storageSoft=" + getStorageSoft() + ", vlansHard="
+            + getVlansHard() + ", vlansSoft=" + getVlansSoft() + "]";
+    }
 
 }
