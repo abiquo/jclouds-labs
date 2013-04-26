@@ -50,9 +50,12 @@ public class VirtualMachineTemplateToStatusTest {
    public void testVirtualMachineTemplateToStatusError() {
       testVirtualMachineTemplateToStatus(Status.ERROR, VMTemplateState.FAILED);
    }
+   public void testVirtualMachineTemplateToStatusDeleted() {
+       testVirtualMachineTemplateToStatus(Status.DELETED, VMTemplateState.UNAVAILABLE);
+    }
 
    public void testVirtualMachineTemplateToStatusAllVMTemplateState() {
-      assertEquals(VMTemplateState.values().length, 3); // we have 3 tests
+      assertEquals(VMTemplateState.values().length, 4); // we have 4 tests
    }
 
    private void testVirtualMachineTemplateToStatus(final Status status, final VMTemplateState vmttemplateState) {

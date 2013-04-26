@@ -46,6 +46,8 @@ public class VirtualMachineTemplateToStatus implements Function<VirtualMachineTe
             return Status.PENDING;
          case FAILED:
             return Status.ERROR;
+         case UNAVAILABLE:
+             return Status.DELETED;
          default:
             return Status.UNRECOGNIZED;
       }
