@@ -18,7 +18,6 @@ package org.jclouds.abiquo.domain.config;
 
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
-
 import org.jclouds.rest.ApiContext;
 
 import com.abiquo.server.core.config.LicenseDto;
@@ -89,14 +88,6 @@ public class License extends DomainWrapper<LicenseDto> {
       return target.getCode();
    }
 
-   public String getCustomerId() {
-      return target.getCustomerid();
-   }
-
-   public String getEnabledIp() {
-      return target.getEnabledip();
-   }
-
    public String getExpiration() {
       return target.getExpiration();
    }
@@ -111,8 +102,8 @@ public class License extends DomainWrapper<LicenseDto> {
 
    @Override
    public String toString() {
-      return "License [id=" + getId() + ", code=" + getCode() + ", customerId=" + getCustomerId() + ", enabledIp="
-            + getEnabledIp() + ", expiration=" + getExpiration() + ", numCores=" + getNumCores() + "]";
+      return "License [id=" + getId() + ", code=" + getCode() + ", expiration=" + getExpiration() + ", numCores="
+            + getNumCores() + "]";
    }
 
 }

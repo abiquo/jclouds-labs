@@ -128,6 +128,7 @@ public class PricingResources {
       pricingtemplate.setPublicIp(new BigDecimal(0));
       pricingtemplate.setVcpu(new BigDecimal(0));
       pricingtemplate.setMemoryGB(new BigDecimal(0));
+      pricingtemplate.setLayer(new BigDecimal(0));
       pricingtemplate.setDefaultTemplate(true);
       pricingtemplate.addLink(new RESTLink("currency", "http://localhost/api/config/currencies/1"));
       return pricingtemplate;
@@ -148,6 +149,7 @@ public class PricingResources {
       pricingtemplate.setPublicIp(new BigDecimal(0));
       pricingtemplate.setVcpu(new BigDecimal(0));
       pricingtemplate.setMemoryGB(new BigDecimal(0));
+      pricingtemplate.setLayer(new BigDecimal(0));
       pricingtemplate.setDefaultTemplate(true);
       pricingtemplate.addLink(new RESTLink("currency", "http://localhost/api/config/currencies/1"));
       pricingtemplate.setId(1);
@@ -169,9 +171,11 @@ public class PricingResources {
       buffer.append("<showMinimumCharge>false</showMinimumCharge>");
       buffer.append("<minimumCharge>2</minimumCharge>");
       buffer.append("<memoryGB>0</memoryGB>");
+      buffer.append("<layer>0</layer>");
       buffer.append("<publicIp>0</publicIp>");
       buffer.append("<vcpu>0</vcpu>");
       buffer.append("<memoryMB>0</memoryMB>");
+      buffer.append("<layer>0</layer>");
       buffer.append("<defaultTemplate>true</defaultTemplate>");
       buffer.append("<link href='http://localhost/api/config/currencies/1' rel='currency'/>");
       buffer.append("</pricingTemplate>");
@@ -198,6 +202,7 @@ public class PricingResources {
       buffer.append("<defaultTemplate>true</defaultTemplate>");
       buffer.append("<link href='http://localhost/api/config/currencies/1' rel='currency'/>");
       buffer.append("<id>1</id>");
+      buffer.append("<layer>0</layer>");
       buffer.append(link("/config/pricingtemplates/1", "edit"));
       buffer.append("</pricingTemplate>");
       return buffer.toString();

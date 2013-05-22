@@ -16,6 +16,7 @@
  */
 package org.jclouds.abiquo.domain.enterprise;
 
+import static org.jclouds.abiquo.domain.DomainWrapper.wrap;
 import static org.jclouds.abiquo.reference.AbiquoTestConstants.PREFIX;
 import static org.jclouds.abiquo.util.Assert.assertHasError;
 import static org.testng.Assert.assertEquals;
@@ -33,13 +34,18 @@ import org.jclouds.abiquo.domain.cloud.VirtualMachine;
 import org.jclouds.abiquo.domain.enterprise.Enterprise.Builder;
 import org.jclouds.abiquo.domain.exception.AbiquoException;
 import org.jclouds.abiquo.domain.infrastructure.Datacenter;
+import org.jclouds.abiquo.domain.infrastructure.Tier;
 import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
+import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.testng.collections.Lists;
 
+import com.abiquo.server.core.enterprise.DatacenterLimitsDto;
 import com.abiquo.server.core.enterprise.DatacentersLimitsDto;
 import com.abiquo.server.core.enterprise.EnterpriseDto;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Live integration tests for the {@link Enterprise} domain class.
@@ -145,6 +151,38 @@ public class EnterpriseLiveApiTest extends BaseAbiquoApiLiveApiTest {
       assertEquals(limitsDto.getCollection().get(0).getCpuCountSoftLimit(), 4);
    }
 
+   public void testSetAllowedTiers() {
+      List<Tier> tiers = Lists.newArrayList(env.datacenter.listTiers());
+      tiers.remove(0);
+      limits.setAllowedTiers(tiers);
+
+      DatacentersLimitsDto limitsDto = env.enterpriseApi.getLimits(enterprise.unwrap(), env.datacenter.unwrap());
+      assertNotNull(limitsDto);
+      assertEquals(limitsDto.getCollection().size(), 1);
+      DatacenterLimitsDto limit = limitsDto.getCollection().get(0);
+      assertEquals(limit.searchLinks(ParentLinkName.TIER).size(), tiers.size());
+
+      Limits limitUpdated = wrap(env.context.getApiContext(), Limits.class, limit);
+      List<Tier> retiervedTiers = limitUpdated.getAllowedTiers();
+      assertNotNull(retiervedTiers);
+      assertEquals(retiervedTiers.size(), tiers.size());
+   }
+
+   public void testSetEmptyAllowedTiers() {
+      limits.setAllowedTiers(ImmutableList.<Tier> of());
+
+      DatacentersLimitsDto limitsDto = env.enterpriseApi.getLimits(enterprise.unwrap(), env.datacenter.unwrap());
+      assertNotNull(limitsDto);
+      assertEquals(limitsDto.getCollection().size(), 1);
+      DatacenterLimitsDto limit = limitsDto.getCollection().get(0);
+      assertEquals(limit.searchLinks(ParentLinkName.TIER).size(), 0);
+
+      Limits limitUpdated = wrap(env.context.getApiContext(), Limits.class, limit);
+      List<Tier> retiervedTiers = limitUpdated.getAllowedTiers();
+      assertNotNull(retiervedTiers);
+      assertEquals(retiervedTiers.size(), 0);
+   }
+
    public void testListAllowedDatacenters() {
       List<Datacenter> allowed = enterprise.listAllowedDatacenters();
 
@@ -162,4 +200,5 @@ public class EnterpriseLiveApiTest extends BaseAbiquoApiLiveApiTest {
       List<VirtualAppliance> vapps = env.defaultEnterprise.listVirtualAppliances();
       assertTrue(vapps.size() > 0);
    }
+
 }

@@ -63,7 +63,6 @@ import org.jclouds.abiquo.predicates.infrastructure.StoragePoolPredicates;
 import org.jclouds.abiquo.predicates.infrastructure.TierPredicates;
 import org.jclouds.abiquo.util.Config;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.enumerator.RemoteServiceType;
 import com.google.common.collect.Iterables;
 import com.google.common.io.Resources;
@@ -108,6 +107,8 @@ public class InfrastructureTestEnvironment implements TestEnvironment {
    public Machine machine;
 
    public Enterprise enterprise;
+
+   public Limits limits;
 
    public StorageDevice storageDevice;
 
@@ -205,7 +206,7 @@ public class InfrastructureTestEnvironment implements TestEnvironment {
 
    protected void createMachine() {
       String ip = Config.get("abiquo.hypervisor.address");
-      HypervisorType type = HypervisorType.valueOf(Config.get("abiquo.hypervisor.type"));
+      String type = Config.get("abiquo.hypervisor.type");
       String user = Config.get("abiquo.hypervisor.user");
       String pass = Config.get("abiquo.hypervisor.pass");
 
@@ -313,7 +314,7 @@ public class InfrastructureTestEnvironment implements TestEnvironment {
       enterprise = Enterprise.builder(context.getApiContext()).name(randomName()).build();
       enterprise.save();
       assertNotNull(enterprise.getId());
-      Limits limits = enterprise.allowDatacenter(datacenter);
+      limits = enterprise.allowDatacenter(datacenter);
       assertNotNull(limits);
    }
 

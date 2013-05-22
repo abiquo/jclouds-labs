@@ -25,7 +25,6 @@ import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
 import org.jclouds.abiquo.domain.infrastructure.options.StoragePoolOptions;
 import org.jclouds.abiquo.reference.ValidationErrors;
-
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.rest.ApiContext;
 
@@ -243,9 +242,8 @@ public class StorageDevice extends DomainWrapper<StorageDeviceDto> {
     * 
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/TierResource#TierResource-Retrievethelistoftiers"
-    *      >
-    *      http://community.abiquo.com/display/ABI20/TierResource#TierResource-
-    *      Retrievethelistoftiers </a>
+    *      > http://community.abiquo.com/display/ABI20/TierResource#TierResource
+    *      - Retrievethelistoftiers </a>
     * @return List of tiers in the datacenter using this device.
     */
    public List<Tier> listTiersFromDatacenter() {
@@ -269,9 +267,8 @@ public class StorageDevice extends DomainWrapper<StorageDeviceDto> {
     *           Filter to be applied to the list.
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/TierResource#TierResource-Retrievethelistoftiers"
-    *      >
-    *      http://community.abiquo.com/display/ABI20/TierResource#TierResource-
-    *      Retrievethelistoftiers </a>
+    *      > http://community.abiquo.com/display/ABI20/TierResource#TierResource
+    *      - Retrievethelistoftiers </a>
     * @return Filtered list of tiers in the datacenter using this device.
     */
    public List<Tier> listTiersFromDatacenter(final Predicate<Tier> filter) {

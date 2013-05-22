@@ -17,6 +17,8 @@
 package org.jclouds.abiquo.internal;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.getFirst;
 import static org.jclouds.abiquo.domain.DomainWrapper.wrap;
 
 import java.util.List;
@@ -34,13 +36,12 @@ import org.jclouds.abiquo.features.services.CloudService;
 import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.abiquo.strategy.cloud.ListVirtualAppliances;
 import org.jclouds.abiquo.strategy.cloud.ListVirtualDatacenters;
-import org.jclouds.abiquo.strategy.cloud.ListVirtualMachines;
 import org.jclouds.rest.ApiContext;
 
 import com.abiquo.server.core.cloud.VirtualDatacenterDto;
+import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 
 /**
  * Provides high level Abiquo cloud operations.
@@ -51,24 +52,20 @@ import com.google.common.collect.Iterables;
 @Singleton
 public class BaseCloudService implements CloudService {
    @VisibleForTesting
-   protected ApiContext<AbiquoApi> context;
+   protected final ApiContext<AbiquoApi> context;
 
    @VisibleForTesting
    protected final ListVirtualDatacenters listVirtualDatacenters;
 
    @VisibleForTesting
-   protected ListVirtualAppliances listVirtualAppliances;
-
-   @VisibleForTesting
-   protected ListVirtualMachines listVirtualMachines;
+   protected final ListVirtualAppliances listVirtualAppliances;
 
    @Inject
    protected BaseCloudService(final ApiContext<AbiquoApi> context, final ListVirtualDatacenters listVirtualDatacenters,
-         final ListVirtualAppliances listVirtualAppliances, final ListVirtualMachines listVirtualMachines) {
+         final ListVirtualAppliances listVirtualAppliances) {
       this.context = checkNotNull(context, "context");
       this.listVirtualDatacenters = checkNotNull(listVirtualDatacenters, "listVirtualDatacenters");
       this.listVirtualAppliances = checkNotNull(listVirtualAppliances, "listVirtualAppliances");
-      this.listVirtualMachines = checkNotNull(listVirtualMachines, "listVirtualMachines");
    }
 
    /*********************** Virtual Datacenter ********************** */
@@ -106,7 +103,7 @@ public class BaseCloudService implements CloudService {
 
    @Override
    public VirtualDatacenter findVirtualDatacenter(final Predicate<VirtualDatacenter> filter) {
-      return Iterables.getFirst(listVirtualDatacenters(filter), null);
+      return getFirst(listVirtualDatacenters(filter), null);
    }
 
    /*********************** Virtual Appliance ********************** */
@@ -123,23 +120,24 @@ public class BaseCloudService implements CloudService {
 
    @Override
    public VirtualAppliance findVirtualAppliance(final Predicate<VirtualAppliance> filter) {
-      return Iterables.getFirst(listVirtualAppliances(filter), null);
+      return getFirst(listVirtualAppliances(filter), null);
    }
 
    /*********************** Virtual Machine ********************** */
 
    @Override
    public Iterable<VirtualMachine> listVirtualMachines() {
-      return listVirtualMachines.execute();
+      VirtualMachinesWithNodeExtendedDto vms = context.getApi().getCloudApi().listAllVirtualMachines();
+      return wrap(context, VirtualMachine.class, vms.getCollection());
    }
 
    @Override
    public Iterable<VirtualMachine> listVirtualMachines(final Predicate<VirtualMachine> filter) {
-      return listVirtualMachines.execute(filter);
+      return filter(listVirtualMachines(), filter);
    }
 
    @Override
    public VirtualMachine findVirtualMachine(final Predicate<VirtualMachine> filter) {
-      return Iterables.getFirst(listVirtualMachines(filter), null);
+      return getFirst(listVirtualMachines(filter), null);
    }
 }

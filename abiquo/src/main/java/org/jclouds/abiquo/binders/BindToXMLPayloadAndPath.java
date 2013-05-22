@@ -22,6 +22,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.ws.rs.PUT;
 
 import org.jclouds.http.HttpRequest;
 import org.jclouds.rest.binders.BindToXMLPayload;

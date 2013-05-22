@@ -76,8 +76,8 @@ public class AdminResources {
       limits.setRamLimitsInMb(0, 0);
       limits.setStorageLimits(0, 0);
       limits.setVlansLimits(0, 0);
-      limits.setRepositoryHardLimitsInMb(0);
-      limits.setRepositorySoftLimitsInMb(0);
+      limits.setRepositoryHard(0);
+      limits.setRepositorySoft(0);
       return limits;
    }
 

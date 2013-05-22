@@ -32,8 +32,11 @@ import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.abiquo.binders.AppendToPath;
 import org.jclouds.abiquo.binders.BindToPath;
 import org.jclouds.abiquo.binders.BindToXMLPayloadAndPath;
+import org.jclouds.abiquo.domain.cloud.TemplateDefinition;
+import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
 import org.jclouds.abiquo.domain.cloud.options.ConversionOptions;
 import org.jclouds.abiquo.domain.cloud.options.VirtualMachineTemplateOptions;
+import org.jclouds.abiquo.domain.infrastructure.Datacenter;
 import org.jclouds.abiquo.functions.ReturnTaskReferenceOrNull;
 import org.jclouds.abiquo.http.filters.AbiquoAuthentication;
 import org.jclouds.abiquo.http.filters.AppendApiVersionToMediaType;
@@ -45,12 +48,12 @@ import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.ResponseParser;
 import org.jclouds.rest.binders.BindToXMLPayload;
 
-import com.abiquo.model.enumerator.DiskFormatType;
 import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.server.core.appslibrary.ConversionDto;
 import com.abiquo.server.core.appslibrary.ConversionsDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplatePersistentDto;
+import com.abiquo.server.core.appslibrary.VirtualMachineTemplateRequestDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplatesDto;
 
 /**
@@ -158,13 +161,13 @@ public interface VirtualMachineTemplateApi extends Closeable {
     * Creates a persistent virtual machine template from other virtual machine
     * template.
     * 
-    * @param dcRepository
+    * @param datacenterRepositoryId
     *           The repository where the persistent virtual machine template
     *           will be created.
     * @param options
     *           The persistent options like name, volume/tier, virtual
     *           datacenter and original template.
-    * @return Response message to the persistent request.
+    * @return Traceable task response.
     */
    @Named("template:createpersistent")
    @POST
@@ -175,6 +178,41 @@ public interface VirtualMachineTemplateApi extends Closeable {
    AcceptedRequestDto<String> createPersistentVirtualMachineTemplate(@PathParam("enterprise") Integer enterpriseId,
          @PathParam("datacenterrepository") Integer datacenterRepositoryId,
          @BinderParam(BindToXMLPayload.class) VirtualMachineTemplatePersistentDto persistentOptions);
+
+   /**
+    * Creates a new virtual machine template in the given datacenter.
+    * <ul>
+    * <li>It can download a template definition @see
+    * {@link TemplateDefinition#downloadToRepository(Datacenter)}</li>
+    * <li>Or promote a virtual machine template instance @see
+    * {@link VirtualMachineTemplate#promoteToMaster(String)}</li>
+    * </ul>
+    * 
+    * @param enterpriseId
+    *           Id of the enterprise
+    * @param datacenterRepositoryId
+    *           The datacenter repository where the new virtual machine template
+    *           will be created.
+    * @param templateRequest
+    *           <ul>
+    *           <li>To downloading a template definition: Hold the template
+    *           definition link with _rel_ ''templateDefinition''</li>
+    *           <li>To promote a virtual machine template instance: Hold the
+    *           virtual machine template link with _rel_
+    *           ''virtualmachinetemplate'' and also the desired
+    *           ''promotedName'', name of the new created virtual machine
+    *           template</li>
+    *           </ul>
+    */
+   @Named("template:create")
+   @POST
+   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
+   @Produces(VirtualMachineTemplateRequestDto.BASE_MEDIA_TYPE)
+   @Path("/{enterprise}/datacenterrepositories/{datacenterrepository}/virtualmachinetemplates")
+   @JAXBResponseParser
+   AcceptedRequestDto<String> createVirtualMachineTemplate(@PathParam("enterprise") Integer enterpriseId,
+         @PathParam("datacenterrepository") Integer datacenterRepositoryId,
+         @BinderParam(BindToXMLPayload.class) VirtualMachineTemplateRequestDto templateRequest);
 
    /**
     * List all the conversions for a virtual machine template.
@@ -227,7 +265,7 @@ public interface VirtualMachineTemplateApi extends Closeable {
    @Fallback(NullOnNotFoundOr404.class)
    ConversionDto getConversion(
          @EndpointLink("conversions") @BinderParam(BindToPath.class) final VirtualMachineTemplateDto template,
-         @BinderParam(AppendToPath.class) DiskFormatType targetFormat);
+         @BinderParam(AppendToPath.class) String targetFormat);
 
    /**
     * Starts a V2V conversion of the current virtual machine template, or
@@ -249,6 +287,6 @@ public interface VirtualMachineTemplateApi extends Closeable {
    @Produces(ConversionDto.BASE_MEDIA_TYPE)
    AcceptedRequestDto<String> requestConversion(
          @EndpointLink("conversions") @BinderParam(BindToPath.class) final VirtualMachineTemplateDto template,
-         @BinderParam(AppendToPath.class) DiskFormatType targetFormat,
+         @BinderParam(AppendToPath.class) String targetFormat,
          @BinderParam(BindToXMLPayload.class) ConversionDto conversion);
 }
