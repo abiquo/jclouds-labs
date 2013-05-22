@@ -17,7 +17,6 @@
 package org.jclouds.abiquo.domain.cloud.options;
 
 import org.jclouds.abiquo.domain.options.search.FilterOptions.BaseFilterOptionsBuilder;
-
 import org.jclouds.http.options.BaseHttpRequestOptions;
 
 /**

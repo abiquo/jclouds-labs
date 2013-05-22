@@ -22,7 +22,7 @@ import java.util.Date;
 
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.domain.DomainWithTasksWrapper;
-import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.ConversionTask;
 import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.http.HttpResponse;
@@ -30,7 +30,6 @@ import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.rest.ApiContext;
 
 import com.abiquo.model.enumerator.ConversionState;
-import com.abiquo.model.enumerator.DiskFormatType;
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.appslibrary.ConversionDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
@@ -82,7 +81,7 @@ public class Conversion extends DomainWithTasksWrapper<ConversionDto> {
     *      ConversionResource- UpdateConversion</a>
     * @return The task reference to track its progress
     */
-   public AsyncTask restartFailedConversion() {
+   public ConversionTask restartFailedConversion() {
       return getVirtualMachineTemplate().requestConversion(getTargetFormat());
    }
 
@@ -104,11 +103,11 @@ public class Conversion extends DomainWithTasksWrapper<ConversionDto> {
       return target.getTargetSizeInBytes();
    }
 
-   public DiskFormatType getSourceFormat() {
+   public String getSourceFormat() {
       return target.getSourceFormat();
    }
 
-   public DiskFormatType getTargetFormat() {
+   public String getTargetFormat() {
       return target.getTargetFormat();
    }
 

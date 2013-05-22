@@ -22,6 +22,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 import java.util.List;
@@ -30,11 +31,13 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jclouds.abiquo.domain.exception.AbiquoException;
 import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.VirtualMachineTask;
 import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
 import org.testng.annotations.Test;
 
 import com.abiquo.server.core.cloud.VirtualMachineDto;
 import com.abiquo.server.core.cloud.VirtualMachineState;
+import com.google.common.collect.Iterables;
 
 /**
  * Live integration tests for the {@link VirtualMachine} domain class.
@@ -43,6 +46,11 @@ import com.abiquo.server.core.cloud.VirtualMachineState;
  */
 @Test(groups = "api", testName = "VirtualMachineLiveApiTest")
 public class VirtualMachineLiveApiTest extends BaseAbiquoApiLiveApiTest {
+   public void testListAllVirtualMachines() {
+      Iterable<VirtualMachine> vms = env.context.getCloudService().listVirtualMachines();
+      assertTrue(Iterables.size(vms) > 1);
+   }
+
    public void testHasDataFromNode() {
       assertNotNull(env.virtualMachine.getNameLabel());
       assertNotNull(env.virtualMachine.getInternalName());
@@ -58,7 +66,7 @@ public class VirtualMachineLiveApiTest extends BaseAbiquoApiLiveApiTest {
    }
 
    public void testGetTasks() {
-      List<AsyncTask> tasks = env.virtualMachine.listTasks();
+      List<AsyncTask<?, ?>> tasks = env.virtualMachine.listTasks();
       assertNotNull(tasks);
    }
 
@@ -100,10 +108,10 @@ public class VirtualMachineLiveApiTest extends BaseAbiquoApiLiveApiTest {
       try {
          VirtualMachine vm = env.virtualAppliance.getVirtualMachine(env.virtualMachine.getId());
          vm.setCpu(7);
-         AsyncTask task = vm.update(true);
+         VirtualMachineTask task = vm.update(true);
 
          assertNull(task);
-         assertEquals(vm.getCpu(), 7);
+         assertEquals(vm.getCpu().intValue(), 7);
       } finally {
          env.virtualDatacenter.setCpuCountHardLimit(originalHard);
          env.virtualDatacenter.setCpuCountSoftLimit(originalSoft);

@@ -39,7 +39,6 @@ import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.rest.ApiContext;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.enumerator.NetworkType;
 import com.abiquo.model.enumerator.StatefulInclusion;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplatesDto;
@@ -518,7 +517,7 @@ public class VirtualDatacenter extends DomainWithLimitsWrapper<VirtualDatacenter
 
       private String name;
 
-      private HypervisorType hypervisorType;
+      private String hypervisorType;
 
       private Enterprise enterprise;
 
@@ -540,7 +539,7 @@ public class VirtualDatacenter extends DomainWithLimitsWrapper<VirtualDatacenter
          return this;
       }
 
-      public Builder hypervisorType(final HypervisorType hypervisorType) {
+      public Builder hypervisorType(final String hypervisorType) {
          this.hypervisorType = hypervisorType;
          return this;
       }
@@ -596,7 +595,7 @@ public class VirtualDatacenter extends DomainWithLimitsWrapper<VirtualDatacenter
 
    // Delegate methods
 
-   public HypervisorType getHypervisorType() {
+   public String getHypervisorType() {
       return target.getHypervisorType();
    }
 
@@ -608,7 +607,7 @@ public class VirtualDatacenter extends DomainWithLimitsWrapper<VirtualDatacenter
       return target.getName();
    }
 
-   public void setHypervisorType(final HypervisorType hypervisorType) {
+   public void setHypervisorType(final String hypervisorType) {
       target.setHypervisorType(hypervisorType);
    }
 

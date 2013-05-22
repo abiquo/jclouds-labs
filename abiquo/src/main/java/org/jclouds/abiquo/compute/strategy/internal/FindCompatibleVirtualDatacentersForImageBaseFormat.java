@@ -33,7 +33,6 @@ import org.jclouds.abiquo.predicates.cloud.VirtualDatacenterPredicates;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.rest.ApiContext;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.server.core.infrastructure.DatacenterDto;
 import com.google.common.base.Predicate;
 
@@ -77,8 +76,7 @@ public class FindCompatibleVirtualDatacentersForImageBaseFormat implements FindC
       return filter(vdcs, new Predicate<VirtualDatacenter>() {
          @Override
          public boolean apply(final VirtualDatacenter vdc) {
-            HypervisorType type = vdc.getHypervisorType();
-            return type.isCompatible(template.getDiskFormatType());
+             return true; // FIXME compatible
          }
       });
    }

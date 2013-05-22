@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+  <allowedtier>
+        <link rel="datacenter" href="http://localhost/api/admin/datacenters/1"/>
+        <link rel="edit" href="http://localhost/api/admin/enterprises/1/limits/1/allowedtiers/1"/>
+        <link rel="enterprise" href="http://localhost/api/admin/enterprises/1"/>
+        <link rel="tier"  href="http://localhost/api/admin/datacenters/1/storage/tiers/2"/>
+        <id>1</id>
+    </allowedtier>

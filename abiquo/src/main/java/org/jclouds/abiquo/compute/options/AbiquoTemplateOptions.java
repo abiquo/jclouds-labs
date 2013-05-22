@@ -16,6 +16,7 @@
  */
 package org.jclouds.abiquo.compute.options;
 
+import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.options.TemplateOptions;
 
 /**

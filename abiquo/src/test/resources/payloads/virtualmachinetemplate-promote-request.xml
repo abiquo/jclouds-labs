@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<virtualmachinetemplaterequest>
+    <link href="http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates/1" rel="virtualmachinetemplate"/>
+    <promotedName>mypromoted</promotedName>
+</virtualmachinetemplaterequest>

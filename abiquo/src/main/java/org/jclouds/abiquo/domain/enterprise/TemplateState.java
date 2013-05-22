@@ -20,15 +20,17 @@ import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
 import org.jclouds.rest.ApiContext;
 
-import com.abiquo.am.model.TemplateStateDto;
-import com.abiquo.am.model.TemplateStatusEnumType;
+import com.abiquo.server.core.appslibrary.TemplateStateDto;
+import com.abiquo.server.core.appslibrary.TemplateStateDto.TemplateStatusEnumType;
 
 /**
  * Adds high level functionality to {@link TemplateStateDto}.
  * 
  * @author Ignasi Barrera
  * @author Francesc Montserrat
+ * @deprecated Will disappear in future Abiquo versions
  */
+@Deprecated
 public class TemplateState extends DomainWrapper<TemplateStateDto> {
    /**
     * Constructor to be used only by the builder.

@@ -45,7 +45,6 @@ import org.jclouds.rest.ApiContext;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.cloud.VirtualMachineState;
 import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
@@ -122,7 +121,7 @@ public class VirtualMachineToNodeMetadataTest {
       assertEquals(node.getLocation().getDescription(), "Mock Location");
       assertEquals(node.getImageId(), "1");
       assertEquals(node.getHardware().getId(), "1");
-      assertEquals(node.getHardware().getRam(), vm.getRam());
+      assertEquals(node.getHardware().getRam(), vm.getRam().intValue());
       assertEquals(node.getHardware().getProcessors().get(0).getCores(), (double) vm.getCpu());
       assertEquals(node.getLoginPort(), vm.getVdrpPort());
       assertEquals(node.getPrivateAddresses().size(), 1);
@@ -138,6 +137,8 @@ public class VirtualMachineToNodeMetadataTest {
 
       expect(image.getId()).andReturn("1");
       expect(image.getOperatingSystem()).andReturn(null);
+      expect(image.getDefaultCredentials()).andReturn(null);
+
       expect(templateToImage.apply(anyObject(VirtualMachineTemplate.class))).andReturn(image);
 
       replay(image);
@@ -182,7 +183,7 @@ public class VirtualMachineToNodeMetadataTest {
 
    private VirtualDatacenter mockVirtualDatacenter() {
       VirtualDatacenter vdc = EasyMock.createMock(VirtualDatacenter.class);
-      expect(vdc.getHypervisorType()).andReturn(HypervisorType.VMX_04);
+      expect(vdc.getHypervisorType()).andReturn("VMX_04");
       expect(vdc.getDatacenter()).andReturn(null);
       replay(vdc);
       return vdc;

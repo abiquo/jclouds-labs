@@ -16,6 +16,7 @@
  */
 package org.jclouds.abiquo.domain.infrastructure;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.find;
 import static com.google.common.collect.Iterables.getFirst;
@@ -25,8 +26,6 @@ import java.util.List;
 
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
-import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
-import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.domain.enterprise.Limits;
 import org.jclouds.abiquo.domain.infrastructure.options.DatacenterOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.IpmiOptions;
@@ -36,16 +35,14 @@ import org.jclouds.abiquo.domain.network.NetworkServiceType;
 import org.jclouds.abiquo.domain.network.PrivateNetwork;
 import org.jclouds.abiquo.domain.network.options.NetworkOptions;
 import org.jclouds.abiquo.predicates.network.NetworkServiceTypePredicates;
+import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.rest.ApiContext;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.enumerator.MachineIpmiState;
 import com.abiquo.model.enumerator.MachineState;
 import com.abiquo.model.enumerator.NetworkType;
 import com.abiquo.model.enumerator.RemoteServiceType;
 import com.abiquo.model.enumerator.VlanTagAvailabilityType;
-import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
-import com.abiquo.server.core.appslibrary.VirtualMachineTemplatesDto;
 import com.abiquo.server.core.cloud.HypervisorTypeDto;
 import com.abiquo.server.core.cloud.HypervisorTypesDto;
 import com.abiquo.server.core.enterprise.DatacentersLimitsDto;
@@ -67,6 +64,7 @@ import com.abiquo.server.core.infrastructure.network.VlanTagAvailabilityDto;
 import com.abiquo.server.core.infrastructure.storage.StorageDeviceDto;
 import com.abiquo.server.core.infrastructure.storage.StorageDevicesDto;
 import com.abiquo.server.core.infrastructure.storage.StorageDevicesMetadataDto;
+import com.abiquo.server.core.infrastructure.storage.TierDto;
 import com.abiquo.server.core.infrastructure.storage.TiersDto;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -579,9 +577,8 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     * 
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/TierResource#TierResource-Retrievethelistoftiers"
-    *      >
-    *      http://community.abiquo.com/display/ABI20/TierResource#TierResource-
-    *      Retrievethelistoftiers </a>
+    *      > http://community.abiquo.com/display/ABI20/TierResource#TierResource
+    *      - Retrievethelistoftiers </a>
     * @return List of tiers in this datacenter.
     */
    public List<Tier> listTiers() {
@@ -596,9 +593,8 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *           Filter to be applied to the list.
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/TierResource#TierResource-Retrievethelistoftiers"
-    *      >
-    *      http://community.abiquo.com/display/ABI20/TierResource#TierResource-
-    *      Retrievethelistoftiers </a>
+    *      > http://community.abiquo.com/display/ABI20/TierResource#TierResource
+    *      - Retrievethelistoftiers </a>
     * @return Filtered list of tiers in this datacenter.
     */
    public List<Tier> listTiers(final Predicate<Tier> filter) {
@@ -620,6 +616,19 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     */
    public Tier findTier(final Predicate<Tier> filter) {
       return getFirst(filter(listTiers(), filter), null);
+   }
+
+   /**
+    * Retrieve a single tier.
+    * 
+    * @param id
+    *           Unique ID of the tier.
+    * @return Tier with the given id or <code>null</code> if it does not exist.
+    */
+   public Tier getTier(Integer tierId) {
+      TierDto dto = context.getApi().getInfrastructureApi()
+            .getTier(target, checkNotNull(tierId, ValidationErrors.NULL_RESOURCE));
+      return wrap(context, Tier.class, dto);
    }
 
    /**
@@ -762,12 +771,11 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     * @throws Exception
     *            If the hypervisor type information cannot be retrieved.
     */
-   public HypervisorType getHypervisorType(final String ip) {
+   public String getHypervisorType(final String ip) {
       DatacenterOptions options = DatacenterOptions.builder().ip(ip).build();
 
-      String type = context.getApi().getInfrastructureApi().getHypervisorTypeFromMachine(target, options);
+      return context.getApi().getInfrastructureApi().getHypervisorTypeFromMachine(target, options);
 
-      return HypervisorType.valueOf(type);
    }
 
    /**
@@ -779,7 +787,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      DatacenterResource- Retrieveavailablehypervisortypes</a>
     * @return List of available hypervisor types in the datacenter.
     */
-   public List<HypervisorType> listAvailableHypervisors() {
+   public List<String> listAvailableHypervisors() {
       HypervisorTypesDto types = context.getApi().getInfrastructureApi().getHypervisorTypes(target);
 
       return getHypervisorTypes(types);
@@ -796,7 +804,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      DatacenterResource- Retrieveavailablehypervisortypes</a>
     * @return Filtered list of available hypervisor types in the datacenter.
     */
-   public List<HypervisorType> listAvailableHypervisors(final Predicate<HypervisorType> filter) {
+   public List<String> listAvailableHypervisors(final Predicate<String> filter) {
       return ImmutableList.copyOf(filter(listAvailableHypervisors(), filter));
    }
 
@@ -813,15 +821,15 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     * @return First hypervisor type matching the filter or <code>null</code> if
     *         there is none.
     */
-   public HypervisorType findHypervisor(final Predicate<HypervisorType> filter) {
+   public String findHypervisor(final Predicate<String> filter) {
       return getFirst(filter(listAvailableHypervisors(), filter), null);
    }
 
-   private List<HypervisorType> getHypervisorTypes(final HypervisorTypesDto dtos) {
-      return ImmutableList.copyOf(transform(dtos.getCollection(), new Function<HypervisorTypeDto, HypervisorType>() {
+   private List<String> getHypervisorTypes(final HypervisorTypesDto dtos) {
+      return ImmutableList.copyOf(transform(dtos.getCollection(), new Function<HypervisorTypeDto, String>() {
          @Override
-         public HypervisorType apply(HypervisorTypeDto input) {
-            return HypervisorType.fromId(input.getId());
+         public String apply(HypervisorTypeDto input) {
+            return input.getName();
          }
       }));
    }
@@ -845,9 +853,9 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
     *      DatacenterResource- Retrieveremotemachineinformation</a>
     */
-   public Machine discoverSingleMachine(final String ip, final HypervisorType hypervisorType, final String user,
+   public Machine discoverSingleMachine(final String ip, final String hypervisorType, final String user,
          final String password) {
-      return discoverSingleMachine(ip, hypervisorType, user, password, hypervisorType.defaultPort);
+      return discoverSingleMachine(ip, hypervisorType, user, password, 443); // FIXME defaultPort
    }
 
    /**
@@ -871,7 +879,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
     *      DatacenterResource- Retrieveremotemachineinformation</a>
     */
-   public Machine discoverSingleMachine(final String ip, final HypervisorType hypervisorType, final String user,
+   public Machine discoverSingleMachine(final String ip, final String hypervisorType, final String user,
          final String password, final int port) {
       MachineDto dto = context
             .getApi()
@@ -908,8 +916,8 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      DatacenterResource- Retrievealistofremotemachineinformation</a>
     */
    public List<Machine> discoverMultipleMachines(final String ipFrom, final String ipTo,
-         final HypervisorType hypervisorType, final String user, final String password) {
-      return discoverMultipleMachines(ipFrom, ipTo, hypervisorType, user, password, hypervisorType.defaultPort);
+         final String hypervisorType, final String user, final String password) {
+      return discoverMultipleMachines(ipFrom, ipTo, hypervisorType, user, password, 443); // FIXME defaultPort
    }
 
    /**
@@ -936,7 +944,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      DatacenterResource- Retrievealistofremotemachineinformation</a>
     */
    public List<Machine> discoverMultipleMachines(final String ipFrom, final String ipTo,
-         final HypervisorType hypervisorType, final String user, final String password, final int port) {
+         final String hypervisorType, final String user, final String password, final int port) {
       MachinesDto dto = context
             .getApi()
             .getInfrastructureApi()
@@ -973,10 +981,10 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
     *      DatacenterResource- Checkthestatefromremotemachine</a>
     */
-   public MachineState checkMachineState(final String ip, final HypervisorType hypervisorType, final String user,
+   public MachineState checkMachineState(final String ip, final String hypervisorType, final String user,
          final String password) {
       return checkMachineState(ip, hypervisorType, user, password,
-            MachineOptions.builder().port(hypervisorType.defaultPort).build());
+            MachineOptions.builder().port(443).build()); // FIXME defaultPort
    }
 
    /**
@@ -1002,7 +1010,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
     *      DatacenterResource- Checkthestatefromremotemachine</a>
     */
-   public MachineState checkMachineState(final String ip, final HypervisorType hypervisorType, final String user,
+   public MachineState checkMachineState(final String ip, final String hypervisorType, final String user,
          final String password, final MachineOptions options) {
       MachineStateDto dto = context.getApi().getInfrastructureApi()
             .checkMachineState(target, ip, hypervisorType, user, password, options);
@@ -1059,91 +1067,6 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
       MachineIpmiStateDto dto = context.getApi().getInfrastructureApi()
             .checkMachineIpmiState(target, ip, user, password, options);
       return dto.getState();
-   }
-
-   /**
-    * Retrieve the list of virtual machine templates in the repository of this
-    * datacenter.
-    * 
-    * @param enterprise
-    *           Owner of the templates.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/VirtualMachineTemplateResource#VirtualMachineTemplateResource-Retrieveallvirtualmachinetemplates"
-    *      > http://community.abiquo.com/display/ABI20/
-    *      VirtualMachineTemplateResource#
-    *      VirtualMachineTemplateResource-Retrieveallvirtualmachinetemplates</a>
-    * @return List of virtual machine templates in the repository of this
-    *         datacenter.
-    */
-   public List<VirtualMachineTemplate> listTemplatesInRepository(final Enterprise enterprise) {
-      VirtualMachineTemplatesDto dto = context.getApi().getVirtualMachineTemplateApi()
-            .listVirtualMachineTemplates(enterprise.getId(), target.getId());
-      return wrap(context, VirtualMachineTemplate.class, dto.getCollection());
-   }
-
-   /**
-    * Retrieve a filtered list of virtual machine templates in the repository of
-    * this datacenter.
-    * 
-    * @param enterprise
-    *           Owner of the templates.
-    * @param filter
-    *           Filter to be applied to the list.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/VirtualMachineTemplateResource#VirtualMachineTemplateResource-Retrieveallvirtualmachinetemplates"
-    *      > http://community.abiquo.com/display/ABI20/
-    *      VirtualMachineTemplateResource#
-    *      VirtualMachineTemplateResource-Retrieveallvirtualmachinetemplates</a>
-    * @return Filtered list of virtual machine templates in the repository of
-    *         this datacenter.
-    */
-   public List<VirtualMachineTemplate> listTemplatesInRepository(final Enterprise enterprise,
-         final Predicate<VirtualMachineTemplate> filter) {
-      return ImmutableList.copyOf(filter(listTemplatesInRepository(enterprise), filter));
-   }
-
-   /**
-    * Retrieve the first virtual machine template within the list of templates
-    * of this datacenter from the given enterprise.
-    * 
-    * @param enterprise
-    *           Owner of the templates.
-    * @param filter
-    *           Filter to be applied to the list.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/VirtualMachineTemplateResource#VirtualMachineTemplateResource-Retrieveallvirtualmachinetemplates"
-    *      > http://community.abiquo.com/display/ABI20/
-    *      VirtualMachineTemplateResource#
-    *      VirtualMachineTemplateResource-Retrieveallvirtualmachinetemplates</a>
-    * @return First virtual machine template matching the filter or
-    *         <code>null</code> if there is none.
-    */
-   public VirtualMachineTemplate findTemplateInRepository(final Enterprise enterprise,
-         final Predicate<VirtualMachineTemplate> filter) {
-      return getFirst(filter(listTemplatesInRepository(enterprise), filter), null);
-   }
-
-   /**
-    * Retrieve a single virtual machine template in of this datacenter from the
-    * given enterprise.
-    * 
-    * @param enterprise
-    *           Owner of the templates.
-    * @param id
-    *           Unique ID of the template in the datacenter repository for the
-    *           given enterprise.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/VirtualMachineTemplateResource#VirtualMachineTemplateResource-Retrieveallvirtualmachinetemplates"
-    *      > http://community.abiquo.com/display/ABI20/
-    *      VirtualMachineTemplateResource#
-    *      VirtualMachineTemplateResource-Retrieveallvirtualmachinetemplates</a>
-    * @return Virtual machine template with the given id in the given enterprise
-    *         or <code>null</code> if it does not exist.
-    */
-   public VirtualMachineTemplate getTemplateInRepository(final Enterprise enterprise, final Integer id) {
-      VirtualMachineTemplateDto template = context.getApi().getVirtualMachineTemplateApi()
-            .getVirtualMachineTemplate(enterprise.getId(), target.getId(), id);
-      return wrap(context, VirtualMachineTemplate.class, template);
    }
 
    // Builder

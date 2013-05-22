@@ -40,6 +40,10 @@ public class ParentLinkName {
 
    public static final String VIRTUAL_MACHINE_TEMPLATE = "virtualmachinetemplate";
 
+   public static final String TEMPLATE_DEFINITION = "templateDefinition";
+
+   public static final String VIRTUAL_MACHINE = "virtualmachine";
+
    public static final String DATACENTER_REPOSITORY = "datacenterrepository";
 
    public static final String COST_CODE = "costcode";
@@ -47,6 +51,8 @@ public class ParentLinkName {
    public static final String CATEGORY = "category";
 
    public static final String ICON = "icon";
+
+   public static final String LIMIT = "limit";
 
    public static final String PRIVATE_NETWORK = "privatenetwork";
 
@@ -59,4 +65,8 @@ public class ParentLinkName {
    public static final String NETWORK_CONFIGURATIONS = "configurations";
 
    public static final String NETWORK_GATEWAY = "network_configuration";
+
+   public final static String TASK_RESULT = "result";
+
+   public final static String LAYER = "layer";
 }

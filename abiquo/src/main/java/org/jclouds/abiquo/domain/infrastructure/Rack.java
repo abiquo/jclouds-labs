@@ -99,9 +99,8 @@ public class Rack extends DomainWrapper<RackDto> {
     * 
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/RackResource#RackResource-UpdateanexistingRack"
-    *      >
-    *      http://community.abiquo.com/display/ABI20/RackResource#RackResource-
-    *      UpdateanexistingRack </a>
+    *      > http://community.abiquo.com/display/ABI20/RackResource#RackResource
+    *      - UpdateanexistingRack </a>
     */
    public void update() {
       target = context.getApi().getInfrastructureApi().updateRack(target);

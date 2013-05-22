@@ -138,7 +138,6 @@ public class BindToPathTest {
    }
 
    static class TestDto extends SingleResourceTransportDto {
-
       private static final long serialVersionUID = 5381713583837345158L;
 
       public TestDto() {

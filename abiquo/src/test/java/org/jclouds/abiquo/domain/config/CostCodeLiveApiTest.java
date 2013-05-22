@@ -27,14 +27,14 @@ import java.util.List;
 
 import javax.ws.rs.core.Response.Status;
 
-import com.google.common.collect.Lists;
-
 import org.jclouds.abiquo.domain.exception.AbiquoException;
 import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
 import org.jclouds.abiquo.predicates.config.PricingPredicates;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import com.google.common.collect.Lists;
 
 /**
  * Live integration tests for the {@link CostCode} domain class.
