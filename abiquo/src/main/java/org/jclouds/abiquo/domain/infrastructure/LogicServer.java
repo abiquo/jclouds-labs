@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
-
 import org.jclouds.rest.ApiContext;
 
 import com.abiquo.server.core.infrastructure.LogicServerDto;

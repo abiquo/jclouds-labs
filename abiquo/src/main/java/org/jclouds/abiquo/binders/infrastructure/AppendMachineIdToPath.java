@@ -20,6 +20,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.jclouds.abiquo.binders.AppendToPath;
+import org.jclouds.abiquo.domain.infrastructure.Machine;
 import org.jclouds.abiquo.functions.infrastructure.ParseMachineId;
 import org.jclouds.http.HttpRequest;
 

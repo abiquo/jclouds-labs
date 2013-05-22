@@ -41,6 +41,7 @@ import org.jclouds.abiquo.binders.infrastructure.AppendRemoteServiceTypeToPath;
 import org.jclouds.abiquo.binders.infrastructure.BindSupportedDevicesLinkToPath;
 import org.jclouds.abiquo.binders.infrastructure.ucs.BindLogicServerParameters;
 import org.jclouds.abiquo.binders.infrastructure.ucs.BindOrganizationParameters;
+import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.DatacenterOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.IpmiOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.MachineOptions;
@@ -61,13 +62,13 @@ import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.ResponseParser;
 import org.jclouds.rest.binders.BindToXMLPayload;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.enumerator.RemoteServiceType;
 import com.abiquo.server.core.cloud.HypervisorTypesDto;
 import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
 import com.abiquo.server.core.enterprise.DatacentersLimitsDto;
 import com.abiquo.server.core.enterprise.EnterpriseDto;
+import com.abiquo.server.core.enterprise.EnterprisesDto;
 import com.abiquo.server.core.infrastructure.BladeLocatorLedDto;
 import com.abiquo.server.core.infrastructure.DatacenterDto;
 import com.abiquo.server.core.infrastructure.DatacentersDto;
@@ -212,8 +213,8 @@ public interface InfrastructureApi extends Closeable {
    @Fallback(PropagateAbiquoExceptionOnNotFoundOr4xx.class)
    MachineDto discoverSingleMachine(
          @EndpointLink("discoversingle") @BinderParam(BindToPath.class) DatacenterDto datacenter,
-         @QueryParam("ip") String ip, @QueryParam("hypervisor") HypervisorType hypervisorType,
-         @QueryParam("user") String user, @QueryParam("password") String password);
+         @QueryParam("ip") String ip, @QueryParam("hypervisor") String hypervisorType, @QueryParam("user") String user,
+         @QueryParam("password") String password);
 
    /**
     * Retrieve remote machine information.
@@ -244,8 +245,8 @@ public interface InfrastructureApi extends Closeable {
    @Fallback(PropagateAbiquoExceptionOnNotFoundOr4xx.class)
    MachineDto discoverSingleMachine(
          @EndpointLink("discoversingle") @BinderParam(BindToPath.class) DatacenterDto datacenter,
-         @QueryParam("ip") String ip, @QueryParam("hypervisor") HypervisorType hypervisorType,
-         @QueryParam("user") String user, @QueryParam("password") String password, MachineOptions options);
+         @QueryParam("ip") String ip, @QueryParam("hypervisor") String hypervisorType, @QueryParam("user") String user,
+         @QueryParam("password") String password, MachineOptions options);
 
    /**
     * Retrieve a list of remote machine information.
@@ -274,10 +275,10 @@ public interface InfrastructureApi extends Closeable {
    @Consumes(MachinesDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
    @Fallback(PropagateAbiquoExceptionOnNotFoundOr4xx.class)
-   MachineDto discoverMultipleMachines(
+   MachinesDto discoverMultipleMachines(
          @EndpointLink("discovermultiple") @BinderParam(BindToPath.class) DatacenterDto datacenter,
          @QueryParam("ipFrom") String ipFrom, @QueryParam("ipTo") String ipTo,
-         @QueryParam("hypervisor") HypervisorType hypervisorType, @QueryParam("user") String user,
+         @QueryParam("hypervisor") String hypervisorType, @QueryParam("user") String user,
          @QueryParam("password") String password);
 
    /**
@@ -312,7 +313,7 @@ public interface InfrastructureApi extends Closeable {
    MachinesDto discoverMultipleMachines(
          @EndpointLink("discovermultiple") @BinderParam(BindToPath.class) DatacenterDto datacenter,
          @QueryParam("ipFrom") String ipFrom, @QueryParam("ipTo") String ipTo,
-         @QueryParam("hypervisor") HypervisorType hypervisorType, @QueryParam("user") String user,
+         @QueryParam("hypervisor") String hypervisorType, @QueryParam("user") String user,
          @QueryParam("password") String password, MachineOptions options);
 
    /**
@@ -352,8 +353,8 @@ public interface InfrastructureApi extends Closeable {
    @Fallback(PropagateAbiquoExceptionOnNotFoundOr4xx.class)
    MachineStateDto checkMachineState(
          @EndpointLink("checkmachinestate") @BinderParam(BindToPath.class) DatacenterDto datacenter,
-         @QueryParam("ip") String ip, @QueryParam("hypervisor") HypervisorType hypervisorType,
-         @QueryParam("user") String user, @QueryParam("password") String password);
+         @QueryParam("ip") String ip, @QueryParam("hypervisor") String hypervisorType, @QueryParam("user") String user,
+         @QueryParam("password") String password);
 
    /**
     * Check the state of a remote machine. This machine does not need to be
@@ -381,8 +382,8 @@ public interface InfrastructureApi extends Closeable {
    @Fallback(PropagateAbiquoExceptionOnNotFoundOr4xx.class)
    MachineStateDto checkMachineState(
          @EndpointLink("checkmachinestate") @BinderParam(BindToPath.class) DatacenterDto datacenter,
-         @QueryParam("ip") String ip, @QueryParam("hypervisor") HypervisorType hypervisorType,
-         @QueryParam("user") String user, @QueryParam("password") String password, MachineOptions options);
+         @QueryParam("ip") String ip, @QueryParam("hypervisor") String hypervisorType, @QueryParam("user") String user,
+         @QueryParam("password") String password, MachineOptions options);
 
    /**
     * Check the ipmi configuration state of a remote machine. This machine does
@@ -1265,6 +1266,60 @@ public interface InfrastructureApi extends Closeable {
    @Fallback(NullOnNotFoundOr404.class)
    TierDto getTier(@EndpointLink("tiers") @BinderParam(BindToPath.class) DatacenterDto datacenter,
          @BinderParam(AppendToPath.class) Integer tierId);
+
+   /**
+    * Allow the tier to be used by all enterprises.
+    * 
+    * @param tier
+    *           The tier to be allowed.
+    */
+   @Named("tier:allow")
+   @PUT
+   void allowTierToAllEnterprises(@EndpointLink("allowallenterprises") @BinderParam(BindToPath.class) TierDto tier);
+
+   /**
+    * Restrict a tier to all enterprises.
+    * 
+    * @param tier
+    *           The tier to be restricted.
+    * @param force
+    *           Boolean indicating if the force the operation must succeed even
+    *           if not all enterprises could be updated
+    */
+   @Named("tier:restrict")
+   @PUT
+   void restrictTierToAllEnterprises(
+         @EndpointLink("restrictallenterprises") @BinderParam(BindToPath.class) TierDto tier,
+         @QueryParam("force") boolean force);
+
+   /**
+    * Retrieve list of allowed enterprises for a tier
+    * 
+    * @param tier
+    *           The tier for searching its allowed enterprises
+    * @return The list of the enterprises with the tier allowed
+    */
+   @Named("tier:enterprises")
+   @GET
+   @Consumes(EnterprisesDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   EnterprisesDto listAllowedEnterprisesForTier(@EndpointLink("enterprises") @BinderParam(BindToPath.class) TierDto tier);
+
+   /**
+    * Retrieve list of allowed enterprises for a tier
+    * 
+    * @param tier
+    *           The tier for searching its allowed enterprises
+    * @param options
+    *           Optional query params
+    * @return The list of the enterprises with the tier allowed
+    */
+   @Named("tier:enterprises")
+   @GET
+   @Consumes(EnterprisesDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   EnterprisesDto listAllowedEnterprisesForTier(
+         @EndpointLink("enterprises") @BinderParam(BindToPath.class) TierDto tier, EnterpriseOptions options);
 
    /*********************** Storage Pool ***********************/
 

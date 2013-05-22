@@ -20,7 +20,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Arrays;
 
-import com.abiquo.model.enumerator.HypervisorType;
 import com.google.common.base.Predicate;
 
 /**
@@ -30,12 +29,12 @@ import com.google.common.base.Predicate;
  * @author Francesc Montserrat
  */
 public class HypervisorPredicates {
-   public static Predicate<HypervisorType> type(final HypervisorType... types) {
+   public static Predicate<String> type(final String... types) {
       checkNotNull(types, "types must be defined");
 
-      return new Predicate<HypervisorType>() {
+      return new Predicate<String>() {
          @Override
-         public boolean apply(final HypervisorType type) {
+         public boolean apply(final String type) {
             return Arrays.asList(types).contains(type);
          }
       };

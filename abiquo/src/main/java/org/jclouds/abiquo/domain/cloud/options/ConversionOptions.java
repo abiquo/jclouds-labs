@@ -19,7 +19,6 @@ package org.jclouds.abiquo.domain.cloud.options;
 import org.jclouds.http.options.BaseHttpRequestOptions;
 
 import com.abiquo.model.enumerator.ConversionState;
-import com.abiquo.model.enumerator.HypervisorType;
 
 /**
  * Available options to filter virtual machine template conversions
@@ -38,12 +37,12 @@ public class ConversionOptions extends BaseHttpRequestOptions {
    }
 
    public static class Builder {
-      private HypervisorType hypervisorType;
+      private String hypervisorType;
 
       private ConversionState conversionState;
 
       /** Only conversions compatible with this hypervisor */
-      public Builder hypervisorType(final HypervisorType hypervisorType) {
+      public Builder hypervisorType(final String hypervisorType) {
          this.hypervisorType = hypervisorType;
          return this;
       }
@@ -58,7 +57,7 @@ public class ConversionOptions extends BaseHttpRequestOptions {
          ConversionOptions options = new ConversionOptions();
 
          if (hypervisorType != null) {
-            options.queryParameters.put("hypervisor", hypervisorType.name());
+            options.queryParameters.put("hypervisor", hypervisorType);
          }
          if (conversionState != null) {
             options.queryParameters.put("state", conversionState.name());

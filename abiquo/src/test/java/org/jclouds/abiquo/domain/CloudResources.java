@@ -18,8 +18,6 @@ package org.jclouds.abiquo.domain;
 
 import static org.jclouds.abiquo.domain.DomainUtils.link;
 
-import com.abiquo.model.enumerator.DiskFormatType;
-import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.enumerator.VolumeState;
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
@@ -43,7 +41,7 @@ public class CloudResources {
    public static VirtualDatacenterDto virtualDatacenterPost() {
       VirtualDatacenterDto virtualDatacenter = new VirtualDatacenterDto();
       virtualDatacenter.setName("VDC");
-      virtualDatacenter.setHypervisorType(HypervisorType.KVM);
+      virtualDatacenter.setHypervisorType("KVM");
       virtualDatacenter.setVlan(NetworkResources.vlanPost());
       return virtualDatacenter;
    }
@@ -57,6 +55,9 @@ public class CloudResources {
    public static VirtualMachineDto virtualMachinePost() {
       VirtualMachineDto virtualMachine = new VirtualMachineDto();
       virtualMachine.setName("VM");
+      virtualMachine.setCpu(1);
+      virtualMachine.setRam(1);
+      virtualMachine.setHdInBytes(20l);
       return virtualMachine;
    }
 
@@ -111,7 +112,7 @@ public class CloudResources {
       virtualMachine.setId(1);
       virtualMachine.addLink(new RESTLink("deploy",
             "http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/action/deploy"));
-      virtualMachine.addLink(new RESTLink("disks",
+      virtualMachine.addLink(new RESTLink("harddisks",
             "http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/storage/disks"));
       virtualMachine.addLink(new RESTLink("edit",
             "http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1"));
@@ -136,6 +137,9 @@ public class CloudResources {
       virtualMachine
             .addLink(new RESTLink("configurations",
                   "http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/network/configurations"));
+      virtualMachine.setCpu(1);
+      virtualMachine.setRam(1);
+      virtualMachine.setHdInBytes(20l);
       return virtualMachine;
    }
 
@@ -182,9 +186,9 @@ public class CloudResources {
       VirtualMachineTemplateDto template = new VirtualMachineTemplateDto();
       template.setId(10);
       template.setName("m0n0wall");
-      template.setDiskFormatType(DiskFormatType.VMDK_FLAT.toString());
+      template.setDiskFormatType("VMDK_FLAT");
       template.setPath("1/abiquo-repository.abiquo.com/m0n0wall/m0n0wall-1.3b18-i386-flat.vmdk");
-      template.setDiskFileSize(27262976);
+      template.setDiskFileSize(27262976l);
       template.setCpuRequired(1);
       template.setRamRequired(128);
       template.setCpuRequired(27262976);
@@ -255,13 +259,13 @@ public class CloudResources {
    public static String virtualMachinePostPayload() {
       StringBuilder buffer = new StringBuilder();
       buffer.append("<virtualMachine>");
-      buffer.append("<cpu>0</cpu>");
-      buffer.append("<hdInBytes>0</hdInBytes>");
+      buffer.append("<cpu>1</cpu>");
+      buffer.append("<hdInBytes>20</hdInBytes>");
       buffer.append("<highDisponibility>0</highDisponibility>");
       buffer.append("<idState>0</idState>");
       buffer.append("<idType>0</idType>");
       buffer.append("<name>VM</name>");
-      buffer.append("<ram>0</ram>");
+      buffer.append("<ram>1</ram>");
       buffer.append("<vdrpPort>0</vdrpPort>");
       buffer.append("</virtualMachine>");
       return buffer.toString();
@@ -334,7 +338,7 @@ public class CloudResources {
       StringBuilder buffer = new StringBuilder();
       buffer.append("<virtualMachine>");
       buffer.append(link("/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/action/deploy", "deploy"));
-      buffer.append(link("/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/storage/disks", "disks"));
+      buffer.append(link("/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/storage/disks", "harddisks"));
       buffer.append(link("/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1", "edit"));
       buffer.append(link("/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/state", "state"));
       buffer.append(link("/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/action/reset", "reset"));
@@ -351,14 +355,14 @@ public class CloudResources {
       buffer.append(link("/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/network/configurations",
             "configurations"));
 
-      buffer.append("<cpu>0</cpu>");
-      buffer.append("<hdInBytes>0</hdInBytes>");
+      buffer.append("<cpu>1</cpu>");
+      buffer.append("<hdInBytes>20</hdInBytes>");
       buffer.append("<highDisponibility>0</highDisponibility>");
       buffer.append("<id>1</id>");
       buffer.append("<idState>0</idState>");
       buffer.append("<idType>0</idType>");
       buffer.append("<name>VM</name>");
-      buffer.append("<ram>0</ram>");
+      buffer.append("<ram>1</ram>");
       buffer.append("<vdrpPort>0</vdrpPort>");
       buffer.append("</virtualMachine>");
       return buffer.toString();

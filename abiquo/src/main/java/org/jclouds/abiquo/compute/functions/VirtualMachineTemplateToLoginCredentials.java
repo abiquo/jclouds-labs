@@ -14,30 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jclouds.abiquo.binders.cloud;
+package org.jclouds.abiquo.compute.functions;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
+import org.jclouds.domain.LoginCredentials;
 
-import org.jclouds.abiquo.binders.BindRefsToPayload;
-import org.jclouds.xml.XMLParser;
+import com.google.common.base.Function;
+import com.google.inject.Singleton;
 
 /**
- * Bind multiple {@link DiskManagementDto} objects to the payload of the request
- * as a list of links.
- * 
- * @author Ignasi Barrera
+ * Transforms a {@link VirtualMachineTemplate} into an {@link LoginCredentials}.
  */
 @Singleton
-public class BindHardDiskRefsToPayload extends BindRefsToPayload {
-   @Inject
-   public BindHardDiskRefsToPayload(final XMLParser xmlParser) {
-      super(xmlParser);
-   }
+public class VirtualMachineTemplateToLoginCredentials implements Function<VirtualMachineTemplate, LoginCredentials> {
 
    @Override
-   protected String getRelToUse(final Object input) {
-      return "disk";
-   }
+   public LoginCredentials apply(final VirtualMachineTemplate virtualMachineTemplate) {
 
+      return LoginCredentials.builder().identity(virtualMachineTemplate.getLoginUser())
+            .password(virtualMachineTemplate.getLoginPassword()).build();
+   }
 }
