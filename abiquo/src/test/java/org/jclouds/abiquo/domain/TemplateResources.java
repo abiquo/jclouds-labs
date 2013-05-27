@@ -38,9 +38,9 @@ public class TemplateResources {
    public static DatacenterRepositoryDto datacenterRepositoryPut() {
       DatacenterRepositoryDto dcRepository = new DatacenterRepositoryDto();
       dcRepository.setName("Datacenter Repo");
-      dcRepository.setRepositoryCapacityMb(0);
+      dcRepository.setRepositoryCapacityMb(0l);
       dcRepository.setRepositoryLocation("10.60.1.104:/volume1/nfs-devel");
-      dcRepository.setRepositoryRemainingMb(0);
+      dcRepository.setRepositoryRemainingMb(0l);
       dcRepository.addLink(new RESTLink("applianceManagerRepositoryUri", "http://localhost/am/erepos/1"));
       dcRepository.addLink(new RESTLink("datacenter", "http://localhost/api/admin/datacenters/1"));
       dcRepository.addLink(new RESTLink("edit", "http://localhost/api/admin/enterprises/1/datacenterrepositories/1"));
