@@ -341,15 +341,15 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    /**
     * Deploy the virtual machine.
     * 
-    * @param forceEnterpriseSoftLimits
-    *           If the deploy operation must be performed even if the soft
-    *           limits for the tenant are exceeded.
+    * @param forceVdcLimits
+    *           If the deploy operation must be performed even if the virtual
+    *           datacenter for the tenant are exceeded.
     * 
     * @return An async task reference to keep track of the deploy operation.
     */
-   public VirtualMachineTask deploy(final boolean forceEnterpriseSoftLimits) {
+   public VirtualMachineTask deploy(final boolean forceVdcLimits) {
       VirtualMachineTaskDto force = new VirtualMachineTaskDto();
-      force.setForceEnterpriseSoftLimits(forceEnterpriseSoftLimits);
+      force.setForceVdcLimits(forceVdcLimits);
 
       AcceptedRequestDto<String> response = context.getApi().getCloudApi().deployVirtualMachine(unwrap(), force);
 
