@@ -32,6 +32,7 @@ import org.jclouds.abiquo.domain.task.VirtualMachineTask;
 import org.jclouds.abiquo.domain.task.VirtualMachineTemplateTask;
 import org.jclouds.abiquo.domain.util.LinkUtils;
 import org.jclouds.abiquo.features.services.MonitoringService;
+import org.jclouds.abiquo.functions.cloud.LinkToVirtualDisk;
 import org.jclouds.abiquo.monitor.VirtualMachineMonitor;
 import org.jclouds.abiquo.predicates.LinkPredicates;
 import org.jclouds.abiquo.reference.ValidationErrors;
@@ -53,6 +54,7 @@ import com.abiquo.server.core.cloud.VirtualMachineInstanceDto;
 import com.abiquo.server.core.cloud.VirtualMachineState;
 import com.abiquo.server.core.cloud.VirtualMachineStateDto;
 import com.abiquo.server.core.cloud.VirtualMachineTaskDto;
+import com.abiquo.server.core.cloud.VirtualMachineType;
 import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
 import com.abiquo.server.core.enterprise.EnterpriseDto;
 import com.abiquo.server.core.infrastructure.network.NicDto;
@@ -313,18 +315,24 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    }
 
    @SinceApiVersion("2.4")
-   public List<VirtualDisk<?>> listVirtualDisks() {
+   public List<VirtualDisk<?>> listAttachedVirtualDisks() {
       // The strategy will refresh the vm. There is no need to do it here
       ListAttachedVirtualDisks strategy = context.utils().injector().getInstance(ListAttachedVirtualDisks.class);
       return Lists.newLinkedList(strategy.execute(this));
    }
 
-   public List<VirtualDisk<?>> listVirtualDisks(final Predicate<VirtualDisk<?>> filter) {
-      return Lists.newLinkedList(filter(listVirtualDisks(), filter));
+   public List<VirtualDisk<?>> listAttachedVirtualDisks(final Predicate<VirtualDisk<?>> filter) {
+      return Lists.newLinkedList(filter(listAttachedVirtualDisks(), filter));
    }
 
-   public VirtualDisk<?> findVirtualDisk(final Predicate<VirtualDisk<?>> filter) {
-      return Iterables.getFirst(filter(listVirtualDisks(), filter), null);
+   public VirtualDisk<?> findAttachedVirtualDisk(final Predicate<VirtualDisk<?>> filter) {
+      return Iterables.getFirst(filter(listAttachedVirtualDisks(), filter), null);
+   }
+
+   @SinceApiVersion("2.6")
+   public VirtualDisk<?> getPrimaryDisk() {
+      LinkToVirtualDisk linkToVirtualDisk = context.utils().injector().getInstance(LinkToVirtualDisk.class);
+      return linkToVirtualDisk.apply(target.searchLink(DiskManagementDto.REL_PREFIX + "0"));
    }
 
    // Actions
@@ -341,15 +349,15 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    /**
     * Deploy the virtual machine.
     * 
-    * @param forceEnterpriseSoftLimits
+    * @param forceVdcSoftLimits
     *           If the deploy operation must be performed even if the soft
-    *           limits for the tenant are exceeded.
+    *           limits for the virtual datacenter are exceeded.
     * 
     * @return An async task reference to keep track of the deploy operation.
     */
-   public VirtualMachineTask deploy(final boolean forceEnterpriseSoftLimits) {
+   public VirtualMachineTask deploy(final boolean forceVdcSoftLimits) {
       VirtualMachineTaskDto force = new VirtualMachineTaskDto();
-      force.setForceEnterpriseSoftLimits(forceEnterpriseSoftLimits);
+      force.setForceVdcLimits(forceVdcSoftLimits);
 
       AcceptedRequestDto<String> response = context.getApi().getCloudApi().deployVirtualMachine(unwrap(), force);
 
@@ -491,13 +499,15 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    public VirtualMachineTask setVirtualDisks(List<? extends VirtualDisk<?>> virtualDisks) {
       checkNotNull(virtualDisks, "virtualDisk list can not be null");
       // Remove current disk links
-      Iterables.removeIf(target.getLinks(), LinkPredicates.isDisk());
+      Iterables.removeIf(target.getLinks(), LinkPredicates.isAttachedDisk());
 
       // Add the given virtual disks in the appropriate order
       for (int i = 0; i < virtualDisks.size(); i++) {
          VirtualDisk<?> virtualDisk = virtualDisks.get(i);
          RESTLink source = LinkUtils.getSelfLink(virtualDisk.unwrap());
-         RESTLink link = new RESTLink(DiskManagementDto.REL_PREFIX + i, source.getHref());
+         // The "disk0" rel is reserved for the primary disk and can not be
+         // changed
+         RESTLink link = new RESTLink(DiskManagementDto.REL_PREFIX + (i + 1), source.getHref());
          link.setType(virtualDisk.unwrap().getBaseMediaType());
          target.addLink(link);
       }
@@ -566,8 +576,6 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
       private String vncAddress;
 
       private Integer idState;
-
-      private Integer idType;
 
       private String password;
 
@@ -651,11 +659,6 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
          return this;
       }
 
-      private Builder idType(final int idType) {
-         this.idType = idType;
-         return this;
-      }
-
       private Builder internalName(final String internalName) {
          this.internalName = internalName;
          return this;
@@ -692,10 +695,6 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
             dto.setIdState(idState);
          }
 
-         if (idType != null) {
-            dto.setIdType(idType);
-         }
-
          if (internalName != null) {
             dto.setName(internalName);
          }
@@ -727,8 +726,8 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
          return VirtualMachine.builder(in.context, in.virtualAppliance, in.template).internalName(in.getInternalName())
                .nameLabel(in.getNameLabel()).description(in.getDescription()).ram(in.getRam()).cpu(in.getCpu())
                .vncEnabled(in.getVncEnabled()).vncAddress(in.getVncAddress()).vncPort(in.getVncPort())
-               .idState(in.getIdState()).idType(in.getIdType()).password(in.getPassword()).keymap(in.getKeymap())
-               .dvd(in.hasDvd()).layer(in.getLayer().orNull());
+               .idState(in.getIdState()).password(in.getPassword()).keymap(in.getKeymap()).dvd(in.hasDvd())
+               .layer(in.getLayer().orNull());
       }
    }
 
@@ -755,8 +754,8 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
       return target.getIdState();
    }
 
-   public int getIdType() {
-      return target.getIdType();
+   public VirtualMachineType getType() {
+      return target.getType();
    }
 
    public String getNameLabel() {
@@ -831,9 +830,8 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    public String toString() {
       String vncData = getVncEnabled() ? ", vncAddress=" + getVncAddress() + ", vncPort=" + getVncPort() : "";
       return "VirtualMachine [id=" + getId() + ", state=" + target.getState().name() + ", cpu=" + getCpu()
-            + ", description=" + getDescription() + ", hdInBytes=" + getHdInBytes() + ", idType=" + getIdType()
-            + ", nameLabel=" + getNameLabel() + ", internalName=" + getInternalName() + ", password=" + getPassword()
-            + ", ram=" + getRam() + ", uuid=" + getUuid() + vncData + ", keymap=" + getKeymap() + ", dvd=" + hasDvd()
-            + "]";
+            + ", description=" + getDescription() + ", hdInBytes=" + getHdInBytes() + ", nameLabel=" + getNameLabel()
+            + ", internalName=" + getInternalName() + ", password=" + getPassword() + ", ram=" + getRam() + ", uuid="
+            + getUuid() + vncData + ", keymap=" + getKeymap() + ", dvd=" + hasDvd() + "]";
    }
 }

@@ -20,16 +20,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.find;
 import static com.google.common.collect.Iterables.getFirst;
-import static com.google.common.collect.Iterables.transform;
 
 import java.util.List;
 
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
 import org.jclouds.abiquo.domain.enterprise.Limits;
-import org.jclouds.abiquo.domain.infrastructure.options.DatacenterOptions;
-import org.jclouds.abiquo.domain.infrastructure.options.IpmiOptions;
-import org.jclouds.abiquo.domain.infrastructure.options.MachineOptions;
+import org.jclouds.abiquo.domain.infrastructure.options.DiscoveryOptions;
 import org.jclouds.abiquo.domain.network.Network;
 import org.jclouds.abiquo.domain.network.NetworkServiceType;
 import org.jclouds.abiquo.domain.network.PrivateNetwork;
@@ -38,18 +35,12 @@ import org.jclouds.abiquo.predicates.network.NetworkServiceTypePredicates;
 import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.rest.ApiContext;
 
-import com.abiquo.model.enumerator.MachineIpmiState;
-import com.abiquo.model.enumerator.MachineState;
 import com.abiquo.model.enumerator.NetworkType;
 import com.abiquo.model.enumerator.RemoteServiceType;
 import com.abiquo.model.enumerator.VlanTagAvailabilityType;
-import com.abiquo.server.core.cloud.HypervisorTypeDto;
 import com.abiquo.server.core.cloud.HypervisorTypesDto;
 import com.abiquo.server.core.enterprise.DatacentersLimitsDto;
 import com.abiquo.server.core.infrastructure.DatacenterDto;
-import com.abiquo.server.core.infrastructure.MachineDto;
-import com.abiquo.server.core.infrastructure.MachineIpmiStateDto;
-import com.abiquo.server.core.infrastructure.MachineStateDto;
 import com.abiquo.server.core.infrastructure.MachinesDto;
 import com.abiquo.server.core.infrastructure.RackDto;
 import com.abiquo.server.core.infrastructure.RacksDto;
@@ -66,7 +57,6 @@ import com.abiquo.server.core.infrastructure.storage.StorageDevicesDto;
 import com.abiquo.server.core.infrastructure.storage.StorageDevicesMetadataDto;
 import com.abiquo.server.core.infrastructure.storage.TierDto;
 import com.abiquo.server.core.infrastructure.storage.TiersDto;
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 
@@ -759,26 +749,6 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
    // Actions
 
    /**
-    * Retrieve the hypervisor type from remote machine.
-    * 
-    * @param ip
-    *           IP address of the physical machine.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/DatacenterResource#DatacenterResource-Retrievethehypervisortypefromremotemachine"
-    *      http://community.abiquo.com/display/ABI20/DatacenterResource#
-    *      DatacenterResource- Retrievethehypervisortypefromremotemachine</a>
-    * @return Hypervisor type of the remote machine.
-    * @throws Exception
-    *            If the hypervisor type information cannot be retrieved.
-    */
-   public String getHypervisorType(final String ip) {
-      DatacenterOptions options = DatacenterOptions.builder().ip(ip).build();
-
-      return context.getApi().getInfrastructureApi().getHypervisorTypeFromMachine(target, options);
-
-   }
-
-   /**
     * Retrieve the list of available hypervisor types in the datacenter.
     * 
     * @see API: <a href=
@@ -787,10 +757,9 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      DatacenterResource- Retrieveavailablehypervisortypes</a>
     * @return List of available hypervisor types in the datacenter.
     */
-   public List<String> listAvailableHypervisors() {
+   public List<HypervisorType> listAvailableHypervisors() {
       HypervisorTypesDto types = context.getApi().getInfrastructureApi().getHypervisorTypes(target);
-
-      return getHypervisorTypes(types);
+      return wrap(context, HypervisorType.class, types.getCollection());
    }
 
    /**
@@ -804,7 +773,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      DatacenterResource- Retrieveavailablehypervisortypes</a>
     * @return Filtered list of available hypervisor types in the datacenter.
     */
-   public List<String> listAvailableHypervisors(final Predicate<String> filter) {
+   public List<HypervisorType> listAvailableHypervisors(final Predicate<HypervisorType> filter) {
       return ImmutableList.copyOf(filter(listAvailableHypervisors(), filter));
    }
 
@@ -821,252 +790,20 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     * @return First hypervisor type matching the filter or <code>null</code> if
     *         there is none.
     */
-   public String findHypervisor(final Predicate<String> filter) {
+   public HypervisorType findHypervisor(final Predicate<HypervisorType> filter) {
       return getFirst(filter(listAvailableHypervisors(), filter), null);
    }
 
-   private List<String> getHypervisorTypes(final HypervisorTypesDto dtos) {
-      return ImmutableList.copyOf(transform(dtos.getCollection(), new Function<HypervisorTypeDto, String>() {
-         @Override
-         public String apply(HypervisorTypeDto input) {
-            return input.getName();
-         }
-      }));
-   }
-
    /**
-    * Searches a remote machine and retrieves an Machine object with its
-    * information.
+    * Discover the information of the given physical machines.
     * 
-    * @param ip
-    *           IP address of the remote hypervisor to connect.
-    * @param hypervisorType
-    *           Kind of hypervisor we want to connect. Valid values are {vbox,
-    *           kvm, xen-3, vmx-04, hyperv-301, xenserver}.
-    * @param user
-    *           User to log in.
-    * @param password
-    *           Password to authenticate.
-    * @return A physical machine if found or <code>null</code>.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/DatacenterResource#DatacenterResource-Retrieveremotemachineinformation"
-    *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
-    *      DatacenterResource- Retrieveremotemachineinformation</a>
-    */
-   public Machine discoverSingleMachine(final String ip, final String hypervisorType, final String user,
-         final String password) {
-      return discoverSingleMachine(ip, hypervisorType, user, password, 443); // FIXME defaultPort
-   }
-
-   /**
-    * Searches a remote machine and retrieves an Machine object with its
-    * information.
-    * 
-    * @param ip
-    *           IP address of the remote hypervisor to connect.
-    * @param hypervisorType
-    *           Kind of hypervisor we want to connect. Valid values are {vbox,
-    *           kvm, xen-3, vmx-04, hyperv-301, xenserver}.
-    * @param user
-    *           User to log in.
-    * @param password
-    *           Password to authenticate.
-    * @param port
-    *           Port to connect.
-    * @return A physical machine if found or <code>null</code>.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/DatacenterResource#DatacenterResource-Retrieveremotemachineinformation"
-    *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
-    *      DatacenterResource- Retrieveremotemachineinformation</a>
-    */
-   public Machine discoverSingleMachine(final String ip, final String hypervisorType, final String user,
-         final String password, final int port) {
-      MachineDto dto = context
-            .getApi()
-            .getInfrastructureApi()
-            .discoverSingleMachine(target, ip, hypervisorType, user, password,
-                  MachineOptions.builder().port(port).build());
-
-      // Credentials are not returned by the API
-      dto.setUser(user);
-      dto.setPassword(password);
-
-      return wrap(context, Machine.class, dto);
-   }
-
-   /**
-    * Searches multiple remote machines and retrieves an Machine list with its
-    * information.
-    * 
-    * @param ipFrom
-    *           IP address of the remote first hypervisor to check.
-    * @param ipTo
-    *           IP address of the remote last hypervisor to check.
-    * @param hypervisorType
-    *           Kind of hypervisor we want to connect. Valid values are {vbox,
-    *           kvm, xen-3, vmx-04, hyperv-301, xenserver}.
-    * @param user
-    *           User to log in.
-    * @param password
-    *           Password to authenticate.
-    * @return The physical machine list.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/DatacenterResource#DatacenterResource-Retrievealistofremotemachineinformation"
-    *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
-    *      DatacenterResource- Retrievealistofremotemachineinformation</a>
-    */
-   public List<Machine> discoverMultipleMachines(final String ipFrom, final String ipTo,
-         final String hypervisorType, final String user, final String password) {
-      return discoverMultipleMachines(ipFrom, ipTo, hypervisorType, user, password, 443); // FIXME defaultPort
-   }
-
-   /**
-    * Searches multiple remote machines and retrieves an Machine list with its
-    * information.
-    * 
-    * @param ipFrom
-    *           IP address of the remote first hypervisor to check.
-    * @param ipTo
-    *           IP address of the remote last hypervisor to check.
-    * @param hypervisorType
-    *           Kind of hypervisor we want to connect. Valid values are {vbox,
-    *           kvm, xen-3, vmx-04, hyperv-301, xenserver}.
-    * @param user
-    *           User to log in.
-    * @param password
-    *           Password to authenticate.
-    * @param port
-    *           Port to connect.
-    * @return The physical machine list.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/DatacenterResource#DatacenterResource-Retrievealistofremotemachineinformation"
-    *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
-    *      DatacenterResource- Retrievealistofremotemachineinformation</a>
-    */
-   public List<Machine> discoverMultipleMachines(final String ipFrom, final String ipTo,
-         final String hypervisorType, final String user, final String password, final int port) {
-      MachinesDto dto = context
-            .getApi()
-            .getInfrastructureApi()
-            .discoverMultipleMachines(target, ipFrom, ipTo, hypervisorType, user, password,
-                  MachineOptions.builder().port(port).build());
-
-      // Credentials are not returned by the API
-      for (MachineDto machine : dto.getCollection()) {
-         machine.setUser(user);
-         machine.setPassword(password);
-      }
-
-      return wrap(context, Machine.class, dto.getCollection());
-   }
-
-   /**
-    * Check the state of a remote machine. This feature is used to check the
-    * state from a remote machine giving its location, user, password and
-    * hypervisor type. This machine does not need to be managed by Abiquo.
-    * 
-    * @param ip
-    *           IP address of the remote hypervisor to connect.
-    * @param hypervisorType
-    *           Kind of hypervisor we want to connect. Valid values are {vbox,
-    *           kvm, xen-3, vmx-04, hyperv-301, xenserver}.
-    * @param user
-    *           User to log in.
-    * @param password
-    *           Password to authenticate.
-    * @return The physical machine state if the machine is found or
-    *         <code>null</code>.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/DatacenterResource#DatacenterResource-Checkthestatefromremotemachine"
-    *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
-    *      DatacenterResource- Checkthestatefromremotemachine</a>
-    */
-   public MachineState checkMachineState(final String ip, final String hypervisorType, final String user,
-         final String password) {
-      return checkMachineState(ip, hypervisorType, user, password,
-            MachineOptions.builder().port(443).build()); // FIXME defaultPort
-   }
-
-   /**
-    * Check the state of a remote machine. This feature is used to check the
-    * state from a remote machine giving its location, user, password and
-    * hypervisor type. This machine does not need to be managed by Abiquo.
-    * 
-    * @param ip
-    *           IP address of the remote hypervisor to connect.
-    * @param hypervisorType
-    *           Kind of hypervisor we want to connect. Valid values are {vbox,
-    *           kvm, xen-3, vmx-04, hyperv-301, xenserver}.
-    * @param user
-    *           User to log in.
-    * @param password
-    *           Password to authenticate.
     * @param options
-    *           .
-    * @return The physical machine state if the machine is found or
-    *         <code>null</code>.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/DatacenterResource#DatacenterResource-Checkthestatefromremotemachine"
-    *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
-    *      DatacenterResource- Checkthestatefromremotemachine</a>
+    *           The discovery options, including the connection details.
+    * @return A list of the discovered machines, with all available information.
     */
-   public MachineState checkMachineState(final String ip, final String hypervisorType, final String user,
-         final String password, final MachineOptions options) {
-      MachineStateDto dto = context.getApi().getInfrastructureApi()
-            .checkMachineState(target, ip, hypervisorType, user, password, options);
-
-      return dto.getState();
-   }
-
-   /**
-    * Check the ipmi configuration state of a remote machine. This feature is
-    * used to check the ipmi configuration state from a remote machine giving
-    * its location, user and password. This machine does not need to be managed
-    * by Abiquo.
-    * 
-    * @param ip
-    *           IP address of the remote hypervisor to connect.
-    * @param user
-    *           User to log in.
-    * @param password
-    *           Password to authenticate.
-    * @return The physical machine state if the machine is found or
-    *         <code>null</code>.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/DatacenterResource#DatacenterResource-Checktheipmistatefromremotemachine"
-    *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
-    *      DatacenterResource- Checktheipmistatefromremotemachine</a>
-    */
-   public MachineIpmiState checkMachineIpmiState(final String ip, final String user, final String password) {
-      MachineIpmiStateDto dto = context.getApi().getInfrastructureApi()
-            .checkMachineIpmiState(target, ip, user, password);
-      return dto.getState();
-   }
-
-   /**
-    * Check the ipmi configuration state of a remote machine. This feature is
-    * used to check the ipmi configuration state from a remote machine giving
-    * its location, user and password. This machine does not need to be managed
-    * by Abiquo.
-    * 
-    * @param ip
-    *           IP address of the remote hypervisor to connect.
-    * @param user
-    *           User to log in.
-    * @param password
-    *           Password to authenticate.
-    * @return The physical machine state if the machine is found or
-    *         <code>null</code>.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/DatacenterResource#DatacenterResource-Checktheipmistatefromremotemachine"
-    *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
-    *      DatacenterResource- Checktheipmistatefromremotemachine</a>
-    */
-   public MachineIpmiState checkMachineIpmiState(final String ip, final String user, final String password,
-         final IpmiOptions options) {
-      MachineIpmiStateDto dto = context.getApi().getInfrastructureApi()
-            .checkMachineIpmiState(target, ip, user, password, options);
-      return dto.getState();
+   public List<Machine> discoverMachines(DiscoveryOptions options) {
+      MachinesDto machines = context.getApi().getInfrastructureApi().discoverMachines(target, options);
+      return wrap(context, Machine.class, machines.getCollection());
    }
 
    // Builder

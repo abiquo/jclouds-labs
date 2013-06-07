@@ -21,16 +21,11 @@ import static org.jclouds.reflect.Reflection2.method;
 
 import java.io.IOException;
 
-import javax.ws.rs.core.MediaType;
-
 import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.abiquo.AbiquoFallbacks.FalseIfNotAvailable;
-import org.jclouds.abiquo.AbiquoFallbacks.PropagateAbiquoExceptionOnNotFoundOr4xx;
 import org.jclouds.abiquo.domain.EnterpriseResources;
 import org.jclouds.abiquo.domain.InfrastructureResources;
 import org.jclouds.abiquo.domain.NetworkResources;
-import org.jclouds.abiquo.domain.infrastructure.options.DatacenterOptions;
-import org.jclouds.abiquo.domain.infrastructure.options.IpmiOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.MachineOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.StoragePoolOptions;
 import org.jclouds.abiquo.domain.network.options.IpOptions;
@@ -39,7 +34,6 @@ import org.jclouds.abiquo.domain.options.search.FilterOptions;
 import org.jclouds.fallbacks.MapHttp4xxCodesToExceptions;
 import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.http.functions.ReleasePayloadAndReturn;
-import org.jclouds.http.functions.ReturnStringIf2xx;
 import org.jclouds.http.functions.ReturnTrueIf2xx;
 import org.jclouds.reflect.Invocation;
 import org.jclouds.rest.internal.GeneratedHttpRequest;
@@ -195,26 +189,6 @@ public class InfrastructureApiTest extends BaseAbiquoApiTest<InfrastructureApi> 
    }
 
    /*********************** Hypervisor ***********************/
-
-   public void testGetHypervisorTypeFromMachine() throws SecurityException, NoSuchMethodException, IOException {
-      Invokable<?, ?> method = method(InfrastructureApi.class, "getHypervisorTypeFromMachine", DatacenterDto.class,
-            DatacenterOptions.class);
-      GeneratedHttpRequest request = processor.apply(Invocation.create(
-            method,
-            ImmutableList.<Object> of(InfrastructureResources.datacenterPut(),
-                  DatacenterOptions.builder().ip("10.60.1.120").build())));
-
-      assertRequestLineEquals(request,
-            "GET http://localhost/api/admin/datacenters/1/action/hypervisor?ip=10.60.1.120 HTTP/1.1");
-      assertNonPayloadHeadersEqual(request, "Accept: " + MediaType.TEXT_PLAIN + "\n");
-      assertPayloadEquals(request, null, null, false);
-
-      assertResponseParserClassEquals(method, request, ReturnStringIf2xx.class);
-      assertSaxResponseParserClassEquals(method, null);
-      assertFallbackClassEquals(method, null);
-
-      checkFilters(request);
-   }
 
    public void testGetHypervisorTypesFromDatacenter() throws SecurityException, NoSuchMethodException, IOException {
       Invokable<?, ?> method = method(InfrastructureApi.class, "getHypervisorTypes", DatacenterDto.class);
@@ -744,202 +718,6 @@ public class InfrastructureApiTest extends BaseAbiquoApiTest<InfrastructureApi> 
    }
 
    /*********************** Machine ***********************/
-
-   public void testDiscoverSingleMachineWithoutOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Invokable<?, ?> method = method(InfrastructureApi.class, "discoverSingleMachine", DatacenterDto.class,
-            String.class, String.class, String.class, String.class);
-      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
-            InfrastructureResources.datacenterPut(), "10.60.1.222", "XENSERVER", "user", "pass")));
-
-      String baseUrl = "http://localhost/api/admin/datacenters/1/action/discoversingle";
-      String query = "ip=10.60.1.222&hypervisor=XENSERVER&user=user&password=pass";
-      String expectedRequest = String.format("GET %s?%s HTTP/1.1", baseUrl, query);
-
-      assertRequestLineEquals(request, expectedRequest);
-      assertNonPayloadHeadersEqual(request, "Accept: " + MachineDto.BASE_MEDIA_TYPE + "\n");
-      assertPayloadEquals(request, null, null, false);
-
-      assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
-      assertSaxResponseParserClassEquals(method, null);
-      assertFallbackClassEquals(method, PropagateAbiquoExceptionOnNotFoundOr4xx.class);
-
-      checkFilters(request);
-   }
-
-   public void testDiscoverSingleMachineAllParams() throws SecurityException, NoSuchMethodException {
-      Invokable<?, ?> method = method(InfrastructureApi.class, "discoverSingleMachine", DatacenterDto.class,
-            String.class, String.class, String.class, String.class, MachineOptions.class);
-      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
-            InfrastructureResources.datacenterPut(), "80.80.80.80", "KVM", "user", "pass", MachineOptions
-                  .builder().port(8889).build())));
-
-      String baseUrl = "http://localhost/api/admin/datacenters/1/action/discoversingle";
-      String query = "ip=80.80.80.80&hypervisor=KVM&user=user&password=pass&port=8889";
-      String expectedRequest = String.format("GET %s?%s HTTP/1.1", baseUrl, query);
-
-      assertRequestLineEquals(request, expectedRequest);
-      assertNonPayloadHeadersEqual(request, "Accept: " + MachineDto.BASE_MEDIA_TYPE + "\n");
-      assertPayloadEquals(request, null, null, false);
-
-      assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
-      assertSaxResponseParserClassEquals(method, null);
-      assertFallbackClassEquals(method, PropagateAbiquoExceptionOnNotFoundOr4xx.class);
-
-      checkFilters(request);
-   }
-
-   public void testDiscoverSingleMachineDefaultValues() throws SecurityException, NoSuchMethodException {
-      Invokable<?, ?> method = method(InfrastructureApi.class, "discoverSingleMachine", DatacenterDto.class,
-            String.class, String.class, String.class, String.class, MachineOptions.class);
-      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
-            InfrastructureResources.datacenterPut(), "80.80.80.80", "KVM", "user", "pass", MachineOptions
-                  .builder().build())));
-
-      String baseUrl = "http://localhost/api/admin/datacenters/1/action/discoversingle";
-      String query = "ip=80.80.80.80&hypervisor=KVM&user=user&password=pass";
-      String expectedRequest = String.format("GET %s?%s HTTP/1.1", baseUrl, query);
-
-      assertRequestLineEquals(request, expectedRequest);
-      assertNonPayloadHeadersEqual(request, "Accept: " + MachineDto.BASE_MEDIA_TYPE + "\n");
-      assertPayloadEquals(request, null, null, false);
-
-      assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
-      assertSaxResponseParserClassEquals(method, null);
-      assertFallbackClassEquals(method, PropagateAbiquoExceptionOnNotFoundOr4xx.class);
-
-      checkFilters(request);
-   }
-
-   public void testDiscoverMultipleMachinesWithoutOptions() throws SecurityException, NoSuchMethodException,
-         IOException {
-      Invokable<?, ?> method = method(InfrastructureApi.class, "discoverMultipleMachines", DatacenterDto.class,
-            String.class, String.class, String.class, String.class, String.class);
-      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
-            InfrastructureResources.datacenterPut(), "10.60.1.222", "10.60.1.250", "XENSERVER", "user",
-            "pass")));
-
-      String baseUrl = "http://localhost/api/admin/datacenters/1/action/discovermultiple";
-      String query = "ipFrom=10.60.1.222&ipTo=10.60.1.250&hypervisor=XENSERVER&user=user&password=pass";
-      String expectedRequest = String.format("GET %s?%s HTTP/1.1", baseUrl, query);
-
-      assertRequestLineEquals(request, expectedRequest);
-      assertNonPayloadHeadersEqual(request, "Accept: " + MachinesDto.BASE_MEDIA_TYPE + "\n");
-      assertPayloadEquals(request, null, null, false);
-
-      assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
-      assertSaxResponseParserClassEquals(method, null);
-      assertFallbackClassEquals(method, PropagateAbiquoExceptionOnNotFoundOr4xx.class);
-
-      checkFilters(request);
-   }
-
-   public void testDiscoverMultipleMachinesAllParams() throws SecurityException, NoSuchMethodException {
-      Invokable<?, ?> method = method(InfrastructureApi.class, "discoverMultipleMachines", DatacenterDto.class,
-            String.class, String.class, String.class, String.class, String.class, MachineOptions.class);
-      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
-            InfrastructureResources.datacenterPut(), "80.80.80.80", "80.80.80.86", "KVM", "user", "pass",
-            MachineOptions.builder().port(8889).build())));
-
-      String baseUrl = "http://localhost/api/admin/datacenters/1/action/discovermultiple";
-      String query = "ipFrom=80.80.80.80&ipTo=80.80.80.86&hypervisor=KVM&user=user&password=pass&port=8889";
-      String expectedRequest = String.format("GET %s?%s HTTP/1.1", baseUrl, query);
-
-      assertRequestLineEquals(request, expectedRequest);
-      assertNonPayloadHeadersEqual(request, "Accept: " + MachinesDto.BASE_MEDIA_TYPE + "\n");
-      assertPayloadEquals(request, null, null, false);
-
-      assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
-      assertSaxResponseParserClassEquals(method, null);
-      assertFallbackClassEquals(method, PropagateAbiquoExceptionOnNotFoundOr4xx.class);
-
-      checkFilters(request);
-   }
-
-   public void testCheckMachineStateWithoutOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Invokable<?, ?> method = method(InfrastructureApi.class, "checkMachineState", DatacenterDto.class,
-            String.class, String.class, String.class, String.class);
-      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
-            InfrastructureResources.datacenterPut(), "10.60.1.222", "XENSERVER", "user", "pass")));
-
-      String baseUrl = "http://localhost/api/admin/datacenters/1/action/checkmachinestate";
-      String query = "ip=10.60.1.222&hypervisor=XENSERVER&user=user&password=pass";
-      String expectedRequest = String.format("GET %s?%s HTTP/1.1", baseUrl, query);
-
-      assertRequestLineEquals(request, expectedRequest);
-      assertNonPayloadHeadersEqual(request, "Accept: " + MachineStateDto.BASE_MEDIA_TYPE + "\n");
-      assertPayloadEquals(request, null, null, false);
-
-      assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
-      assertSaxResponseParserClassEquals(method, null);
-      assertFallbackClassEquals(method, PropagateAbiquoExceptionOnNotFoundOr4xx.class);
-
-      checkFilters(request);
-   }
-
-   public void testCheckMachineStateAllParams() throws SecurityException, NoSuchMethodException, IOException {
-      Invokable<?, ?> method = method(InfrastructureApi.class, "checkMachineState", DatacenterDto.class,
-            String.class, String.class, String.class, String.class, MachineOptions.class);
-      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
-            InfrastructureResources.datacenterPut(), "10.60.1.222", "XENSERVER", "user", "pass",
-            MachineOptions.builder().port(8889).build())));
-
-      String baseUrl = "http://localhost/api/admin/datacenters/1/action/checkmachinestate";
-      String query = "ip=10.60.1.222&hypervisor=XENSERVER&user=user&password=pass&port=8889";
-      String expectedRequest = String.format("GET %s?%s HTTP/1.1", baseUrl, query);
-
-      assertRequestLineEquals(request, expectedRequest);
-      assertNonPayloadHeadersEqual(request, "Accept: " + MachineStateDto.BASE_MEDIA_TYPE + "\n");
-      assertPayloadEquals(request, null, null, false);
-
-      assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
-      assertSaxResponseParserClassEquals(method, null);
-      assertFallbackClassEquals(method, PropagateAbiquoExceptionOnNotFoundOr4xx.class);
-
-      checkFilters(request);
-   }
-
-   public void testCheckMachineIpmiStateWithoutOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Invokable<?, ?> method = method(InfrastructureApi.class, "checkMachineIpmiState", DatacenterDto.class,
-            String.class, String.class, String.class);
-      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
-            ImmutableList.<Object> of(InfrastructureResources.datacenterPut(), "10.60.1.222", "user", "pass")));
-
-      String baseUrl = "http://localhost/api/admin/datacenters/1/action/checkmachineipmistate";
-      String query = "ip=10.60.1.222&user=user&password=pass";
-      String expectedRequest = String.format("GET %s?%s HTTP/1.1", baseUrl, query);
-
-      assertRequestLineEquals(request, expectedRequest);
-      assertNonPayloadHeadersEqual(request, "Accept: " + MachineIpmiStateDto.BASE_MEDIA_TYPE + "\n");
-      assertPayloadEquals(request, null, null, false);
-
-      assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
-      assertSaxResponseParserClassEquals(method, null);
-      assertFallbackClassEquals(method, PropagateAbiquoExceptionOnNotFoundOr4xx.class);
-
-      checkFilters(request);
-   }
-
-   public void testCheckMachineIpmiStateWithALLOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Invokable<?, ?> method = method(InfrastructureApi.class, "checkMachineIpmiState", DatacenterDto.class,
-            String.class, String.class, String.class, IpmiOptions.class);
-      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
-            InfrastructureResources.datacenterPut(), "10.60.1.222", "user", "pass", IpmiOptions.builder().port(8889)
-                  .build())));
-
-      String baseUrl = "http://localhost/api/admin/datacenters/1/action/checkmachineipmistate";
-      String query = "ip=10.60.1.222&user=user&password=pass&port=8889";
-      String expectedRequest = String.format("GET %s?%s HTTP/1.1", baseUrl, query);
-
-      assertRequestLineEquals(request, expectedRequest);
-      assertNonPayloadHeadersEqual(request, "Accept: " + MachineIpmiStateDto.BASE_MEDIA_TYPE + "\n");
-      assertPayloadEquals(request, null, null, false);
-
-      assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
-      assertSaxResponseParserClassEquals(method, null);
-      assertFallbackClassEquals(method, PropagateAbiquoExceptionOnNotFoundOr4xx.class);
-
-      checkFilters(request);
-   }
 
    public void testListMachines() throws SecurityException, NoSuchMethodException, IOException {
       Invokable<?, ?> method = method(InfrastructureApi.class, "listMachines", RackDto.class);

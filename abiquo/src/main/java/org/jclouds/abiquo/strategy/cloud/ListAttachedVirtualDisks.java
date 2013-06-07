@@ -19,7 +19,6 @@ package org.jclouds.abiquo.strategy.cloud;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
-import static org.jclouds.abiquo.domain.DomainWrapper.wrap;
 
 import javax.inject.Singleton;
 
@@ -29,18 +28,13 @@ import org.jclouds.abiquo.domain.cloud.VirtualDisk;
 import org.jclouds.abiquo.domain.cloud.VirtualMachine;
 import org.jclouds.abiquo.domain.cloud.Volume;
 import org.jclouds.abiquo.domain.util.LinkUtils;
+import org.jclouds.abiquo.functions.cloud.LinkToVirtualDisk;
 import org.jclouds.abiquo.strategy.ListEntities;
-import org.jclouds.http.HttpResponse;
-import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.rest.ApiContext;
 
 import com.abiquo.model.rest.RESTLink;
-import com.abiquo.server.core.infrastructure.storage.DiskManagementDto;
-import com.abiquo.server.core.infrastructure.storage.VolumeManagementDto;
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.inject.Inject;
-import com.google.inject.TypeLiteral;
 
 /**
  * List all {@link HardDisk} and {@link Volume} attached to a
@@ -51,44 +45,23 @@ import com.google.inject.TypeLiteral;
 @Singleton
 public class ListAttachedVirtualDisks implements ListEntities<VirtualDisk<?>, VirtualMachine> {
    protected final ApiContext<AbiquoApi> context;
+   protected final LinkToVirtualDisk linkToVirtualDisk;
 
    @Inject
-   public ListAttachedVirtualDisks(final ApiContext<AbiquoApi> context) {
+   public ListAttachedVirtualDisks(final ApiContext<AbiquoApi> context, final LinkToVirtualDisk linkToVirtualDisk) {
       this.context = checkNotNull(context, "context");
+      this.linkToVirtualDisk = checkNotNull(linkToVirtualDisk, "linkToVirtualDisk");
    }
 
    @Override
    public Iterable<VirtualDisk<?>> execute(VirtualMachine parent) {
       parent.refresh();
-      Iterable<RESTLink> diskLinks = LinkUtils.filterDiskLinks(parent.unwrap().getLinks());
-      return listVirtualDisks(diskLinks);
+      Iterable<RESTLink> diskLinks = LinkUtils.filterAttachedDiskLinks(parent.unwrap().getLinks());
+      return transform(diskLinks, linkToVirtualDisk);
    }
 
    @Override
    public Iterable<VirtualDisk<?>> execute(VirtualMachine parent, Predicate<VirtualDisk<?>> selector) {
       return filter(execute(parent), selector);
-   }
-
-   private Iterable<VirtualDisk<?>> listVirtualDisks(final Iterable<RESTLink> diskLinks) {
-      return transform(diskLinks, new Function<RESTLink, VirtualDisk<?>>() {
-         @Override
-         public VirtualDisk<?> apply(final RESTLink input) {
-            HttpResponse response = context.getApi().get(input);
-
-            if (input.getType().equals(DiskManagementDto.BASE_MEDIA_TYPE)) {
-               ParseXMLWithJAXB<DiskManagementDto> parser = new ParseXMLWithJAXB<DiskManagementDto>(context.utils()
-                     .xml(), TypeLiteral.get(DiskManagementDto.class));
-
-               return wrap(context, HardDisk.class, parser.apply(response));
-            } else if (input.getType().equals(VolumeManagementDto.BASE_MEDIA_TYPE)) {
-               ParseXMLWithJAXB<VolumeManagementDto> parser = new ParseXMLWithJAXB<VolumeManagementDto>(context.utils()
-                     .xml(), TypeLiteral.get(VolumeManagementDto.class));
-
-               return wrap(context, Volume.class, parser.apply(response));
-            } else {
-               throw new IllegalArgumentException("Unsupported media type: " + input.getType());
-            }
-         }
-      });
    }
 }

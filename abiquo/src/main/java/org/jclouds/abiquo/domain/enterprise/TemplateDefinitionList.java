@@ -16,22 +16,16 @@
  */
 package org.jclouds.abiquo.domain.enterprise;
 
-import static com.google.common.collect.Iterables.filter;
-
 import java.util.List;
 
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
 import org.jclouds.abiquo.domain.cloud.TemplateDefinition;
-import org.jclouds.abiquo.domain.infrastructure.Datacenter;
 import org.jclouds.rest.ApiContext;
 
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionsDto;
-import com.abiquo.server.core.appslibrary.TemplatesStateDto;
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Adds high level functionality to {@link TemplateDefinitionListDto}. A
@@ -121,27 +115,6 @@ public class TemplateDefinitionList extends DomainWrapper<TemplateDefinitionList
    // Children access
 
    /**
-    * Retrieve the list of states of the templates in the template definition
-    * list in the repository of the given datacenter. Template Definition are
-    * available sources, but in order to create a Virtual Machine the Definition
-    * should be downloaded into the Datacenter Repository (NFS filesystem).
-    * 
-    * @param The
-    *           datacenter in which repository search.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/TemplateDefinitionListResource#TemplateDefinitionListResource-Retrievealistofthestatusofalltemplatestatuslist"
-    *      > http://community.abiquo.com/display/ABI20/
-    *      TemplateDefinitionListResource# TemplateDefinitionListResource-
-    *      Retrievealistofthestatusofalltemplatestatuslist</a>
-    */
-   @Deprecated
-   public List<TemplateState> listStatus(final Datacenter datacenter) {
-      TemplatesStateDto states = context.getApi().getEnterpriseApi()
-            .listTemplateListStatus(target, datacenter.unwrap());
-      return wrap(context, TemplateState.class, states.getCollection());
-   }
-
-   /**
     * Access the content of the list
     * 
     * @return all the template definitions in the list
@@ -149,30 +122,6 @@ public class TemplateDefinitionList extends DomainWrapper<TemplateDefinitionList
    public List<TemplateDefinition> listDefinitions() {
       TemplateDefinitionsDto definitions = target.getTemplateDefinitions();
       return wrap(context, TemplateDefinition.class, definitions.getCollection());
-   }
-
-   /**
-    * Retrieve a filtered list of states of the templates in the template
-    * definition list in the repository of the given datacenter. Template
-    * Definition are available sources, but in order to create a Virtual Machine
-    * the Definition should be downloaded into the Datacenter Repository (NFS
-    * filesystem).
-    * 
-    * @param filter
-    *           Filter to be applied to the list.
-    * @param The
-    *           datacenter in which repository search.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/TemplateDefinitionListResource#TemplateDefinitionListResource-Retrievealistofthestatusofalltemplatestatuslist"
-    *      > http://community.abiquo.com/display/ABI20/
-    *      TemplateDefinitionListResource# TemplateDefinitionListResource-
-    *      Retrievealistofthestatusofalltemplatestatuslist</a>
-    * 
-    * @deprecated Will disappear in future Abiquo versions
-    */
-   @Deprecated
-   public List<TemplateState> listStatus(final Predicate<TemplateState> filter, final Datacenter datacenter) {
-      return ImmutableList.copyOf(filter(listStatus(datacenter), filter));
    }
 
    // Builder

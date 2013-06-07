@@ -17,6 +17,7 @@
 package org.jclouds.abiquo.environment;
 
 import static com.google.common.collect.Iterables.find;
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.jclouds.abiquo.reference.AbiquoTestConstants.PREFIX;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -46,6 +47,7 @@ import org.jclouds.abiquo.domain.infrastructure.StorageDevice;
 import org.jclouds.abiquo.domain.infrastructure.StorageDeviceMetadata;
 import org.jclouds.abiquo.domain.infrastructure.StoragePool;
 import org.jclouds.abiquo.domain.infrastructure.Tier;
+import org.jclouds.abiquo.domain.infrastructure.options.DiscoveryOptions;
 import org.jclouds.abiquo.domain.network.ExternalNetwork;
 import org.jclouds.abiquo.domain.network.NetworkServiceType;
 import org.jclouds.abiquo.domain.network.PublicNetwork;
@@ -55,6 +57,7 @@ import org.jclouds.abiquo.features.ConfigApi;
 import org.jclouds.abiquo.features.EnterpriseApi;
 import org.jclouds.abiquo.features.InfrastructureApi;
 import org.jclouds.abiquo.features.services.AdministrationService;
+import org.jclouds.abiquo.predicates.enterprise.EnterprisePredicates;
 import org.jclouds.abiquo.predicates.enterprise.RolePredicates;
 import org.jclouds.abiquo.predicates.enterprise.UserPredicates;
 import org.jclouds.abiquo.predicates.infrastructure.RemoteServicePredicates;
@@ -65,6 +68,7 @@ import org.jclouds.abiquo.util.Config;
 
 import com.abiquo.model.enumerator.RemoteServiceType;
 import com.google.common.collect.Iterables;
+import com.google.common.io.LineProcessor;
 import com.google.common.io.Resources;
 
 /**
@@ -107,6 +111,8 @@ public class InfrastructureTestEnvironment implements TestEnvironment {
    public Machine machine;
 
    public Enterprise enterprise;
+
+   public Enterprise defaultEnterprise;
 
    public Limits limits;
 
@@ -210,7 +216,16 @@ public class InfrastructureTestEnvironment implements TestEnvironment {
       String user = Config.get("abiquo.hypervisor.user");
       String pass = Config.get("abiquo.hypervisor.pass");
 
-      machine = datacenter.discoverSingleMachine(ip, type, user, pass);
+      DiscoveryOptions options = DiscoveryOptions.builder() //
+            .hypervisorType(type) //
+            .ip(ip) //
+            .credentials(user, pass) //
+            .build();
+
+      machine = getOnlyElement(datacenter.discoverMachines(options));
+      // Credentials are not returned by the API
+      machine.setUser(user);
+      machine.setPassword(pass);
 
       NetworkServiceType nst = datacenter.defaultNetworkServiceType();
       NetworkInterface vswitch = machine.findAvailableVirtualSwitch(Config.get("abiquo.hypervisor.vswitch"));
@@ -311,6 +326,8 @@ public class InfrastructureTestEnvironment implements TestEnvironment {
    }
 
    protected void createEnterprise() {
+      defaultEnterprise = context.getAdministrationService().findEnterprise(EnterprisePredicates.name("Abiquo"));
+
       enterprise = Enterprise.builder(context.getApiContext()).name(randomName()).build();
       enterprise.save();
       assertNotNull(enterprise.getId());
@@ -326,14 +343,14 @@ public class InfrastructureTestEnvironment implements TestEnvironment {
    }
 
    protected void createExternalNetwork() {
-      externalNetwork = ExternalNetwork.builder(context.getApiContext(), datacenter, enterprise)
+      externalNetwork = ExternalNetwork.builder(context.getApiContext(), datacenter, defaultEnterprise)
             .name("ExternalNetwork").gateway("10.0.0.1").address("10.0.0.0").mask(24).tag(7).build();
       externalNetwork.save();
       assertNotNull(externalNetwork.getId());
    }
 
    protected void createUnmanagedNetwork() {
-      unmanagedNetwork = UnmanagedNetwork.builder(context.getApiContext(), datacenter, enterprise)
+      unmanagedNetwork = UnmanagedNetwork.builder(context.getApiContext(), datacenter, defaultEnterprise)
             .name("UnmanagedNetwork").gateway("10.0.1.1").address("10.0.1.0").mask(24).tag(8).build();
       unmanagedNetwork.save();
       assertNotNull(unmanagedNetwork.getId());
@@ -461,8 +478,22 @@ public class InfrastructureTestEnvironment implements TestEnvironment {
 
    public static String readLicense() throws IOException {
       URL url = CloudTestEnvironment.class.getResource("/license/expired");
+      return Resources.readLines(url, Charset.defaultCharset(), new LineProcessor<String>() {
+         StringBuilder sb = new StringBuilder();
 
-      return Resources.toString(url, Charset.defaultCharset());
+         @Override
+         public String getResult() {
+            return sb.toString();
+         }
+
+         @Override
+         public boolean processLine(String line) throws IOException {
+            if (!line.startsWith("#")) {
+               sb.append(line);
+            }
+            return true;
+         }
+      });
    }
 
    public RemoteService findRemoteService(final RemoteServiceType type) {

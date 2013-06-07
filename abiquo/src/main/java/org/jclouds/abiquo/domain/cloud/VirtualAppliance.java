@@ -27,6 +27,7 @@ import org.jclouds.abiquo.domain.DomainWrapper;
 import org.jclouds.abiquo.domain.cloud.options.VirtualMachineOptions;
 import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.BaseTask;
 import org.jclouds.abiquo.domain.task.VirtualMachineTask;
 import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
@@ -253,19 +254,19 @@ public class VirtualAppliance extends DomainWrapper<VirtualApplianceDto> {
     * deploy operation. The deployment will finish when all individual tasks
     * finish.
     * 
-    * @param forceEnterpriseSoftLimits
+    * @param forceVdcSoftLimits
     *           Boolean indicating if the deployment must be executed even if
-    *           the enterprise soft limits are reached.
+    *           the virtual datacenter soft limits are reached.
     * @return The list of tasks corresponding to the deploy process of each
     *         virtual machine in the appliance.
     */
-   public VirtualMachineTask[] deploy(final boolean forceEnterpriseSoftLimits) {
+   public VirtualMachineTask[] deploy(final boolean forceVdcSoftLimits) {
       VirtualMachineTaskDto force = new VirtualMachineTaskDto();
-      force.setForceEnterpriseSoftLimits(forceEnterpriseSoftLimits);
+      force.setForceVdcLimits(forceVdcSoftLimits);
 
       AcceptedRequestDto<String> response = context.getApi().getCloudApi().deployVirtualAppliance(unwrap(), force);
 
-      AsyncTask<?, ?>[] tasks = getTasks(response);
+      BaseTask<?>[] tasks = getTasks(response);
       return Arrays.copyOf(tasks, tasks.length, VirtualMachineTask[].class);
    }
 
@@ -304,7 +305,7 @@ public class VirtualAppliance extends DomainWrapper<VirtualApplianceDto> {
 
       AcceptedRequestDto<String> response = context.getApi().getCloudApi().undeployVirtualAppliance(unwrap(), force);
 
-      AsyncTask<?, ?>[] tasks = getTasks(response);
+      BaseTask<?>[] tasks = getTasks(response);
       return Arrays.copyOf(tasks, tasks.length, VirtualMachineTask[].class);
    }
 

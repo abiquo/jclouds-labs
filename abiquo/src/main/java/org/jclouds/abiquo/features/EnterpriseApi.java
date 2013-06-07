@@ -34,6 +34,7 @@ import org.jclouds.abiquo.binders.AppendToPath;
 import org.jclouds.abiquo.binders.BindToPath;
 import org.jclouds.abiquo.binders.BindToXMLPayloadAndPath;
 import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
+import org.jclouds.abiquo.functions.ReturnTaskReferenceOrNull;
 import org.jclouds.abiquo.functions.infrastructure.ParseDatacenterId;
 import org.jclouds.abiquo.http.filters.AbiquoAuthentication;
 import org.jclouds.abiquo.http.filters.AppendApiVersionToMediaType;
@@ -43,15 +44,16 @@ import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.JAXBResponseParser;
 import org.jclouds.rest.annotations.ParamParser;
 import org.jclouds.rest.annotations.RequestFilters;
+import org.jclouds.rest.annotations.ResponseParser;
 import org.jclouds.rest.annotations.SinceApiVersion;
 import org.jclouds.rest.binders.BindToXMLPayload;
 
+import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.server.core.appslibrary.DatacenterRepositoryDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListsDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionsDto;
-import com.abiquo.server.core.appslibrary.TemplatesStateDto;
 import com.abiquo.server.core.cloud.VirtualAppliancesDto;
 import com.abiquo.server.core.cloud.VirtualDatacentersDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
@@ -238,32 +240,6 @@ public interface EnterpriseApi extends Closeable {
          @EndpointLink("edit") @BinderParam(BindToXMLPayloadAndPath.class) EnterprisePropertiesDto properties);
 
    /*********************** Enterprise Limits ***********************/
-
-   /**
-    * Allows the given enterprise to use the given datacenter with the given
-    * limits.
-    * 
-    * @param enterprise
-    *           The enterprise.
-    * @param datacenter
-    *           The datacenter to allow to the given enterprise.
-    * @param limits
-    *           The usage limits for the enterprise in the given datacenter.
-    * @return The usage limits for the enterprise in the given datacenter.
-    * @deprecated This method will be removed in fufure versions. Use
-    *             {@link EnterpriseApi#createLimits(EnterpriseDto, DatacenterLimitsDto)}
-    *             instead.
-    */
-   @Deprecated
-   @Named("limit:create")
-   @POST
-   @Produces(DatacenterLimitsDto.BASE_MEDIA_TYPE)
-   @Consumes(DatacenterLimitsDto.BASE_MEDIA_TYPE)
-   @JAXBResponseParser
-   DatacenterLimitsDto createLimits(
-         @EndpointLink("limits") @BinderParam(BindToPath.class) final EnterpriseDto enterprise,
-         @QueryParam("datacenter") @ParamParser(ParseDatacenterId.class) final DatacenterDto datacenter,
-         @BinderParam(BindToXMLPayload.class) DatacenterLimitsDto limits);
 
    /**
     * Allows the given enterprise to use the given datacenter with the given
@@ -474,11 +450,13 @@ public interface EnterpriseApi extends Closeable {
     *           Id of the enterprise which information will be refreshed.
     * @param datacenterRepositoryId
     *           Id of the datacenter repository containing the templates.
+    * @return A reference to the refresh repository task
     */
    @Named("repository:refresh")
    @PUT
    @Path("/enterprises/{enterprise}/datacenterrepositories/{datacenterrepository}/actions/refresh")
-   void refreshTemplateRepository(@PathParam("enterprise") Integer enterpriseId,
+   @ResponseParser(ReturnTaskReferenceOrNull.class)
+   AcceptedRequestDto<String> refreshTemplateRepository(@PathParam("enterprise") Integer enterpriseId,
          @PathParam("datacenterrepository") Integer datacenterRepositoryId);
 
    /*********************** Network ***********************/
@@ -635,25 +613,6 @@ public interface EnterpriseApi extends Closeable {
    TemplateDefinitionListDto getTemplateDefinitionList(
          @EndpointLink("appslib/templateDefinitionLists") @BinderParam(BindToPath.class) EnterpriseDto enterprise,
          @BinderParam(AppendToPath.class) Integer templateListId);
-
-   /**
-    * Get the list of status of a template definition list in a datacenter.
-    * 
-    * @param templateList
-    *           The template definition list.
-    * @param datacenter
-    *           The given datacenter.
-    * @return The list of states.
-    * @deprecated Will disappear in future Abiquo versions
-    */
-   @Deprecated
-   @Named("templatedefinitionlist:status")
-   @GET
-   @Consumes(TemplatesStateDto.BASE_MEDIA_TYPE)
-   @JAXBResponseParser
-   TemplatesStateDto listTemplateListStatus(
-         @EndpointLink("repositoryStatus") @BinderParam(BindToPath.class) TemplateDefinitionListDto templateList,
-         @QueryParam("datacenterId") @ParamParser(ParseDatacenterId.class) DatacenterDto datacenter);
 
    /*********************** Template definition ************************/
 

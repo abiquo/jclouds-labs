@@ -22,6 +22,7 @@ import javax.annotation.Resource;
 import javax.inject.Singleton;
 
 import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.BaseTask;
 import org.jclouds.abiquo.monitor.MonitorStatus;
 import org.jclouds.logging.Logger;
 
@@ -33,12 +34,12 @@ import com.google.common.base.Function;
  * @author Ignasi Barrera
  */
 @Singleton
-public class AsyncTaskStatusMonitor implements Function<AsyncTask<?, ?>, MonitorStatus> {
+public class AsyncTaskStatusMonitor implements Function<BaseTask<?>, MonitorStatus> {
    @Resource
    protected Logger logger = Logger.NULL;
 
    @Override
-   public MonitorStatus apply(final AsyncTask<?, ?> asyncTask) {
+   public MonitorStatus apply(final BaseTask<?> asyncTask) {
       checkNotNull(asyncTask, "asyncTask");
 
       try {

@@ -29,7 +29,9 @@ import java.util.List;
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.domain.exception.WrapperException;
 import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.BaseTask;
 import org.jclouds.abiquo.domain.task.ConversionTask;
+import org.jclouds.abiquo.domain.task.NoResultTask;
 import org.jclouds.abiquo.domain.task.VirtualMachineTask;
 import org.jclouds.abiquo.domain.task.VirtualMachineTemplateTask;
 import org.jclouds.abiquo.domain.util.LinkUtils;
@@ -203,7 +205,7 @@ public abstract class DomainWrapper<T extends SingleResourceTransportDto> {
     *           The accepted request dto.
     * @return The async task.
     */
-   protected AsyncTask<?, ?> getTask(final AcceptedRequestDto<String> acceptedRequest) {
+   protected BaseTask<?> getTask(final AcceptedRequestDto<String> acceptedRequest) {
       RESTLink taskLink = acceptedRequest.getStatusLink();
       checkNotNull(taskLink, ValidationErrors.MISSING_REQUIRED_LINK + AsyncTask.class);
 
@@ -220,8 +222,8 @@ public abstract class DomainWrapper<T extends SingleResourceTransportDto> {
     *           The accepted request dto.
     * @return The async task array.
     */
-   protected AsyncTask<?, ?>[] getTasks(final AcceptedRequestDto<String> acceptedRequest) {
-      List<AsyncTask<?, ?>> tasks = Lists.newArrayList();
+   protected BaseTask<?>[] getTasks(final AcceptedRequestDto<String> acceptedRequest) {
+      List<BaseTask<?>> tasks = Lists.newArrayList();
 
       for (RESTLink link : acceptedRequest.getLinks()) {
          // This will return null on untrackable tasks
@@ -231,7 +233,7 @@ public abstract class DomainWrapper<T extends SingleResourceTransportDto> {
          }
       }
 
-      AsyncTask<?, ?>[] taskArr = new AsyncTask<?, ?>[tasks.size()];
+      BaseTask<?>[] taskArr = new AsyncTask<?, ?>[tasks.size()];
       return tasks.toArray(taskArr);
    }
 
@@ -245,37 +247,26 @@ public abstract class DomainWrapper<T extends SingleResourceTransportDto> {
     *           The dto used to generate the domain object.
     * @return The task domain object.
     */
-   protected static AsyncTask<?, ?> newTask(final ApiContext<AbiquoApi> context, final TaskDto dto) {
-      // Can be null in untrackable tasks
-      if (dto == null) {
-         return null;
-      }
-
-      Class<? extends AsyncTask<?, ?>> taskClass = null;
+   protected static BaseTask<?> newTask(final ApiContext<AbiquoApi> context, final TaskDto dto) {
+      Class<? extends BaseTask<?>> taskClass = null;
 
       switch (dto.getType().getOwnerType()) {
          case CONVERSION:
-            taskClass = ConversionTask.class;
-            break;
+            return ConversionTask.builder(context, dto).build();
          case VIRTUAL_MACHINE_TEMPLATE:
-            taskClass = VirtualMachineTemplateTask.class;
-            break;
+            return VirtualMachineTemplateTask.builder(context, dto).build();
          case VIRTUAL_MACHINE:
             // A VirtualMachine task can generate a template (if task is an
             // instance)
-            taskClass = dto.getType() == TaskType.INSTANCE ? VirtualMachineTemplateTask.class
-                  : VirtualMachineTask.class;
-            break;
-      }
-
-      try {
-         Invokable<? extends AsyncTask<?, ?>, ? extends AsyncTask<?, ?>> cons = constructor(taskClass,
-               ApiContext.class, dto.getClass());
-         return cons.invoke(null, context, dto);
-      } catch (InvocationTargetException e) {
-         throw new WrapperException(taskClass, dto, e.getTargetException());
-      } catch (IllegalAccessException e) {
-         throw new WrapperException(taskClass, dto, e);
+            if (dto.getType() == TaskType.INSTANCE) {
+               return VirtualMachineTemplateTask.builder(context, dto).build();
+            } else {
+               return VirtualMachineTask.builder(context, dto).build();
+            }
+         case REPOSITORY:
+            return NoResultTask.builder(context, dto).build();
+         default:
+            throw new WrapperException(taskClass, dto, "Unsupported task type");
       }
    }
 

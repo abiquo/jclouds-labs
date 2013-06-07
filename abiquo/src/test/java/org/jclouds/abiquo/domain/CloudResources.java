@@ -212,7 +212,7 @@ public class CloudResources {
 
    public static VirtualMachineTaskDto deployOptions() {
       VirtualMachineTaskDto deploy = new VirtualMachineTaskDto();
-      deploy.setForceEnterpriseSoftLimits(false);
+      deploy.setForceVdcLimits(false);
       return deploy;
 
    }
@@ -408,7 +408,7 @@ public class CloudResources {
    public static String deployPayload() {
       StringBuilder buffer = new StringBuilder();
       buffer.append("<virtualmachinetask>");
-      buffer.append("<forceEnterpriseSoftLimits>false</forceEnterpriseSoftLimits>");
+      buffer.append("<forceVdcSoftLimits>false</forceVdcSoftLimits>");
       buffer.append("</virtualmachinetask>");
       return buffer.toString();
    }
@@ -416,7 +416,7 @@ public class CloudResources {
    public static String undeployPayload() {
       StringBuilder buffer = new StringBuilder();
       buffer.append("<virtualmachinetask>");
-      buffer.append("<forceEnterpriseSoftLimits>false</forceEnterpriseSoftLimits>");
+      buffer.append("<forceVdcSoftLimits>false</forceVdcSoftLimits>");
       buffer.append("<forceUndeploy>true</forceUndeploy>");
       buffer.append("</virtualmachinetask>");
       return buffer.toString();

@@ -62,7 +62,7 @@ public class ListAttachedVirtualDisksLiveApiTest extends BaseAbiquoStrategyLiveA
    protected void tearDownStrategy() {
       env.virtualMachine.setVirtualDisks(Lists.<VirtualDisk<?>> newArrayList());
       deleteVolume(volume);
-      deleteHardDisk(hardDisk);
+      // The hard disk is deleted when it is detached from the virtual machine
    }
 
    public void testExecute() {
@@ -120,11 +120,5 @@ public class ListAttachedVirtualDisksLiveApiTest extends BaseAbiquoStrategyLiveA
       assertNotNull(hardDisk.getSequence());
 
       return hardDisk;
-   }
-
-   private void deleteHardDisk(final HardDisk hardDisk) {
-      Integer id = hardDisk.getId();
-      hardDisk.delete();
-      assertNull(env.virtualDatacenter.getHardDisk(id));
    }
 }

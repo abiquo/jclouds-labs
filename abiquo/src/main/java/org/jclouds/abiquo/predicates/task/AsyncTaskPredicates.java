@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Arrays;
 
 import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.BaseTask;
 
 import com.abiquo.server.core.task.TaskState;
 import com.abiquo.server.core.task.TaskType;
@@ -32,23 +33,23 @@ import com.google.common.base.Predicate;
  * @author Ignasi Barrera
  */
 public class AsyncTaskPredicates {
-   public static Predicate<AsyncTask<?, ?>> state(final TaskState... states) {
+   public static Predicate<BaseTask<?>> state(final TaskState... states) {
       checkNotNull(states, "states must be defined");
 
-      return new Predicate<AsyncTask<?, ?>>() {
+      return new Predicate<BaseTask<?>>() {
          @Override
-         public boolean apply(final AsyncTask<?, ?> task) {
+         public boolean apply(final BaseTask<?> task) {
             return Arrays.asList(states).contains(task.getState());
          }
       };
    }
 
-   public static Predicate<AsyncTask<?, ?>> type(final TaskType... types) {
+   public static Predicate<BaseTask<?>> type(final TaskType... types) {
       checkNotNull(types, "types must be defined");
 
-      return new Predicate<AsyncTask<?, ?>>() {
+      return new Predicate<BaseTask<?>>() {
          @Override
-         public boolean apply(final AsyncTask<?, ?> task) {
+         public boolean apply(final BaseTask<?> task) {
             return Arrays.asList(types).contains(task.getType());
          }
       };

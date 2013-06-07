@@ -52,12 +52,6 @@ public class DatacenterLiveApiTest extends BaseAbiquoApiLiveApiTest {
       assertEquals(updated.getLocation(), "New York");
    }
 
-   public void testCheckHypervisorType() {
-      String type = env.datacenter.getHypervisorType(env.machine.getIp());
-
-      assertEquals(env.machine.getType(), type);
-   }
-
    public void testCreateRepeated() {
       Datacenter repeated = Builder.fromDatacenter(env.datacenter).build();
 
