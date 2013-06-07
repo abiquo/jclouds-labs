@@ -43,7 +43,7 @@ import org.jclouds.abiquo.binders.infrastructure.ucs.BindLogicServerParameters;
 import org.jclouds.abiquo.binders.infrastructure.ucs.BindOrganizationParameters;
 import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.DatacenterOptions;
-import org.jclouds.abiquo.domain.infrastructure.options.IpmiOptions;
+import org.jclouds.abiquo.domain.infrastructure.options.DiscoveryOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.MachineOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.StoragePoolOptions;
 import org.jclouds.abiquo.domain.network.options.IpOptions;
@@ -187,134 +187,22 @@ public interface InfrastructureApi extends Closeable {
    void deleteDatacenter(@EndpointLink("edit") @BinderParam(BindToPath.class) DatacenterDto datacenter);
 
    /**
-    * Retrieve remote machine information.
+    * Attempts to discover the information of the physical machines in the given
+    * host.
     * 
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/DatacenterResource#DatacenterResource-Retrieveremotemachineinformation"
-    *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
-    *      DatacenterResource- Retrieveremotemachineinformation</a>
     * @param datacenter
-    *           The datacenter.
-    * @param ip
-    *           IP address of the remote hypervisor to connect.
-    * @param hypervisorType
-    *           Kind of hypervisor we want to connect. Valid values are {vbox,
-    *           kvm, xen-3, vmx-04, hyperv-301, xenserver}.
-    * @param user
-    *           User to log in.
-    * @param password
-    *           Password to authenticate.
-    * @return The physical machine.
-    */
-   @Named("machine:discover")
-   @GET
-   @Consumes(MachineDto.BASE_MEDIA_TYPE)
-   @JAXBResponseParser
-   @Fallback(PropagateAbiquoExceptionOnNotFoundOr4xx.class)
-   MachineDto discoverSingleMachine(
-         @EndpointLink("discoversingle") @BinderParam(BindToPath.class) DatacenterDto datacenter,
-         @QueryParam("ip") String ip, @QueryParam("hypervisor") String hypervisorType, @QueryParam("user") String user,
-         @QueryParam("password") String password);
-
-   /**
-    * Retrieve remote machine information.
-    * 
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/DatacenterResource#DatacenterResource-Retrieveremotemachineinformation"
-    *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
-    *      DatacenterResource- Retrieveremotemachineinformation</a>
-    * @param datacenter
-    *           The datacenter.
-    * @param ip
-    *           IP address of the remote hypervisor to connect.
-    * @param hypervisorType
-    *           Kind of hypervisor we want to connect. Valid values are {vbox,
-    *           kvm, xen-3, vmx-04, hyperv-301, xenserver}.
-    * @param user
-    *           User to log in.
-    * @param password
-    *           Password to authenticate.
+    *           The datacenter where the machines will be discovered.
     * @param options
-    *           Optional query params.
-    * @return The physical machine.
-    */
-   @Named("machine:discover")
-   @GET
-   @Consumes(MachineDto.BASE_MEDIA_TYPE)
-   @JAXBResponseParser
-   @Fallback(PropagateAbiquoExceptionOnNotFoundOr4xx.class)
-   MachineDto discoverSingleMachine(
-         @EndpointLink("discoversingle") @BinderParam(BindToPath.class) DatacenterDto datacenter,
-         @QueryParam("ip") String ip, @QueryParam("hypervisor") String hypervisorType, @QueryParam("user") String user,
-         @QueryParam("password") String password, MachineOptions options);
-
-   /**
-    * Retrieve a list of remote machine information.
-    * 
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/DatacenterResource#DatacenterResource-Retrievealistofremotemachineinformation"
-    *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
-    *      DatacenterResource- Retrievealistofremotemachineinformation</a>
-    * @param datacenter
-    *           The datacenter.
-    * @param ipFrom
-    *           IP address of the remote first hypervisor to check.
-    * @param ipTo
-    *           IP address of the remote last hypervisor to check.
-    * @param hypervisorType
-    *           Kind of hypervisor we want to connect. Valid values are {vbox,
-    *           kvm, xen-3, vmx-04, hyperv-301, xenserver}.
-    * @param user
-    *           User to log in.
-    * @param password
-    *           Password to authenticate.
-    * @return The physical machine list.
+    *           The discovery options, providing the connection details.
+    * @return The list of discovered hosts.
     */
    @Named("machine:discover")
    @GET
    @Consumes(MachinesDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
    @Fallback(PropagateAbiquoExceptionOnNotFoundOr4xx.class)
-   MachinesDto discoverMultipleMachines(
-         @EndpointLink("discovermultiple") @BinderParam(BindToPath.class) DatacenterDto datacenter,
-         @QueryParam("ipFrom") String ipFrom, @QueryParam("ipTo") String ipTo,
-         @QueryParam("hypervisor") String hypervisorType, @QueryParam("user") String user,
-         @QueryParam("password") String password);
-
-   /**
-    * Retrieve a list of remote machine information.
-    * 
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/DatacenterResource#DatacenterResource-Retrievealistofremotemachineinformation"
-    *      > http://community.abiquo.com/display/ABI20/DatacenterResource#
-    *      DatacenterResource- Retrievealistofremotemachineinformation</a>
-    * @param datacenter
-    *           The datacenter.
-    * @param ipFrom
-    *           IP address of the remote first hypervisor to check.
-    * @param ipTo
-    *           IP address of the remote last hypervisor to check.
-    * @param hypervisorType
-    *           Kind of hypervisor we want to connect. Valid values are {vbox,
-    *           kvm, xen-3, vmx-04, hyperv-301, xenserver}.
-    * @param user
-    *           User to log in.
-    * @param password
-    *           Password to authenticate.
-    * @param options
-    *           Optional query params.
-    * @return The physical machine list.
-    */
-   @Named("machine:discover")
-   @GET
-   @Consumes(MachinesDto.BASE_MEDIA_TYPE)
-   @JAXBResponseParser
-   @Fallback(PropagateAbiquoExceptionOnNotFoundOr4xx.class)
-   MachinesDto discoverMultipleMachines(
-         @EndpointLink("discovermultiple") @BinderParam(BindToPath.class) DatacenterDto datacenter,
-         @QueryParam("ipFrom") String ipFrom, @QueryParam("ipTo") String ipTo,
-         @QueryParam("hypervisor") String hypervisorType, @QueryParam("user") String user,
-         @QueryParam("password") String password, MachineOptions options);
+   MachinesDto discoverMachines(@EndpointLink("discover") @BinderParam(BindToPath.class) DatacenterDto datacenter,
+         DiscoveryOptions options);
 
    /**
     * Retrieves limits for the given datacenter and any enterprise.
@@ -328,111 +216,6 @@ public interface InfrastructureApi extends Closeable {
    @Consumes(DatacentersLimitsDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
    DatacentersLimitsDto listLimits(@EndpointLink("getLimits") @BinderParam(BindToPath.class) DatacenterDto datacenter);
-
-   /**
-    * Check the state of a remote machine. This machine does not need to be
-    * managed by Abiquo.
-    * 
-    * @param datacenter
-    *           The datacenter.
-    * @param ip
-    *           IP address of the remote hypervisor to connect.
-    * @param hypervisorType
-    *           Kind of hypervisor we want to connect. Valid values are {vbox,
-    *           kvm, xen-3, vmx-04, hyperv-301, xenserver}.
-    * @param user
-    *           User to log in.
-    * @param password
-    *           Password to authenticate.
-    * @return The physical machine state information.
-    */
-   @Named("machine:checkstate")
-   @GET
-   @Consumes(MachineStateDto.BASE_MEDIA_TYPE)
-   @JAXBResponseParser
-   @Fallback(PropagateAbiquoExceptionOnNotFoundOr4xx.class)
-   MachineStateDto checkMachineState(
-         @EndpointLink("checkmachinestate") @BinderParam(BindToPath.class) DatacenterDto datacenter,
-         @QueryParam("ip") String ip, @QueryParam("hypervisor") String hypervisorType, @QueryParam("user") String user,
-         @QueryParam("password") String password);
-
-   /**
-    * Check the state of a remote machine. This machine does not need to be
-    * managed by Abiquo.
-    * 
-    * @param datacenter
-    *           The datacenter.
-    * @param ip
-    *           IP address of the remote hypervisor to connect.
-    * @param hypervisorType
-    *           Kind of hypervisor we want to connect. Valid values are {vbox,
-    *           kvm, xen-3, vmx-04, hyperv-301, xenserver}.
-    * @param user
-    *           User to log in.
-    * @param password
-    *           Password to authenticate.
-    * @param options
-    *           Optional query params.
-    * @return The physical machine state information.
-    */
-   @Named("machine:checkstate")
-   @GET
-   @Consumes(MachineStateDto.BASE_MEDIA_TYPE)
-   @JAXBResponseParser
-   @Fallback(PropagateAbiquoExceptionOnNotFoundOr4xx.class)
-   MachineStateDto checkMachineState(
-         @EndpointLink("checkmachinestate") @BinderParam(BindToPath.class) DatacenterDto datacenter,
-         @QueryParam("ip") String ip, @QueryParam("hypervisor") String hypervisorType, @QueryParam("user") String user,
-         @QueryParam("password") String password, MachineOptions options);
-
-   /**
-    * Check the ipmi configuration state of a remote machine. This machine does
-    * not need to be managed by Abiquo.
-    * 
-    * @param datacenter
-    *           The datacenter.
-    * @param ip
-    *           IP address of the remote hypervisor to connect.
-    * @param user
-    *           User to log in.
-    * @param password
-    *           Password to authenticate.
-    * @return The ipmi configuration state information
-    */
-   @Named("machine:checkipmi")
-   @GET
-   @Consumes(MachineIpmiStateDto.BASE_MEDIA_TYPE)
-   @JAXBResponseParser
-   @Fallback(PropagateAbiquoExceptionOnNotFoundOr4xx.class)
-   MachineIpmiStateDto checkMachineIpmiState(
-         @EndpointLink("checkmachineipmistate") @BinderParam(BindToPath.class) DatacenterDto datacenter,
-         @QueryParam("ip") String ip, @QueryParam("user") String user, @QueryParam("password") String password);
-
-   /**
-    * Check the ipmi configuration state of a remote machine. This machine does
-    * not need to be managed by Abiquo.
-    * 
-    * @param datacenter
-    *           The datacenter.
-    * @param ip
-    *           IP address of the remote hypervisor to connect.
-    * @param user
-    *           User to log in.
-    * @param password
-    *           Password to authenticate.
-    * @param options
-    *           Optional query params.
-    * @return The ipmi configuration state information
-    */
-   @Named("machine:checkipmi")
-   @GET
-   @Consumes(MachineIpmiStateDto.BASE_MEDIA_TYPE)
-   @JAXBResponseParser
-   @Fallback(PropagateAbiquoExceptionOnNotFoundOr4xx.class)
-   MachineIpmiStateDto checkMachineIpmiState(
-         @EndpointLink("checkmachineipmistate") @BinderParam(BindToPath.class) DatacenterDto datacenter,
-         @QueryParam("ip") String ip, @QueryParam("user") String user, @QueryParam("password") String password,
-         IpmiOptions options);
 
    /*********************** Hypervisor ***********************/
 

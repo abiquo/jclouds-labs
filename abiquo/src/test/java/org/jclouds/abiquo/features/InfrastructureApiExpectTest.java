@@ -25,6 +25,7 @@ import java.net.URI;
 
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
+import org.jclouds.abiquo.domain.infrastructure.options.DiscoveryOptions;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.HttpResponse;
 import org.testng.annotations.Test;
@@ -32,6 +33,7 @@ import org.testng.annotations.Test;
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.enterprise.EnterprisesDto;
 import com.abiquo.server.core.infrastructure.DatacenterDto;
+import com.abiquo.server.core.infrastructure.MachinesDto;
 import com.abiquo.server.core.infrastructure.network.NetworkServiceTypeDto;
 import com.abiquo.server.core.infrastructure.network.NetworkServiceTypesDto;
 import com.abiquo.server.core.infrastructure.storage.TierDto;
@@ -275,6 +277,36 @@ public class InfrastructureApiExpectTest extends BaseAbiquoApiExpectTest<Infrast
 
       assertEquals(enterprises.getCollection().size(), 1);
       assertEquals(enterprises.getCollection().get(0).getId(), Integer.valueOf(1));
+   }
+
+   public void testDiscoverMachinesReturns2xx() {
+      InfrastructureApi api = requestSendsResponse(
+            HttpRequest.builder().method("GET")
+                  .endpoint(URI.create("http://localhost/api/admin/datacenters/1/action/discover"))
+                  .addHeader("Authorization", basicAuth) //
+                  .addHeader("Accept", normalize(MachinesDto.MEDIA_TYPE)) //
+                  .addQueryParam("hypervisor", "KVM") //
+                  .addQueryParam("ip", "10.60.1.120") //
+                  .build(),
+            HttpResponse
+                  .builder()
+                  .statusCode(200)
+                  .payload(
+                        payloadFromResourceWithContentType("/payloads/machines-discover.xml",
+                              normalize(MachinesDto.MEDIA_TYPE))).build());
+
+      DatacenterDto datacenter = new DatacenterDto();
+      datacenter.addLink(new RESTLink("discover", "http://localhost/api/admin/datacenters/1/action/discover"));
+
+      DiscoveryOptions options = DiscoveryOptions.builder() //
+            .hypervisorType("KVM") //
+            .ip("10.60.1.120") //
+            .build();
+
+      MachinesDto machines = api.discoverMachines(datacenter, options);
+      assertEquals(machines.getCollection().size(), 1);
+      assertEquals(machines.getCollection().get(0).getIp(), "10.60.1.120");
+      assertEquals(machines.getCollection().get(0).getType(), "KVM");
    }
 
    @Override

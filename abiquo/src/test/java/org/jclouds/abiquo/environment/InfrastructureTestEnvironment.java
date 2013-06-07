@@ -17,6 +17,7 @@
 package org.jclouds.abiquo.environment;
 
 import static com.google.common.collect.Iterables.find;
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.jclouds.abiquo.reference.AbiquoTestConstants.PREFIX;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -46,6 +47,7 @@ import org.jclouds.abiquo.domain.infrastructure.StorageDevice;
 import org.jclouds.abiquo.domain.infrastructure.StorageDeviceMetadata;
 import org.jclouds.abiquo.domain.infrastructure.StoragePool;
 import org.jclouds.abiquo.domain.infrastructure.Tier;
+import org.jclouds.abiquo.domain.infrastructure.options.DiscoveryOptions;
 import org.jclouds.abiquo.domain.network.ExternalNetwork;
 import org.jclouds.abiquo.domain.network.NetworkServiceType;
 import org.jclouds.abiquo.domain.network.PublicNetwork;
@@ -210,7 +212,16 @@ public class InfrastructureTestEnvironment implements TestEnvironment {
       String user = Config.get("abiquo.hypervisor.user");
       String pass = Config.get("abiquo.hypervisor.pass");
 
-      machine = datacenter.discoverSingleMachine(ip, type, user, pass);
+      DiscoveryOptions options = DiscoveryOptions.builder() //
+            .hypervisorType(type) //
+            .ip(ip) //
+            .credentials(user, pass) //
+            .build();
+
+      machine = getOnlyElement(datacenter.discoverMachines(options));
+      // Credentials are not returned by the API
+      machine.setUser(user);
+      machine.setPassword(pass);
 
       NetworkServiceType nst = datacenter.defaultNetworkServiceType();
       NetworkInterface vswitch = machine.findAvailableVirtualSwitch(Config.get("abiquo.hypervisor.vswitch"));

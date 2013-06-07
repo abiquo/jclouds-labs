@@ -31,6 +31,7 @@ import javax.ws.rs.core.Response.Status;
 import org.jclouds.abiquo.domain.cloud.VirtualMachine;
 import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.domain.exception.AbiquoException;
+import org.jclouds.abiquo.domain.infrastructure.options.DiscoveryOptions;
 import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
 import org.jclouds.abiquo.predicates.infrastructure.RemoteServicePredicates;
 import org.jclouds.abiquo.util.Config;
@@ -54,12 +55,13 @@ public class MachineLiveApiTest extends BaseAbiquoApiLiveApiTest {
       nc.delete();
 
       try {
-         String ip = Config.get("abiquo.hypervisor.address");
-         String type = Config.get("abiquo.hypervisor.type");
-         String user = Config.get("abiquo.hypervisor.user");
-         String pass = Config.get("abiquo.hypervisor.pass");
+         DiscoveryOptions options = DiscoveryOptions.builder() //
+               .hypervisorType(Config.get("abiquo.hypervisor.type")) //
+               .ip(Config.get("abiquo.hypervisor.address")) //
+               .credentials(Config.get("abiquo.hypervisor.user"), Config.get("abiquo.hypervisor.pass")) //
+               .build();
 
-         env.datacenter.discoverSingleMachine(ip, type, user, pass);
+         env.datacenter.discoverMachines(options);
       } catch (AbiquoException ex) {
          assertHasError(ex, Status.NOT_FOUND, "RS-2");
       }
@@ -85,19 +87,6 @@ public class MachineLiveApiTest extends BaseAbiquoApiLiveApiTest {
       MachineState state = env.machine.check();
 
       // Recover the machine with same state that has been returned
-      MachineDto machine = env.infrastructureApi.getMachine(env.rack.unwrap(), env.machine.getId());
-      assertEquals(machine.getState(), state);
-   }
-
-   public void testCheckFromDatacenter() {
-      String ip = Config.get("abiquo.hypervisor.address");
-      String type = Config.get("abiquo.hypervisor.type");
-      String user = Config.get("abiquo.hypervisor.user");
-      String pass = Config.get("abiquo.hypervisor.pass");
-
-      MachineState state = env.datacenter.checkMachineState(ip, type, user, pass);
-
-      // Recover the same machine and compare states
       MachineDto machine = env.infrastructureApi.getMachine(env.rack.unwrap(), env.machine.getId());
       assertEquals(machine.getState(), state);
    }
