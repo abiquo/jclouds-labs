@@ -17,11 +17,14 @@
 package org.jclouds.abiquo.domain.util;
 
 import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Lists.newArrayList;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.jclouds.abiquo.predicates.LinkPredicates;
 
+import com.abiquo.model.enumerator.LinkOrder;
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.model.transport.SingleResourceTransportDto;
 import com.google.common.collect.ImmutableList;
@@ -52,7 +55,9 @@ public class LinkUtils {
     * @return A list with all links that point to a NIC.
     */
    public static List<RESTLink> filterNicLinks(final List<RESTLink> links) {
-      return ImmutableList.copyOf(filter(links, LinkPredicates.isNic()));
+      List<RESTLink> nicLinks = newArrayList(filter(links, LinkPredicates.isNic()));
+      Collections.sort(nicLinks, LinkOrder.BY_REL);
+      return ImmutableList.copyOf(nicLinks);
    }
 
    /**
@@ -64,6 +69,8 @@ public class LinkUtils {
     * @return A list with all links that point to a virtual disk.
     */
    public static List<RESTLink> filterDiskLinks(final List<RESTLink> links) {
-      return ImmutableList.copyOf(filter(links, LinkPredicates.isDisk()));
+      List<RESTLink> diskLinks = newArrayList(filter(links, LinkPredicates.isDisk()));
+      Collections.sort(diskLinks, LinkOrder.BY_REL);
+      return ImmutableList.copyOf(diskLinks);
    }
 }

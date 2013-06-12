@@ -313,18 +313,18 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    }
 
    @SinceApiVersion("2.4")
-   public List<VirtualDisk<?>> listVirtualDisks() {
+   public List<VirtualDisk<?>> listAttachedVirtualDisks() {
       // The strategy will refresh the vm. There is no need to do it here
       ListAttachedVirtualDisks strategy = context.utils().injector().getInstance(ListAttachedVirtualDisks.class);
       return Lists.newLinkedList(strategy.execute(this));
    }
 
-   public List<VirtualDisk<?>> listVirtualDisks(final Predicate<VirtualDisk<?>> filter) {
-      return Lists.newLinkedList(filter(listVirtualDisks(), filter));
+   public List<VirtualDisk<?>> listAttachedVirtualDisks(final Predicate<VirtualDisk<?>> filter) {
+      return Lists.newLinkedList(filter(listAttachedVirtualDisks(), filter));
    }
 
-   public VirtualDisk<?> findVirtualDisk(final Predicate<VirtualDisk<?>> filter) {
-      return Iterables.getFirst(filter(listVirtualDisks(), filter), null);
+   public VirtualDisk<?> findAttachedVirtualDisk(final Predicate<VirtualDisk<?>> filter) {
+      return Iterables.getFirst(filter(listAttachedVirtualDisks(), filter), null);
    }
 
    // Actions
@@ -497,7 +497,9 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
       for (int i = 0; i < virtualDisks.size(); i++) {
          VirtualDisk<?> virtualDisk = virtualDisks.get(i);
          RESTLink source = LinkUtils.getSelfLink(virtualDisk.unwrap());
-         RESTLink link = new RESTLink(DiskManagementDto.REL_PREFIX + i, source.getHref());
+         // The "disk0" rel is reserved for the primary disk and can not be
+         // changed
+         RESTLink link = new RESTLink(DiskManagementDto.REL_PREFIX + (i + 1), source.getHref());
          link.setType(virtualDisk.unwrap().getBaseMediaType());
          target.addLink(link);
       }

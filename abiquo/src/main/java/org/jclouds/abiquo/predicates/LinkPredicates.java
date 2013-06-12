@@ -55,7 +55,7 @@ public class LinkPredicates {
       return new Predicate<RESTLink>() {
          @Override
          public boolean apply(final RESTLink link) {
-            return link.getRel().matches("^" + DiskManagementDto.REL_PREFIX + "[0-9]+$");
+            return link.getRel().matches("^" + DiskManagementDto.REL_PREFIX + "[1-9]+$");
          }
       };
    }
