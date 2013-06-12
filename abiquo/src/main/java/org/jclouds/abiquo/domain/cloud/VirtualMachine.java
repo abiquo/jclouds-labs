@@ -53,6 +53,7 @@ import com.abiquo.server.core.cloud.VirtualMachineInstanceDto;
 import com.abiquo.server.core.cloud.VirtualMachineState;
 import com.abiquo.server.core.cloud.VirtualMachineStateDto;
 import com.abiquo.server.core.cloud.VirtualMachineTaskDto;
+import com.abiquo.server.core.cloud.VirtualMachineType;
 import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
 import com.abiquo.server.core.enterprise.EnterpriseDto;
 import com.abiquo.server.core.infrastructure.network.NicDto;
@@ -341,15 +342,15 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    /**
     * Deploy the virtual machine.
     * 
-    * @param forceEnterpriseSoftLimits
+    * @param forceVdcSoftLimits
     *           If the deploy operation must be performed even if the soft
-    *           limits for the tenant are exceeded.
+    *           limits for the virtual datacenter are exceeded.
     * 
     * @return An async task reference to keep track of the deploy operation.
     */
-   public VirtualMachineTask deploy(final boolean forceEnterpriseSoftLimits) {
+   public VirtualMachineTask deploy(final boolean forceVdcSoftLimits) {
       VirtualMachineTaskDto force = new VirtualMachineTaskDto();
-      force.setForceEnterpriseSoftLimits(forceEnterpriseSoftLimits);
+      force.setForceVdcLimits(forceVdcSoftLimits);
 
       AcceptedRequestDto<String> response = context.getApi().getCloudApi().deployVirtualMachine(unwrap(), force);
 
@@ -569,8 +570,6 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
 
       private Integer idState;
 
-      private Integer idType;
-
       private String password;
 
       private String keymap;
@@ -653,11 +652,6 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
          return this;
       }
 
-      private Builder idType(final int idType) {
-         this.idType = idType;
-         return this;
-      }
-
       private Builder internalName(final String internalName) {
          this.internalName = internalName;
          return this;
@@ -694,10 +688,6 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
             dto.setIdState(idState);
          }
 
-         if (idType != null) {
-            dto.setIdType(idType);
-         }
-
          if (internalName != null) {
             dto.setName(internalName);
          }
@@ -729,8 +719,8 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
          return VirtualMachine.builder(in.context, in.virtualAppliance, in.template).internalName(in.getInternalName())
                .nameLabel(in.getNameLabel()).description(in.getDescription()).ram(in.getRam()).cpu(in.getCpu())
                .vncEnabled(in.getVncEnabled()).vncAddress(in.getVncAddress()).vncPort(in.getVncPort())
-               .idState(in.getIdState()).idType(in.getIdType()).password(in.getPassword()).keymap(in.getKeymap())
-               .dvd(in.hasDvd()).layer(in.getLayer().orNull());
+               .idState(in.getIdState()).password(in.getPassword()).keymap(in.getKeymap()).dvd(in.hasDvd())
+               .layer(in.getLayer().orNull());
       }
    }
 
@@ -757,8 +747,8 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
       return target.getIdState();
    }
 
-   public int getIdType() {
-      return target.getIdType();
+   public VirtualMachineType getType() {
+      return target.getType();
    }
 
    public String getNameLabel() {
@@ -833,9 +823,8 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    public String toString() {
       String vncData = getVncEnabled() ? ", vncAddress=" + getVncAddress() + ", vncPort=" + getVncPort() : "";
       return "VirtualMachine [id=" + getId() + ", state=" + target.getState().name() + ", cpu=" + getCpu()
-            + ", description=" + getDescription() + ", hdInBytes=" + getHdInBytes() + ", idType=" + getIdType()
-            + ", nameLabel=" + getNameLabel() + ", internalName=" + getInternalName() + ", password=" + getPassword()
-            + ", ram=" + getRam() + ", uuid=" + getUuid() + vncData + ", keymap=" + getKeymap() + ", dvd=" + hasDvd()
-            + "]";
+            + ", description=" + getDescription() + ", hdInBytes=" + getHdInBytes() + ", nameLabel=" + getNameLabel()
+            + ", internalName=" + getInternalName() + ", password=" + getPassword() + ", ram=" + getRam() + ", uuid="
+            + getUuid() + vncData + ", keymap=" + getKeymap() + ", dvd=" + hasDvd() + "]";
    }
 }

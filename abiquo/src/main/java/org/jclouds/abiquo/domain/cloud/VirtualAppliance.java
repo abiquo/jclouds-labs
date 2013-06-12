@@ -254,15 +254,15 @@ public class VirtualAppliance extends DomainWrapper<VirtualApplianceDto> {
     * deploy operation. The deployment will finish when all individual tasks
     * finish.
     * 
-    * @param forceEnterpriseSoftLimits
+    * @param forceVdcSoftLimits
     *           Boolean indicating if the deployment must be executed even if
-    *           the enterprise soft limits are reached.
+    *           the virtual datacenter soft limits are reached.
     * @return The list of tasks corresponding to the deploy process of each
     *         virtual machine in the appliance.
     */
-   public VirtualMachineTask[] deploy(final boolean forceEnterpriseSoftLimits) {
+   public VirtualMachineTask[] deploy(final boolean forceVdcSoftLimits) {
       VirtualMachineTaskDto force = new VirtualMachineTaskDto();
-      force.setForceEnterpriseSoftLimits(forceEnterpriseSoftLimits);
+      force.setForceVdcLimits(forceVdcSoftLimits);
 
       AcceptedRequestDto<String> response = context.getApi().getCloudApi().deployVirtualAppliance(unwrap(), force);
 
