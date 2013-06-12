@@ -93,7 +93,7 @@ public class UnmanagedNetworkLiveApiTest extends BaseAbiquoApiLiveApiTest {
       assertEquals(unmanagedNetwork.getSecondaryDNS(), "8.8.8.8");
 
       // Refresh the unmanaged network
-      UnmanagedNetwork en = env.enterprise.findUnmanagedNetwork(env.datacenter,
+      UnmanagedNetwork en = env.defaultEnterprise.findUnmanagedNetwork(env.datacenter,
             NetworkPredicates.<UnmanagedIp> name(unmanagedNetwork.getName()));
 
       assertEquals(en.getId(), unmanagedNetwork.getId());
@@ -135,7 +135,7 @@ public class UnmanagedNetworkLiveApiTest extends BaseAbiquoApiLiveApiTest {
    }
 
    public void testGetEnterprise() {
-      assertEquals(unmanagedNetwork.getEnterprise().getId(), env.enterprise.getId());
+      assertEquals(unmanagedNetwork.getEnterprise().getId(), env.defaultEnterprise.getId());
    }
 
    public void testGetDatacenter() {

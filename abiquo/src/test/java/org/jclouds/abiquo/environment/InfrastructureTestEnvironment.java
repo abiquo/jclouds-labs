@@ -57,6 +57,7 @@ import org.jclouds.abiquo.features.ConfigApi;
 import org.jclouds.abiquo.features.EnterpriseApi;
 import org.jclouds.abiquo.features.InfrastructureApi;
 import org.jclouds.abiquo.features.services.AdministrationService;
+import org.jclouds.abiquo.predicates.enterprise.EnterprisePredicates;
 import org.jclouds.abiquo.predicates.enterprise.RolePredicates;
 import org.jclouds.abiquo.predicates.enterprise.UserPredicates;
 import org.jclouds.abiquo.predicates.infrastructure.RemoteServicePredicates;
@@ -109,6 +110,8 @@ public class InfrastructureTestEnvironment implements TestEnvironment {
    public Machine machine;
 
    public Enterprise enterprise;
+
+   public Enterprise defaultEnterprise;
 
    public Limits limits;
 
@@ -322,6 +325,8 @@ public class InfrastructureTestEnvironment implements TestEnvironment {
    }
 
    protected void createEnterprise() {
+      defaultEnterprise = context.getAdministrationService().findEnterprise(EnterprisePredicates.name("Abiquo"));
+
       enterprise = Enterprise.builder(context.getApiContext()).name(randomName()).build();
       enterprise.save();
       assertNotNull(enterprise.getId());
@@ -337,14 +342,14 @@ public class InfrastructureTestEnvironment implements TestEnvironment {
    }
 
    protected void createExternalNetwork() {
-      externalNetwork = ExternalNetwork.builder(context.getApiContext(), datacenter, enterprise)
+      externalNetwork = ExternalNetwork.builder(context.getApiContext(), datacenter, defaultEnterprise)
             .name("ExternalNetwork").gateway("10.0.0.1").address("10.0.0.0").mask(24).tag(7).build();
       externalNetwork.save();
       assertNotNull(externalNetwork.getId());
    }
 
    protected void createUnmanagedNetwork() {
-      unmanagedNetwork = UnmanagedNetwork.builder(context.getApiContext(), datacenter, enterprise)
+      unmanagedNetwork = UnmanagedNetwork.builder(context.getApiContext(), datacenter, defaultEnterprise)
             .name("UnmanagedNetwork").gateway("10.0.1.1").address("10.0.1.0").mask(24).tag(8).build();
       unmanagedNetwork.save();
       assertNotNull(unmanagedNetwork.getId());

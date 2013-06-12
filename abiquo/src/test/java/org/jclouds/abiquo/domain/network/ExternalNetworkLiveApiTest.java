@@ -91,7 +91,7 @@ public class ExternalNetworkLiveApiTest extends BaseAbiquoApiLiveApiTest {
       assertEquals(externalNetwork.getSecondaryDNS(), "8.8.8.8");
 
       // Refresh the external network
-      ExternalNetwork en = env.enterprise.findExternalNetwork(env.datacenter,
+      ExternalNetwork en = env.defaultEnterprise.findExternalNetwork(env.datacenter,
             NetworkPredicates.<ExternalIp> name(externalNetwork.getName()));
 
       assertEquals(en.getId(), externalNetwork.getId());
@@ -133,7 +133,7 @@ public class ExternalNetworkLiveApiTest extends BaseAbiquoApiLiveApiTest {
    }
 
    public void testGetEnterprise() {
-      assertEquals(externalNetwork.getEnterprise().getId(), env.enterprise.getId());
+      assertEquals(externalNetwork.getEnterprise().getId(), env.defaultEnterprise.getId());
    }
 
    public void testGetDatacenter() {

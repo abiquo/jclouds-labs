@@ -33,14 +33,12 @@ import org.jclouds.abiquo.domain.cloud.VirtualAppliance;
 import org.jclouds.abiquo.domain.cloud.VirtualDatacenter;
 import org.jclouds.abiquo.domain.cloud.VirtualMachine;
 import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
-import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.domain.network.PrivateIp;
 import org.jclouds.abiquo.domain.network.PrivateNetwork;
 import org.jclouds.abiquo.domain.task.NoResultTask;
 import org.jclouds.abiquo.features.CloudApi;
 import org.jclouds.abiquo.features.services.EventService;
 import org.jclouds.abiquo.monitor.AsyncTaskMonitor;
-import org.jclouds.abiquo.predicates.enterprise.EnterprisePredicates;
 import org.jclouds.abiquo.predicates.network.NetworkPredicates;
 import org.testng.collections.Lists;
 
@@ -70,8 +68,6 @@ public class CloudTestEnvironment extends InfrastructureTestEnvironment {
 
    public PrivateNetwork privateNetwork;
 
-   public Enterprise defaultEnterprise;
-
    public AbiquoContext plainUserContext;
 
    public AbiquoContext enterpriseAdminContext;
@@ -90,7 +86,6 @@ public class CloudTestEnvironment extends InfrastructureTestEnvironment {
       createUserContext();
       createEnterpriseAdminContext();
 
-      findDefaultEnterprise();
       createVirtualDatacenter();
       createVirtualAppliance();
       refreshTemplateRepository();
@@ -128,10 +123,6 @@ public class CloudTestEnvironment extends InfrastructureTestEnvironment {
             .endpoint(endpoint) //
             .credentials("jclouds-admin", "admin") //
             .build(AbiquoContext.class);
-   }
-
-   protected void findDefaultEnterprise() {
-      defaultEnterprise = context.getAdministrationService().findEnterprise(EnterprisePredicates.name("Abiquo"));
    }
 
    protected void createVirtualDatacenter() {
