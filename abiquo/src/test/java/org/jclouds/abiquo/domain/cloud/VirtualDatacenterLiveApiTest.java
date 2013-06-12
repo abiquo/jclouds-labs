@@ -30,6 +30,7 @@ import org.jclouds.abiquo.domain.cloud.VirtualDatacenter.Builder;
 import org.jclouds.abiquo.domain.cloud.options.VirtualDatacenterOptions;
 import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.domain.infrastructure.Datacenter;
+import org.jclouds.abiquo.domain.infrastructure.HypervisorType;
 import org.jclouds.abiquo.domain.network.PrivateNetwork;
 import org.jclouds.abiquo.domain.network.PublicIp;
 import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
@@ -84,11 +85,11 @@ public class VirtualDatacenterLiveApiTest extends BaseAbiquoApiLiveApiTest {
 
       Datacenter datacenter = datacenters.get(0);
 
-      List<String> hypervisors = datacenter.listAvailableHypervisors();
+      List<HypervisorType> hypervisors = datacenter.listAvailableHypervisors();
       assertNotNull(datacenters);
       assertTrue(size(datacenters) > 0);
 
-      String hypervisor = hypervisors.get(0);
+      HypervisorType hypervisor = hypervisors.get(0);
 
       PrivateNetwork network = PrivateNetwork.builder(env.enterpriseAdminContext.getApiContext())
             .name("DefaultNetwork").gateway("192.168.1.1").address("192.168.1.0").mask(24).build();
@@ -97,7 +98,7 @@ public class VirtualDatacenterLiveApiTest extends BaseAbiquoApiLiveApiTest {
             .builder(env.enterpriseAdminContext.getApiContext(), datacenters.get(0), enterprise)
             .name(PREFIX + "Plain Virtual Aloha from ENT").cpuCountLimits(18, 20).hdLimitsInMb(279172872, 279172872)
             .publicIpsLimits(2, 2).ramLimits(19456, 20480).storageLimits(289910292, 322122547).vlansLimits(1, 2)
-            .hypervisorType(hypervisor).network(network).build();
+            .hypervisorType(hypervisor.getName()).network(network).build();
 
       virtualDatacenter.save();
       assertNotNull(virtualDatacenter.getId());

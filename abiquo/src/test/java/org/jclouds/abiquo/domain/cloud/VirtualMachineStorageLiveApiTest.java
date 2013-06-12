@@ -24,9 +24,11 @@ import static org.testng.Assert.assertTrue;
 
 import java.util.List;
 
+import org.jclouds.abiquo.domain.infrastructure.HypervisorType;
 import org.jclouds.abiquo.domain.infrastructure.Tier;
 import org.jclouds.abiquo.domain.task.VirtualMachineTask;
 import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
+import org.jclouds.abiquo.predicates.infrastructure.HypervisorPredicates;
 import org.jclouds.abiquo.predicates.infrastructure.TierPredicates;
 import org.testng.SkipException;
 import org.testng.annotations.AfterClass;
@@ -44,9 +46,14 @@ import com.google.common.collect.Lists;
 public class VirtualMachineStorageLiveApiTest extends BaseAbiquoApiLiveApiTest {
    private Volume volume;
 
+   private boolean hardDisksSupported;
+
    @BeforeClass
    public void setupVirtualDisks() {
       volume = createVolume();
+
+      HypervisorType type = env.datacenter.findHypervisor(HypervisorPredicates.type(env.machine.getType()));
+      hardDisksSupported = type.supportsExtraHardDisks();
    }
 
    @AfterClass
@@ -176,9 +183,8 @@ public class VirtualMachineStorageLiveApiTest extends BaseAbiquoApiLiveApiTest {
       return hardDisk;
    }
 
-   protected static void skipIfHardDisksNotSupported() {
-      // TODO: Check against the plugin capabilities
-      if (!env.machine.getType().equals("VMX_04")) {
+   protected void skipIfHardDisksNotSupported() {
+      if (!hardDisksSupported) {
          throw new SkipException(
                "Cannot perform this test because hard disk actions are not available for this hypervisor");
       }

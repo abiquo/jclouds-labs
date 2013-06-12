@@ -20,22 +20,24 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Arrays;
 
+import org.jclouds.abiquo.domain.infrastructure.HypervisorType;
+
 import com.google.common.base.Predicate;
 
 /**
- * Container for {@link HypervisorType} filters.
+ * Container forHypervisorType filters.
  * 
  * @author Ignasi Barrera
  * @author Francesc Montserrat
  */
 public class HypervisorPredicates {
-   public static Predicate<String> type(final String... types) {
+   public static Predicate<HypervisorType> type(final String... types) {
       checkNotNull(types, "types must be defined");
 
-      return new Predicate<String>() {
+      return new Predicate<HypervisorType>() {
          @Override
-         public boolean apply(final String type) {
-            return Arrays.asList(types).contains(type);
+         public boolean apply(final HypervisorType type) {
+            return Arrays.asList(types).contains(type.getName());
          }
       };
    }

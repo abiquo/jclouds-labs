@@ -20,14 +20,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.find;
 import static com.google.common.collect.Iterables.getFirst;
-import static com.google.common.collect.Iterables.transform;
 
 import java.util.List;
 
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
 import org.jclouds.abiquo.domain.enterprise.Limits;
-import org.jclouds.abiquo.domain.infrastructure.options.DatacenterOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.DiscoveryOptions;
 import org.jclouds.abiquo.domain.network.Network;
 import org.jclouds.abiquo.domain.network.NetworkServiceType;
@@ -40,7 +38,6 @@ import org.jclouds.rest.ApiContext;
 import com.abiquo.model.enumerator.NetworkType;
 import com.abiquo.model.enumerator.RemoteServiceType;
 import com.abiquo.model.enumerator.VlanTagAvailabilityType;
-import com.abiquo.server.core.cloud.HypervisorTypeDto;
 import com.abiquo.server.core.cloud.HypervisorTypesDto;
 import com.abiquo.server.core.enterprise.DatacentersLimitsDto;
 import com.abiquo.server.core.infrastructure.DatacenterDto;
@@ -60,7 +57,6 @@ import com.abiquo.server.core.infrastructure.storage.StorageDevicesDto;
 import com.abiquo.server.core.infrastructure.storage.StorageDevicesMetadataDto;
 import com.abiquo.server.core.infrastructure.storage.TierDto;
 import com.abiquo.server.core.infrastructure.storage.TiersDto;
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 
@@ -753,26 +749,6 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
    // Actions
 
    /**
-    * Retrieve the hypervisor type from remote machine.
-    * 
-    * @param ip
-    *           IP address of the physical machine.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/DatacenterResource#DatacenterResource-Retrievethehypervisortypefromremotemachine"
-    *      http://community.abiquo.com/display/ABI20/DatacenterResource#
-    *      DatacenterResource- Retrievethehypervisortypefromremotemachine</a>
-    * @return Hypervisor type of the remote machine.
-    * @throws Exception
-    *            If the hypervisor type information cannot be retrieved.
-    */
-   public String getHypervisorType(final String ip) {
-      DatacenterOptions options = DatacenterOptions.builder().ip(ip).build();
-
-      return context.getApi().getInfrastructureApi().getHypervisorTypeFromMachine(target, options);
-
-   }
-
-   /**
     * Retrieve the list of available hypervisor types in the datacenter.
     * 
     * @see API: <a href=
@@ -781,10 +757,9 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      DatacenterResource- Retrieveavailablehypervisortypes</a>
     * @return List of available hypervisor types in the datacenter.
     */
-   public List<String> listAvailableHypervisors() {
+   public List<HypervisorType> listAvailableHypervisors() {
       HypervisorTypesDto types = context.getApi().getInfrastructureApi().getHypervisorTypes(target);
-
-      return getHypervisorTypes(types);
+      return wrap(context, HypervisorType.class, types.getCollection());
    }
 
    /**
@@ -798,7 +773,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      DatacenterResource- Retrieveavailablehypervisortypes</a>
     * @return Filtered list of available hypervisor types in the datacenter.
     */
-   public List<String> listAvailableHypervisors(final Predicate<String> filter) {
+   public List<HypervisorType> listAvailableHypervisors(final Predicate<HypervisorType> filter) {
       return ImmutableList.copyOf(filter(listAvailableHypervisors(), filter));
    }
 
@@ -815,17 +790,8 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     * @return First hypervisor type matching the filter or <code>null</code> if
     *         there is none.
     */
-   public String findHypervisor(final Predicate<String> filter) {
+   public HypervisorType findHypervisor(final Predicate<HypervisorType> filter) {
       return getFirst(filter(listAvailableHypervisors(), filter), null);
-   }
-
-   private List<String> getHypervisorTypes(final HypervisorTypesDto dtos) {
-      return ImmutableList.copyOf(transform(dtos.getCollection(), new Function<HypervisorTypeDto, String>() {
-         @Override
-         public String apply(HypervisorTypeDto input) {
-            return input.getName();
-         }
-      }));
    }
 
    /**

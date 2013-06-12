@@ -21,14 +21,11 @@ import static org.jclouds.reflect.Reflection2.method;
 
 import java.io.IOException;
 
-import javax.ws.rs.core.MediaType;
-
 import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.abiquo.AbiquoFallbacks.FalseIfNotAvailable;
 import org.jclouds.abiquo.domain.EnterpriseResources;
 import org.jclouds.abiquo.domain.InfrastructureResources;
 import org.jclouds.abiquo.domain.NetworkResources;
-import org.jclouds.abiquo.domain.infrastructure.options.DatacenterOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.MachineOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.StoragePoolOptions;
 import org.jclouds.abiquo.domain.network.options.IpOptions;
@@ -37,7 +34,6 @@ import org.jclouds.abiquo.domain.options.search.FilterOptions;
 import org.jclouds.fallbacks.MapHttp4xxCodesToExceptions;
 import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.http.functions.ReleasePayloadAndReturn;
-import org.jclouds.http.functions.ReturnStringIf2xx;
 import org.jclouds.http.functions.ReturnTrueIf2xx;
 import org.jclouds.reflect.Invocation;
 import org.jclouds.rest.internal.GeneratedHttpRequest;
@@ -193,26 +189,6 @@ public class InfrastructureApiTest extends BaseAbiquoApiTest<InfrastructureApi> 
    }
 
    /*********************** Hypervisor ***********************/
-
-   public void testGetHypervisorTypeFromMachine() throws SecurityException, NoSuchMethodException, IOException {
-      Invokable<?, ?> method = method(InfrastructureApi.class, "getHypervisorTypeFromMachine", DatacenterDto.class,
-            DatacenterOptions.class);
-      GeneratedHttpRequest request = processor.apply(Invocation.create(
-            method,
-            ImmutableList.<Object> of(InfrastructureResources.datacenterPut(),
-                  DatacenterOptions.builder().ip("10.60.1.120").build())));
-
-      assertRequestLineEquals(request,
-            "GET http://localhost/api/admin/datacenters/1/action/hypervisor?ip=10.60.1.120 HTTP/1.1");
-      assertNonPayloadHeadersEqual(request, "Accept: " + MediaType.TEXT_PLAIN + "\n");
-      assertPayloadEquals(request, null, null, false);
-
-      assertResponseParserClassEquals(method, request, ReturnStringIf2xx.class);
-      assertSaxResponseParserClassEquals(method, null);
-      assertFallbackClassEquals(method, null);
-
-      checkFilters(request);
-   }
 
    public void testGetHypervisorTypesFromDatacenter() throws SecurityException, NoSuchMethodException, IOException {
       Invokable<?, ?> method = method(InfrastructureApi.class, "getHypervisorTypes", DatacenterDto.class);

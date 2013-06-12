@@ -28,7 +28,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
 
 import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.abiquo.AbiquoFallbacks.FalseIfNotAvailable;
@@ -42,7 +41,6 @@ import org.jclouds.abiquo.binders.infrastructure.BindSupportedDevicesLinkToPath;
 import org.jclouds.abiquo.binders.infrastructure.ucs.BindLogicServerParameters;
 import org.jclouds.abiquo.binders.infrastructure.ucs.BindOrganizationParameters;
 import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
-import org.jclouds.abiquo.domain.infrastructure.options.DatacenterOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.DiscoveryOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.MachineOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.StoragePoolOptions;
@@ -53,13 +51,11 @@ import org.jclouds.abiquo.functions.infrastructure.ParseDatacenterId;
 import org.jclouds.abiquo.http.filters.AbiquoAuthentication;
 import org.jclouds.abiquo.http.filters.AppendApiVersionToMediaType;
 import org.jclouds.abiquo.rest.annotations.EndpointLink;
-import org.jclouds.http.functions.ReturnStringIf2xx;
 import org.jclouds.rest.annotations.BinderParam;
 import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.JAXBResponseParser;
 import org.jclouds.rest.annotations.ParamParser;
 import org.jclouds.rest.annotations.RequestFilters;
-import org.jclouds.rest.annotations.ResponseParser;
 import org.jclouds.rest.binders.BindToXMLPayload;
 
 import com.abiquo.model.enumerator.RemoteServiceType;
@@ -218,22 +214,6 @@ public interface InfrastructureApi extends Closeable {
    DatacentersLimitsDto listLimits(@EndpointLink("getLimits") @BinderParam(BindToPath.class) DatacenterDto datacenter);
 
    /*********************** Hypervisor ***********************/
-
-   /**
-    * Retrieves the hypervisor type of a remote a machine.
-    * 
-    * @param datacenter
-    *           The datacenter.
-    * @param options
-    *           Optional query params.
-    * @return The hypervisor type.
-    */
-   @Named("hypervisortype:getfrommachine")
-   @GET
-   @Consumes(MediaType.TEXT_PLAIN)
-   @ResponseParser(ReturnStringIf2xx.class)
-   String getHypervisorTypeFromMachine(
-         @EndpointLink("hypervisor") @BinderParam(BindToPath.class) DatacenterDto datacenter, DatacenterOptions options);
 
    /**
     * Retrieves the hypervisor types in the datacenter.
