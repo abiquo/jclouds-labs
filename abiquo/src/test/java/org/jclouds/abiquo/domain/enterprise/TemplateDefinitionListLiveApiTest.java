@@ -23,6 +23,7 @@ import static org.testng.Assert.assertNull;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.jclouds.abiquo.domain.cloud.Conversion;
 import org.jclouds.abiquo.domain.cloud.TemplateDefinition;
 import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
 import org.jclouds.abiquo.domain.task.VirtualMachineTemplateTask;
@@ -30,12 +31,14 @@ import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
 import org.jclouds.abiquo.predicates.cloud.VirtualMachineTemplatePredicates;
 import org.jclouds.abiquo.predicates.enterprise.TemplateDefinitionListPredicates;
 import org.jclouds.abiquo.util.Config;
+import org.testng.SkipException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.abiquo.model.enumerator.VMTemplateState;
 import com.abiquo.server.core.task.TaskState;
+import com.google.common.base.Strings;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
 
@@ -48,26 +51,15 @@ import com.google.common.primitives.Longs;
 public class TemplateDefinitionListLiveApiTest extends BaseAbiquoApiLiveApiTest {
    private TemplateDefinitionList list;
 
-   public void testUpdate() {
-      list.setName(list.getName() + "Updated");
-      list.update();
-
-      List<TemplateDefinitionList> lists = env.enterprise.listTemplateDefinitionLists(TemplateDefinitionListPredicates
-            .name("myListUpdated"));
-
-      assertEquals(lists.size(), 1);
-   }
-
-   public void testListStates() {
-      List<TemplateState> states = list.listStatus(env.datacenter);
-      assertNotNull(states);
-   }
-
    @BeforeClass
    public void setup() {
+      String remoteRepository = Config.get("abiquo.template.repository", "");
+      if (Strings.isNullOrEmpty(remoteRepository)) {
+         throw new SkipException("No remote repository has been configured");
+      }
+
       list = TemplateDefinitionList.builder(env.context.getApiContext(), env.enterprise).name("myList")
-            .url(Config.get("abiquo.template.repository", "http://template-repository.herokuapp.com/ovfindex.xml"))
-            .build();
+            .url(remoteRepository).build();
 
       list.save();
 
@@ -81,7 +73,17 @@ public class TemplateDefinitionListLiveApiTest extends BaseAbiquoApiLiveApiTest 
       assertNull(env.enterprise.getTemplateDefinitionList(idTemplateList));
    }
 
-   @Test
+   public void testUpdate() {
+      list.setName(list.getName() + "Updated");
+      list.update();
+
+      List<TemplateDefinitionList> lists = env.enterprise.listTemplateDefinitionLists(TemplateDefinitionListPredicates
+            .name("myListUpdated"));
+
+      assertEquals(lists.size(), 1);
+   }
+
+   @Test(enabled = false)
    public void testDownload() {
       TemplateDefinition templateDef = templateBySize().min(list.listDefinitions());
 
@@ -102,7 +104,12 @@ public class TemplateDefinitionListLiveApiTest extends BaseAbiquoApiLiveApiTest 
                VirtualMachineTemplatePredicates.templateDefinition(templateDef));
          assertEquals(templates.size(), 1, "template not present in datacenter");
       } finally {
-         // FIXME: wait until conversions are finished before deleting
+         // Must wait until all conversions finish before deleting the template
+         List<Conversion> conversions = vmt.listConversions();
+         Conversion[] monitored = new Conversion[conversions.size()];
+         env.context.getMonitoringService().getConversionMonitor()
+               .awaitCompletion(30l, TimeUnit.MINUTES, conversions.toArray(monitored));
+
          vmt.delete();
       }
    }

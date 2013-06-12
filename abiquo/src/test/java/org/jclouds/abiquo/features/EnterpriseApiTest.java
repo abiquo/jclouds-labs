@@ -36,7 +36,6 @@ import org.testng.annotations.Test;
 import com.abiquo.server.core.appslibrary.DatacenterRepositoryDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListsDto;
-import com.abiquo.server.core.appslibrary.TemplatesStateDto;
 import com.abiquo.server.core.cloud.VirtualAppliancesDto;
 import com.abiquo.server.core.cloud.VirtualDatacentersDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
@@ -249,31 +248,6 @@ public class EnterpriseApiTest extends BaseAbiquoApiTest<EnterpriseApi> {
    }
 
    /*********************** Enterprise Limits ********************** */
-
-   public void testCreateLimits() throws SecurityException, NoSuchMethodException, IOException {
-      EnterpriseDto enterprise = EnterpriseResources.enterprisePut();
-      DatacenterDto datacenter = InfrastructureResources.datacenterPut();
-      DatacenterLimitsDto limits = EnterpriseResources.datacenterLimitsPost();
-
-      Invokable<?, ?> method = method(EnterpriseApi.class, "createLimits", EnterpriseDto.class, DatacenterDto.class,
-            DatacenterLimitsDto.class);
-      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
-            ImmutableList.<Object> of(enterprise, datacenter, limits)));
-
-      String limitsUri = enterprise.searchLink("limits").getHref();
-      String requestURI = String.format("POST %s?datacenter=%d HTTP/1.1", limitsUri, datacenter.getId());
-
-      assertRequestLineEquals(request, requestURI);
-      assertNonPayloadHeadersEqual(request, "Accept: " + DatacenterLimitsDto.BASE_MEDIA_TYPE + "\n");
-      assertPayloadEquals(request, withHeader(EnterpriseResources.datacenterLimitsPostPayload()),
-            DatacenterLimitsDto.class, DatacenterLimitsDto.BASE_MEDIA_TYPE, false);
-
-      assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
-      assertSaxResponseParserClassEquals(method, null);
-      assertFallbackClassEquals(method, null);
-
-      checkFilters(request);
-   }
 
    public void testGetLimits() throws SecurityException, NoSuchMethodException, IOException {
       EnterpriseDto enterprise = EnterpriseResources.enterprisePut();
@@ -653,25 +627,6 @@ public class EnterpriseApiTest extends BaseAbiquoApiTest<EnterpriseApi> {
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
       assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
-
-      checkFilters(request);
-   }
-
-   public void testListTemplateListStatus() throws SecurityException, NoSuchMethodException, IOException {
-      Invokable<?, ?> method = method(EnterpriseApi.class, "listTemplateListStatus", TemplateDefinitionListDto.class,
-            DatacenterDto.class);
-      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
-            ImmutableList.<Object> of(EnterpriseResources.templateListPut(), InfrastructureResources.datacenterPut())));
-
-      assertRequestLineEquals(
-            request,
-            "GET http://localhost/api/admin/enterprises/1/appslib/templateDefinitionLists/1/actions/repositoryStatus?datacenterId=1 HTTP/1.1");
-      assertNonPayloadHeadersEqual(request, "Accept: " + TemplatesStateDto.BASE_MEDIA_TYPE + "\n");
-      assertPayloadEquals(request, null, null, false);
-
-      assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
-      assertSaxResponseParserClassEquals(method, null);
-      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }

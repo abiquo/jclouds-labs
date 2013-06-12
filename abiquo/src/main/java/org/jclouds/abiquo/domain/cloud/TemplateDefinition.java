@@ -92,12 +92,14 @@ public class TemplateDefinition extends DomainWrapper<TemplateDefinitionDto> {
    }
 
    // Parent access
+
    public Enterprise getEnterprise() {
       Integer enterpriseId = target.getIdFromLink(ParentLinkName.ENTERPRISE);
       return wrap(context, Enterprise.class, context.getApi().getEnterpriseApi().getEnterprise(enterpriseId));
    }
 
    // Builder
+
    public static Builder builder(final ApiContext<AbiquoApi> context, final Enterprise enterprise) {
       return new Builder(context, enterprise);
    }
