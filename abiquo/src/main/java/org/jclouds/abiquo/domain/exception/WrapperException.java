@@ -33,6 +33,13 @@ public class WrapperException extends RuntimeException {
    private SingleResourceTransportDto target;
 
    public WrapperException(final Class<? extends DomainWrapper<?>> wrapperClass,
+         final SingleResourceTransportDto target, String message) {
+      super(message);
+      this.wrapperClass = wrapperClass;
+      this.target = target;
+   }
+
+   public WrapperException(final Class<? extends DomainWrapper<?>> wrapperClass,
          final SingleResourceTransportDto target, Throwable cause) {
       super(cause);
       this.wrapperClass = wrapperClass;

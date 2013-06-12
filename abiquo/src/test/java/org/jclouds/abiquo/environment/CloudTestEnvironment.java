@@ -18,6 +18,7 @@ package org.jclouds.abiquo.environment;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.jclouds.abiquo.reference.AbiquoTestConstants.PREFIX;
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
@@ -35,12 +36,15 @@ import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
 import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.domain.network.PrivateIp;
 import org.jclouds.abiquo.domain.network.PrivateNetwork;
+import org.jclouds.abiquo.domain.task.NoResultTask;
 import org.jclouds.abiquo.features.CloudApi;
 import org.jclouds.abiquo.features.services.EventService;
+import org.jclouds.abiquo.monitor.AsyncTaskMonitor;
 import org.jclouds.abiquo.predicates.enterprise.EnterprisePredicates;
 import org.jclouds.abiquo.predicates.network.NetworkPredicates;
 import org.testng.collections.Lists;
 
+import com.abiquo.server.core.task.TaskState;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
 
@@ -179,7 +183,10 @@ public class CloudTestEnvironment extends InfrastructureTestEnvironment {
    }
 
    protected void refreshTemplateRepository() {
-      defaultEnterprise.refreshTemplateRepository(datacenter);
+      NoResultTask refreshTask = defaultEnterprise.refreshTemplateRepository(datacenter);
+      AsyncTaskMonitor monitor = context.getMonitoringService().getAsyncTaskMonitor();
+      monitor.awaitCompletion(refreshTask);
+      assertEquals(refreshTask.getState(), TaskState.FINISHED_SUCCESSFULLY);
    }
 
    // Tear down

@@ -38,4 +38,20 @@ public class ConversionTask extends AsyncTask<Conversion, ConversionDto> {
       return "Conversion" + super.toString();
    }
 
+   public static class Builder extends AsyncTask.Builder<Conversion, ConversionDto> {
+
+      public Builder(ApiContext<AbiquoApi> context, TaskDto target) {
+         super(context, target);
+      }
+
+      @Override
+      public AsyncTask<Conversion, ConversionDto> build() {
+         return new ConversionTask(context, target);
+      }
+   }
+
+   public static Builder builder(ApiContext<AbiquoApi> context, TaskDto target) {
+      return new Builder(context, target);
+   }
+
 }

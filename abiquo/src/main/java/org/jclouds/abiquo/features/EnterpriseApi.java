@@ -34,6 +34,7 @@ import org.jclouds.abiquo.binders.AppendToPath;
 import org.jclouds.abiquo.binders.BindToPath;
 import org.jclouds.abiquo.binders.BindToXMLPayloadAndPath;
 import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
+import org.jclouds.abiquo.functions.ReturnTaskReferenceOrNull;
 import org.jclouds.abiquo.functions.infrastructure.ParseDatacenterId;
 import org.jclouds.abiquo.http.filters.AbiquoAuthentication;
 import org.jclouds.abiquo.http.filters.AppendApiVersionToMediaType;
@@ -43,9 +44,11 @@ import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.JAXBResponseParser;
 import org.jclouds.rest.annotations.ParamParser;
 import org.jclouds.rest.annotations.RequestFilters;
+import org.jclouds.rest.annotations.ResponseParser;
 import org.jclouds.rest.annotations.SinceApiVersion;
 import org.jclouds.rest.binders.BindToXMLPayload;
 
+import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.server.core.appslibrary.DatacenterRepositoryDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListDto;
@@ -474,11 +477,13 @@ public interface EnterpriseApi extends Closeable {
     *           Id of the enterprise which information will be refreshed.
     * @param datacenterRepositoryId
     *           Id of the datacenter repository containing the templates.
+    * @return A reference to the refresh repository task
     */
    @Named("repository:refresh")
    @PUT
    @Path("/enterprises/{enterprise}/datacenterrepositories/{datacenterrepository}/actions/refresh")
-   void refreshTemplateRepository(@PathParam("enterprise") Integer enterpriseId,
+   @ResponseParser(ReturnTaskReferenceOrNull.class)
+   AcceptedRequestDto<String> refreshTemplateRepository(@PathParam("enterprise") Integer enterpriseId,
          @PathParam("datacenterrepository") Integer datacenterRepositoryId);
 
    /*********************** Network ***********************/

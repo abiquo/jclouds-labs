@@ -19,7 +19,7 @@ package org.jclouds.abiquo.monitor.functions;
 import static org.testng.Assert.assertEquals;
 
 import org.easymock.EasyMock;
-import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.BaseTask;
 import org.jclouds.abiquo.domain.task.VirtualMachineTask;
 import org.jclouds.abiquo.monitor.MonitorStatus;
 import org.jclouds.rest.ApiContext;
@@ -39,7 +39,7 @@ public class AsyncTaskStatusMonitorTest {
 
    @Test(expectedExceptions = NullPointerException.class)
    public void testInvalidNullArgument() {
-      Function<AsyncTask<?, ?>, MonitorStatus> function = new AsyncTaskStatusMonitor();
+      Function<BaseTask<?>, MonitorStatus> function = new AsyncTaskStatusMonitor();
       function.apply(null);
    }
 
@@ -63,7 +63,7 @@ public class AsyncTaskStatusMonitorTest {
       checkStatesReturn(new MockAsyncTaskFailing(), new AsyncTaskStatusMonitor(), states, MonitorStatus.CONTINUE);
    }
 
-   private void checkStatesReturn(final MockAsyncTask task, final Function<AsyncTask<?, ?>, MonitorStatus> function,
+   private void checkStatesReturn(final MockAsyncTask task, final Function<BaseTask<?>, MonitorStatus> function,
          final TaskState[] states, final MonitorStatus expectedStatus) {
       for (TaskState state : states) {
          task.setState(state);

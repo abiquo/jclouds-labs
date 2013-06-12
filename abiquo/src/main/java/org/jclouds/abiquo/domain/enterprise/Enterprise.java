@@ -35,12 +35,14 @@ import org.jclouds.abiquo.domain.network.ExternalNetwork;
 import org.jclouds.abiquo.domain.network.Network;
 import org.jclouds.abiquo.domain.network.UnmanagedIp;
 import org.jclouds.abiquo.domain.network.UnmanagedNetwork;
+import org.jclouds.abiquo.domain.task.NoResultTask;
 import org.jclouds.abiquo.strategy.enterprise.ListVirtualMachineTemplates;
 import org.jclouds.http.HttpResponse;
 import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.rest.ApiContext;
 
 import com.abiquo.model.rest.RESTLink;
+import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListsDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
@@ -674,8 +676,10 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     *      Resource# DatacenterRepositoryResource-
     *      SynchronizetheDatacenterRepositorywiththerepository</a>
     */
-   public void refreshTemplateRepository(final Datacenter datacenter) {
-      context.getApi().getEnterpriseApi().refreshTemplateRepository(target.getId(), datacenter.getId());
+   public NoResultTask refreshTemplateRepository(final Datacenter datacenter) {
+      AcceptedRequestDto<String> taskRef = context.getApi().getEnterpriseApi()
+            .refreshTemplateRepository(target.getId(), datacenter.getId());
+      return getTask(taskRef).asNoResultTask();
    }
 
    /**

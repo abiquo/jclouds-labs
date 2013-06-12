@@ -16,37 +16,45 @@
  */
 package org.jclouds.abiquo.domain.task;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.jclouds.abiquo.AbiquoApi;
-import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
 import org.jclouds.rest.ApiContext;
 
-import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
 import com.abiquo.server.core.task.TaskDto;
 
 /**
- * Task that produces a {@link VirtualMachineTemplate}.
+ * A task that does not produce a result.
  * 
  * @author Ignasi Barrera
  */
-public class VirtualMachineTemplateTask extends AsyncTask<VirtualMachineTemplate, VirtualMachineTemplateDto> {
-   protected VirtualMachineTemplateTask(final ApiContext<AbiquoApi> context, final TaskDto target) {
-      super(context, target, VirtualMachineTemplate.class, VirtualMachineTemplateDto.class);
+public class NoResultTask extends BaseTask<Void> {
+   protected NoResultTask(final ApiContext<AbiquoApi> context, final TaskDto target) {
+      super(context, target);
+   }
+
+   @Override
+   public Void getResult() {
+      return null;
    }
 
    @Override
    public String toString() {
-      return "VirtualMachineTemplate" + super.toString();
+      return "NoResult" + super.toString();
    }
 
-   public static class Builder extends AsyncTask.Builder<VirtualMachineTemplate, VirtualMachineTemplateDto> {
+   public static class Builder {
+      private ApiContext<AbiquoApi> context;
+
+      private TaskDto target;
 
       public Builder(ApiContext<AbiquoApi> context, TaskDto target) {
-         super(context, target);
+         this.context = checkNotNull(context, "context");
+         this.target = checkNotNull(target, "target");
       }
 
-      @Override
-      public AsyncTask<VirtualMachineTemplate, VirtualMachineTemplateDto> build() {
-         return new VirtualMachineTemplateTask(context, target);
+      public NoResultTask build() {
+         return new NoResultTask(context, target);
       }
    }
 

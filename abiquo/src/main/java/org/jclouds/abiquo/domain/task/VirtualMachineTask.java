@@ -38,4 +38,20 @@ public class VirtualMachineTask extends AsyncTask<VirtualMachine, VirtualMachine
       return "VirtualMachine" + super.toString();
    }
 
+   public static class Builder extends AsyncTask.Builder<VirtualMachine, VirtualMachineWithNodeExtendedDto> {
+
+      public Builder(ApiContext<AbiquoApi> context, TaskDto target) {
+         super(context, target);
+      }
+
+      @Override
+      public AsyncTask<VirtualMachine, VirtualMachineWithNodeExtendedDto> build() {
+         return new VirtualMachineTask(context, target);
+      }
+   }
+
+   public static Builder builder(ApiContext<AbiquoApi> context, TaskDto target) {
+      return new Builder(context, target);
+   }
+
 }

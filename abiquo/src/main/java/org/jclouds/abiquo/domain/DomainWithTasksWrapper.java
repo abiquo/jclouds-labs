@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jclouds.abiquo.AbiquoApi;
-import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.BaseTask;
 import org.jclouds.rest.ApiContext;
 
 import com.abiquo.model.transport.SingleResourceTransportDto;
@@ -47,17 +47,17 @@ public abstract class DomainWithTasksWrapper<T extends SingleResourceTransportDt
       super(context, target);
    }
 
-   public List<AsyncTask<?, ?>> listTasks() {
+   public List<BaseTask<?>> listTasks() {
       TasksDto result = context.getApi().getTaskApi().listTasks(target);
-      List<AsyncTask<?, ?>> tasks = Lists.newArrayList();
+      List<BaseTask<?>> tasks = Lists.newArrayList();
       for (TaskDto dto : result.getCollection()) {
          tasks.add(newTask(context, dto));
       }
 
       // Return the most recent task first
-      Collections.sort(tasks, new Ordering<AsyncTask<?, ?>>() {
+      Collections.sort(tasks, new Ordering<BaseTask<?>>() {
          @Override
-         public int compare(final AsyncTask<?, ?> left, final AsyncTask<?, ?> right) {
+         public int compare(final BaseTask<?> left, final BaseTask<?> right) {
             return Longs.compare(left.getTimestamp(), right.getTimestamp());
          }
       }.reverse());
@@ -65,11 +65,11 @@ public abstract class DomainWithTasksWrapper<T extends SingleResourceTransportDt
       return ImmutableList.copyOf(tasks);
    }
 
-   public List<AsyncTask<?, ?>> listTasks(final Predicate<AsyncTask<?, ?>> filter) {
+   public List<BaseTask<?>> listTasks(final Predicate<BaseTask<?>> filter) {
       return ImmutableList.copyOf(filter(listTasks(), filter));
    }
 
-   public AsyncTask<?, ?> findTask(final Predicate<AsyncTask<?, ?>> filter) {
+   public BaseTask<?> findTask(final Predicate<BaseTask<?>> filter) {
       return Iterables.getFirst(filter(listTasks(), filter), null);
    }
 }

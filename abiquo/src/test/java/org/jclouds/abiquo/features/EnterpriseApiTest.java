@@ -25,6 +25,7 @@ import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.abiquo.domain.EnterpriseResources;
 import org.jclouds.abiquo.domain.InfrastructureResources;
 import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
+import org.jclouds.abiquo.functions.ReturnTaskReferenceOrNull;
 import org.jclouds.fallbacks.MapHttp4xxCodesToExceptions;
 import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.http.functions.ReleasePayloadAndReturn;
@@ -482,7 +483,7 @@ public class EnterpriseApiTest extends BaseAbiquoApiTest<EnterpriseApi> {
       assertNonPayloadHeadersEqual(request, "");
       assertPayloadEquals(request, null, null, false);
 
-      assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
+      assertResponseParserClassEquals(method, request, ReturnTaskReferenceOrNull.class);
       assertSaxResponseParserClassEquals(method, null);
       assertFallbackClassEquals(method, null);
 

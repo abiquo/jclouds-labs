@@ -27,6 +27,7 @@ import org.jclouds.abiquo.domain.DomainWrapper;
 import org.jclouds.abiquo.domain.cloud.options.VirtualMachineOptions;
 import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.BaseTask;
 import org.jclouds.abiquo.domain.task.VirtualMachineTask;
 import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
@@ -265,7 +266,7 @@ public class VirtualAppliance extends DomainWrapper<VirtualApplianceDto> {
 
       AcceptedRequestDto<String> response = context.getApi().getCloudApi().deployVirtualAppliance(unwrap(), force);
 
-      AsyncTask<?, ?>[] tasks = getTasks(response);
+      BaseTask<?>[] tasks = getTasks(response);
       return Arrays.copyOf(tasks, tasks.length, VirtualMachineTask[].class);
    }
 
@@ -304,7 +305,7 @@ public class VirtualAppliance extends DomainWrapper<VirtualApplianceDto> {
 
       AcceptedRequestDto<String> response = context.getApi().getCloudApi().undeployVirtualAppliance(unwrap(), force);
 
-      AsyncTask<?, ?>[] tasks = getTasks(response);
+      BaseTask<?>[] tasks = getTasks(response);
       return Arrays.copyOf(tasks, tasks.length, VirtualMachineTask[].class);
    }
 
