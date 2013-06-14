@@ -43,12 +43,12 @@ public class HypervisorType extends DomainWrapper<HypervisorTypeDto> {
 
    public boolean supportsExtraHardDisks() {
       Optional<String> constraint = Optional.fromNullable(getConstraints().get("extra_hard_disk"));
-      return !constraint.isPresent() || Boolean.parseBoolean(constraint.get());
+      return Boolean.parseBoolean(constraint.or("true"));
    }
 
    public boolean hasEditableDatastores() {
       Optional<String> constraint = Optional.fromNullable(getConstraints().get("datastore_directory_editable"));
-      return !constraint.isPresent() || Boolean.parseBoolean(constraint.get());
+      return Boolean.parseBoolean(constraint.or("true"));
    }
 
    // Delegate methods

@@ -83,7 +83,6 @@ public class TemplateDefinitionListLiveApiTest extends BaseAbiquoApiLiveApiTest 
       assertEquals(lists.size(), 1);
    }
 
-   @Test(enabled = false)
    public void testDownload() {
       TemplateDefinition templateDef = templateBySize().min(list.listDefinitions());
 
