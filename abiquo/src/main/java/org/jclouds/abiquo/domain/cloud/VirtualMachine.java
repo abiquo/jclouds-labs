@@ -32,6 +32,7 @@ import org.jclouds.abiquo.domain.task.VirtualMachineTask;
 import org.jclouds.abiquo.domain.task.VirtualMachineTemplateTask;
 import org.jclouds.abiquo.domain.util.LinkUtils;
 import org.jclouds.abiquo.features.services.MonitoringService;
+import org.jclouds.abiquo.functions.cloud.LinkToVirtualDisk;
 import org.jclouds.abiquo.monitor.VirtualMachineMonitor;
 import org.jclouds.abiquo.predicates.LinkPredicates;
 import org.jclouds.abiquo.reference.ValidationErrors;
@@ -328,6 +329,12 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
       return Iterables.getFirst(filter(listAttachedVirtualDisks(), filter), null);
    }
 
+   @SinceApiVersion("2.6")
+   public VirtualDisk<?> getPrimaryDisk() {
+      LinkToVirtualDisk linkToVirtualDisk = context.utils().injector().getInstance(LinkToVirtualDisk.class);
+      return linkToVirtualDisk.apply(target.searchLink(DiskManagementDto.REL_PREFIX + "0"));
+   }
+
    // Actions
 
    /**
@@ -492,7 +499,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    public VirtualMachineTask setVirtualDisks(List<? extends VirtualDisk<?>> virtualDisks) {
       checkNotNull(virtualDisks, "virtualDisk list can not be null");
       // Remove current disk links
-      Iterables.removeIf(target.getLinks(), LinkPredicates.isDisk());
+      Iterables.removeIf(target.getLinks(), LinkPredicates.isAttachedDisk());
 
       // Add the given virtual disks in the appropriate order
       for (int i = 0; i < virtualDisks.size(); i++) {

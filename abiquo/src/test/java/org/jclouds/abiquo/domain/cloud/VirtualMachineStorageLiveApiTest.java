@@ -61,6 +61,12 @@ public class VirtualMachineStorageLiveApiTest extends BaseAbiquoApiLiveApiTest {
       deleteVolume(volume);
    }
 
+   public void testGetPrimaryDisk() {
+      VirtualDisk<?> primaryDisk = env.virtualMachine.getPrimaryDisk();
+      assertNotNull(primaryDisk);
+      assertTrue(primaryDisk instanceof HardDisk);
+   }
+
    public void testAttachVolume() {
       // Since the virtual machine is not deployed, this should not generate a
       // task
