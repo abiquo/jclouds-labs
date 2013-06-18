@@ -33,6 +33,7 @@ import org.jclouds.Constants;
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
 import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
+import org.jclouds.abiquo.domain.cloud.options.VirtualMachineTemplateOptions;
 import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.domain.infrastructure.Datacenter;
 import org.jclouds.abiquo.strategy.ListEntities;
@@ -103,8 +104,11 @@ public class ListVirtualMachineTemplates implements ListEntities<VirtualMachineT
                   return executor.submit(new Callable<VirtualMachineTemplatesDto>() {
                      @Override
                      public VirtualMachineTemplatesDto call() throws Exception {
-                        return context.getApi().getVirtualMachineTemplateApi()
-                              .listVirtualMachineTemplates(parent.getId(), input.getId());
+                        return context
+                              .getApi()
+                              .getVirtualMachineTemplateApi()
+                              .listVirtualMachineTemplates(parent.getId(), input.getId(),
+                                    VirtualMachineTemplateOptions.builder().disablePagination().build());
                      }
                   });
                }
