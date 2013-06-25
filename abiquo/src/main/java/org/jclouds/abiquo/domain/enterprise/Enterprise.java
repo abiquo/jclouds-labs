@@ -27,6 +27,7 @@ import org.jclouds.abiquo.domain.cloud.VirtualAppliance;
 import org.jclouds.abiquo.domain.cloud.VirtualDatacenter;
 import org.jclouds.abiquo.domain.cloud.VirtualMachine;
 import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
+import org.jclouds.abiquo.domain.cloud.options.VirtualMachineTemplateOptions;
 import org.jclouds.abiquo.domain.exception.AbiquoException;
 import org.jclouds.abiquo.domain.infrastructure.Datacenter;
 import org.jclouds.abiquo.domain.infrastructure.Machine;
@@ -427,8 +428,11 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     *         datacenter.
     */
    public List<VirtualMachineTemplate> listTemplatesInRepository(final Datacenter datacenter) {
-      VirtualMachineTemplatesDto dto = context.getApi().getVirtualMachineTemplateApi()
-            .listVirtualMachineTemplates(target.getId(), datacenter.getId());
+      VirtualMachineTemplatesDto dto = context
+            .getApi()
+            .getVirtualMachineTemplateApi()
+            .listVirtualMachineTemplates(target.getId(), datacenter.getId(),
+                  VirtualMachineTemplateOptions.builder().disablePagination().build());
       return wrap(context, VirtualMachineTemplate.class, dto.getCollection());
    }
 
