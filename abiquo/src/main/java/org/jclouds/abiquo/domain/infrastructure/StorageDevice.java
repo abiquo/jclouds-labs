@@ -301,9 +301,9 @@ public class StorageDevice extends DomainWrapper<StorageDeviceDto> {
 
       private Datacenter datacenter;
 
-      private String iscsiIp;
+      private String serviceIp;
 
-      private Integer iscsiPort;
+      private Integer servicePort;
 
       private String managementIp;
 
@@ -330,13 +330,13 @@ public class StorageDevice extends DomainWrapper<StorageDeviceDto> {
          return this;
       }
 
-      public Builder iscsiIp(final String iscsiIp) {
-         this.iscsiIp = iscsiIp;
+      public Builder serviceIp(final String serviceIp) {
+         this.serviceIp = serviceIp;
          return this;
       }
 
-      public Builder iscsiPort(final int iscsiPort) {
-         this.iscsiPort = iscsiPort;
+      public Builder servicePort(final int servicePort) {
+         this.servicePort = servicePort;
          return this;
       }
 
@@ -372,8 +372,8 @@ public class StorageDevice extends DomainWrapper<StorageDeviceDto> {
 
       public StorageDevice build() {
          StorageDeviceDto dto = new StorageDeviceDto();
-         dto.setIscsiIp(iscsiIp);
-         dto.setIscsiPort(iscsiPort);
+         dto.setServiceIp(serviceIp);
+         dto.setServicePort(servicePort);
          dto.setManagementIp(managementIp);
          dto.setManagementPort(managementPort);
          dto.setName(name);
@@ -386,9 +386,10 @@ public class StorageDevice extends DomainWrapper<StorageDeviceDto> {
       }
 
       public static Builder fromStorageDevice(final StorageDevice in) {
-         Builder builder = StorageDevice.builder(in.context, in.getDatacenter()).iscsiIp(in.getIscsiIp())
-               .iscsiPort(in.getIscsiPort()).managementIp(in.getManagementIp()).managementPort(in.getManagementPort())
-               .name(in.getName()).password(in.getPassword()).type(in.getType()).username(in.getUsername());
+         Builder builder = StorageDevice.builder(in.context, in.getDatacenter()).serviceIp(in.getServiceIp())
+               .servicePort(in.getServicePort()).managementIp(in.getManagementIp())
+               .managementPort(in.getManagementPort()).name(in.getName()).password(in.getPassword()).type(in.getType())
+               .username(in.getUsername());
 
          return builder;
       }
@@ -400,12 +401,12 @@ public class StorageDevice extends DomainWrapper<StorageDeviceDto> {
       return target.getId();
    }
 
-   public String getIscsiIp() {
-      return target.getIscsiIp();
+   public String getServiceIp() {
+      return target.getServiceIp();
    }
 
-   public int getIscsiPort() {
-      return target.getIscsiPort();
+   public int getServicePort() {
+      return target.getServicePort();
    }
 
    public String getManagementIp() {
@@ -432,12 +433,12 @@ public class StorageDevice extends DomainWrapper<StorageDeviceDto> {
       return target.getUsername();
    }
 
-   public void setIscsiIp(final String iscsiIp) {
-      target.setIscsiIp(iscsiIp);
+   public void setServiceIp(final String serviceIp) {
+      target.setServiceIp(serviceIp);
    }
 
-   public void setIscsiPort(final int iscsiPort) {
-      target.setIscsiPort(iscsiPort);
+   public void setServicePort(final int servicePort) {
+      target.setServicePort(servicePort);
    }
 
    public void setManagementIp(final String managementIp) {
@@ -466,7 +467,7 @@ public class StorageDevice extends DomainWrapper<StorageDeviceDto> {
 
    @Override
    public String toString() {
-      return "StorageDevice [id=" + getId() + ", iscsiIp=" + getIscsiIp() + ", iscsiPort=" + getIscsiPort()
+      return "StorageDevice [id=" + getId() + ", serviceIp=" + getServiceIp() + ", servicePort=" + getServicePort()
             + ", managementIp=" + getManagementIp() + ", managementPort=" + getManagementPort() + ", name=" + getName()
             + ", password=" + getPassword() + ", type=" + getType() + ", user=" + getUsername() + "]";
    }

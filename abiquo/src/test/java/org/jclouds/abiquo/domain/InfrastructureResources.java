@@ -88,8 +88,8 @@ public class InfrastructureResources {
    public static StorageDeviceDto storageDevicePost() {
       StorageDeviceDto storage = new StorageDeviceDto();
       storage.setName("Aloha aloha");
-      storage.setIscsiIp("10.10.10.10");
-      storage.setIscsiPort(99);
+      storage.setServiceIp("10.10.10.10");
+      storage.setServicePort(99);
       storage.setManagementPort(90);
 
       return storage;
@@ -302,8 +302,8 @@ public class InfrastructureResources {
    public static String storageDevicePostPayload() {
       StringBuilder buffer = new StringBuilder();
       buffer.append("<device>");
-      buffer.append("<iscsiIp>10.10.10.10</iscsiIp>");
-      buffer.append("<iscsiPort>99</iscsiPort>");
+      buffer.append("<serviceIp>10.10.10.10</serviceIp>");
+      buffer.append("<servicePort>99</servicePort>");
       buffer.append("<managementPort>90</managementPort>");
       buffer.append("<name>Aloha aloha</name>");
       buffer.append("</device>");
@@ -442,8 +442,8 @@ public class InfrastructureResources {
       buffer.append(link("/admin/datacenters/1/storage/devices/1", "edit"));
       buffer.append(link("/admin/datacenters/1/storage/devices/1/pools", "pools"));
       buffer.append("<id>1</id>");
-      buffer.append("<iscsiIp>10.10.10.10</iscsiIp>");
-      buffer.append("<iscsiPort>99</iscsiPort>");
+      buffer.append("<serviceIp>10.10.10.10</serviceIp>");
+      buffer.append("<servicePort>99</servicePort>");
       buffer.append("<managementPort>90</managementPort>");
       buffer.append("<name>Aloha aloha</name>");
       buffer.append("</device>");

@@ -271,7 +271,7 @@ public class InfrastructureTestEnvironment implements TestEnvironment {
             .name(PREFIX + "Storage Device")//
             .type(type)//
             .managementIp(ip).managementPort(metadata.getDefaultManagementPort())//
-            .iscsiIp(ip).iscsiPort(metadata.getDefaultIscsiPort()) //
+            .serviceIp(ip).servicePort(metadata.getDefaultServicePort()) //
             .username(user)//
             .password(pass) //
             .build();

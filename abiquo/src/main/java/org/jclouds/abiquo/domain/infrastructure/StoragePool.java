@@ -178,6 +178,7 @@ public class StoragePool extends DomainWrapper<StoragePoolDto> {
       private ApiContext<AbiquoApi> context;
       private StorageDevice storageDevice;
       private String name;
+      private String type;
       private Long totalSizeInMb;
 
       public Builder(final ApiContext<AbiquoApi> context, final StorageDevice storageDevice) {
@@ -198,6 +199,11 @@ public class StoragePool extends DomainWrapper<StoragePoolDto> {
          return this;
       }
 
+      public Builder type(final String type) {
+         this.type = type;
+         return this;
+      }
+
       public Builder totalSizeInMb(final long totalSizeInMb) {
          this.totalSizeInMb = totalSizeInMb;
          return this;
@@ -206,6 +212,7 @@ public class StoragePool extends DomainWrapper<StoragePoolDto> {
       public StoragePool build() {
          StoragePoolDto dto = new StoragePoolDto();
          dto.setName(name);
+         dto.setType(type);
          dto.setTotalSizeInMb(totalSizeInMb);
          StoragePool storagePool = new StoragePool(context, dto);
          storagePool.storageDevice = storageDevice;
@@ -213,9 +220,8 @@ public class StoragePool extends DomainWrapper<StoragePoolDto> {
       }
 
       public static Builder fromStoragePool(final StoragePool in) {
-         Builder builder = StoragePool.builder(in.context, in.getStorageDevice()).totalSizeInMb(in.getTotalSizeInMb());
-
-         return builder;
+         return StoragePool.builder(in.context, in.getStorageDevice()).name(in.getName()).type(in.getType())
+               .totalSizeInMb(in.getTotalSizeInMb());
       }
    }
 
@@ -225,12 +231,20 @@ public class StoragePool extends DomainWrapper<StoragePoolDto> {
       return target.getName();
    }
 
+   public String getType() {
+      return target.getType();
+   }
+
    public long getTotalSizeInMb() {
       return target.getTotalSizeInMb();
    }
 
    public void setName(final String name) {
       target.setName(name);
+   }
+
+   public void setType(final String type) {
+      target.setType(type);
    }
 
    public void setTotalSizeInMb(final long totalSizeInMb) {
